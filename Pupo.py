@@ -1,7 +1,7 @@
 import sys
-
-import Function as func
 import os
+import CopyWindow 
+import Function as func
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
@@ -18,32 +18,25 @@ Warning = "Внимание!"
 Message = "Сообщение "
 
 
-class CopyWindow(QMainWindow):
-    def __init__(self):
-        super().__init__()
-        self.title = 'Cleaning program'
-        self.checkBox_Delete = QCheckBox(CheckBox_1, self)
-        self.show()
-
-
-
 
 class MainWindow(QMainWindow):
 
 # Функция инициализации окна
     def __init__(self):
         super().__init__()
-        self.title = 'Cleaning program'
+        Title = 'Cleaning program'
         self.setWindowIcon(QIcon('icon.png'))
-
+        
         self.File =  os.getcwd().replace('/', '\\')
-        self.left = 700
-        self.top = 300        
+        
+        ax = 700
+        ay = 300        
+        
+        aw = 620
+        ah = 500
 
-        self.width = 620
-        self.height = 500
-        self.setWindowTitle(self.title)
-        self.setGeometry(self.left, self.top, self.width, self.height)
+        self.setWindowTitle(Title)
+        self.setGeometry(ax, ay, aw, ah)
 
         self.ButtonUI()
         self.CheckBoxesUI()
@@ -76,9 +69,6 @@ class MainWindow(QMainWindow):
         self.checkBox_EmptyDir.move(20, 100)
         self.checkBox_EmptyDir.setFixedSize(400,20)
 
-    # def CheckedBox(self):
-    #     if self.checkBox_Delete.isChecked() == True:
-    #         QMessageBox.warning(self,Warning,Message,QMessageBox.Ok, QMessageBox.Ok)
 
 #   Функция инициализации кнопок
     def ButtonUI(self):
@@ -86,26 +76,40 @@ class MainWindow(QMainWindow):
         button2 = QPushButton('Exit', self)
         button3 = QPushButton('Review', self)
         button4 = QPushButton('Copy Files', self)
+        button5 = QPushButton('Txt to xlsx', self)
 
 
-        button1.move(510,450)
+        button1.move(490,450)
         button1.clicked.connect(self.on_click)
 
         button2.clicked.connect(self.exit)
         button2.move(30,450)
 
-        button3.clicked.connect(self.selectDirectory)
+        button3.clicked.connect(self.SelectMainDirectory)
         button3.move(500,14)
         button3.setFixedSize(90,30)
 
         button4.clicked.connect(self.open_new_window)
-        button4.move(500,50)
+        button4.move(493,190)
         button4.setFixedSize(90,30)
 
+        button5.clicked.connect(self.SelectForConvert)
+        button5.move(400,190)
+        button5.setFixedSize(90,30)
+
+
+    def SelectForConvert(self):
+        self.File = str(QFileDialog.getExistingDirectory(self, "Select Directory")).replace('/', '\\')
+        self.lineEdit.setText(self.File)
+
+    def SelectMainDirectory(self):
+        self.File = str(QFileDialog.getExistingDirectory(self, "Select Directory")).replace('/', '\\')
+        self.lineEdit.setText(self.File)
+
     def open_new_window(self):
-        # CopyWindow()
-        self.w = CopyWindow()
+        self.w = CopyWindow.CopyWindow()
         self.w.show()
+
         
 
 
@@ -166,9 +170,7 @@ class MainWindow(QMainWindow):
                 func.Print(self,EmptyError)
     
 
-    def selectDirectory(self):
-        self.File = str(QFileDialog.getExistingDirectory(self, "Select Directory")).replace('/', '\\')
-        self.lineEdit.setText(self.File)
+    
 
 
     def exit(self):
