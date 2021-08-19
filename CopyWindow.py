@@ -1,6 +1,8 @@
 from PyQt5.QtWidgets import *
+from PyQt5 import QtCore
 import os
 import shutil
+from Function import *
 
 From    = ""
 To      = ""
@@ -13,8 +15,13 @@ def splitName(str):
 
 
 class CopyWindow(QMainWindow):
+    log_update = QtCore.pyqtSignal(int)
+
     def __init__(self):
         super().__init__()
+
+        self.log_txt = 'Начало копирования'
+
         self.setWindowTitle("Copy Files")
         label_1 = QLabel("From: ",self)
         label_1.setStyleSheet("font: bold 12px")
@@ -35,7 +42,7 @@ class CopyWindow(QMainWindow):
         self.Buttons()
         self.show()
     
-    
+
     def LineEdit(self):
         self.lineEdit_1 = QLineEdit(self)
         self.lineEdit_1.setFixedSize(420,30)
@@ -62,20 +69,24 @@ class CopyWindow(QMainWindow):
         button_3.clicked.connect(self.startCopy)
 
     def startCopy(self):
+        global Text
         if From == "":
             QMessageBox.critical(self, 'Ошибка', "Выберите откуда надо копировать файлы")
             return
         elif To == "":
             QMessageBox.critical(self, 'Ошибка', "Выберите куда надо копировать файлы")
             return
-
-        for root, _, files in os.walk(From):
+        for root, folders, files in os.walk(From):
+            print(folders.sort(key=len))
             for file in files:
                 if file.endswith(".txt"):
+                    self.log_update.emit(1)
+                    self.log_txt = root + "\\" + file + " -> " + To + "\\" + splitName(root) + ".txt"
                     shutil.copyfile(root + "\\" + file, To + "\\" + splitName(root) + ".txt")
-                    self.close()
         
         QMessageBox.information(self, 'Успех', "Файлы скопированы")
+        self.close()
+
         
 
 

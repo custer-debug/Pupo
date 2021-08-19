@@ -1,5 +1,7 @@
 import sys
 import os
+
+from PyQt5 import QtGui
 import CopyWindow 
 import Function as func
 from PyQt5.QtCore import *
@@ -108,8 +110,12 @@ class MainWindow(QMainWindow):
 
     def open_new_window(self):
         self.w = CopyWindow.CopyWindow()
+        self.w.log_update.connect(self.kek)
         self.w.show()
 
+    def kek(self):
+        func.Print(self, self.w.log_txt)
+        QtGui.QGuiApplication.processEvents()
         
 
 
@@ -122,7 +128,7 @@ class MainWindow(QMainWindow):
                     if file.endswith(".exe"):
                         path = os.path.join(root, file)
                         os.remove(path)
-                        self.Print(self,"Удалён: " + path)
+                        func.Print(self,"Удалён: " + path)
         
 
         return len(path)
@@ -136,7 +142,6 @@ class MainWindow(QMainWindow):
                     return func.splitDate(file)
 
 
-
 #   Главная функция переименования выходных файлов
     def RenameTxtFiles(self):
         folder = ""
@@ -144,15 +149,11 @@ class MainWindow(QMainWindow):
             for file in files:
                 if file.endswith("Out_res.txt"):
                     folder = func.splitName(root)    #Директория поиска
-                    data = self.findDatFiles()  #Дата первого dat-файла
+                    data = self.findDatFiles()
+                    print(data)
                     func.Print(self,root + "\\" + file + " -> " + folder + "_" + data)
                     os.rename(os.path.join(root, file), os.path.join(root, folder) + "_" + data + ".txt")
         return len(folder)
-            
-
-
-
-    
 
 
     @pyqtSlot()
@@ -166,11 +167,8 @@ class MainWindow(QMainWindow):
                 func.Print(self,TxtError)
 
         if self.checkBox_EmptyDir.isChecked() == True:
-            if func.del_empty_dirs(self.File) == False:
+            if func.del_empty_dirs(self, self.File) == True:
                 func.Print(self,EmptyError)
-    
-
-    
 
 
     def exit(self):

@@ -1,14 +1,15 @@
 import os
 from datetime import datetime
 from PyQt5.QtGui import QTextCursor
+from Function import *
 
 Text = ""
 
 #   Функция записи событий в окне статуса
 def Print(self,text):
         global Text
-        Text += "[" + str(datetime.now().strftime("%H:%M:%S")) + "] " + text + "\n"
-        self.Text.setText(Text)
+        Text += "<b>[" + str(datetime.now().strftime("%H:%M:%S")) + "]</b> " + text + "<br>"
+        self.Text.setHtml(Text)
         self.Text.moveCursor(QTextCursor.End)
 
 
@@ -26,14 +27,14 @@ def splitDate(str):
     return res
 
 
-def del_empty_dirs(path):
-        flag = False
+def del_empty_dirs(self, path):
+        flag = True
         for d in os.listdir(path):
             a = os.path.join(path, d)
             if os.path.isdir(a):
-                del_empty_dirs(a)
+                del_empty_dirs(self, a)
                 if not os.listdir(a):
                     os.rmdir(a)
-                    print(a, 'удалена')
-                    flag = True
+                    Print(self,"Папка удалена: " + a)
+                    flag = False
         return flag
