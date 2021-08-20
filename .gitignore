@@ -123,3 +123,4 @@ RenameOutFile.py
 *.xlsx
 CopyFiles.py
 CopyFiles.py
+*.exe
