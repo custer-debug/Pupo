@@ -11,9 +11,6 @@ def splitName(str):
     return str.split('\\')[-1]
 
 
-
-
-
 class CopyWindow(QMainWindow):
     log_update = QtCore.pyqtSignal(int)
 

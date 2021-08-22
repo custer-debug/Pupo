@@ -2,15 +2,25 @@ import os
 from datetime import datetime
 from PyQt5.QtGui import QTextCursor
 from Function import *
+import logging
 
 Text = ""
+logging.basicConfig(filename='Pupo.log',level = logging.INFO, filemode='w', format='%(asctime)s - %(levelname)s - %(message)s')
+
+
+
 
 #   Функция записи событий в окне статуса
 def Print(self,text):
         global Text
-        Text += "<b>[" + str(datetime.now().strftime("%H:%M:%S")) + "]</b> " + text + "<br>"
+        logging.info(text)
+        Text += "<b>[" + str(datetime.now().strftime("%H:%M:%S")) + "]</b> " + text + "<br> " 
         self.Text.setHtml(Text)
         self.Text.moveCursor(QTextCursor.End)
+        
+        
+
+
 
 
 def splitName(str):
@@ -37,4 +47,6 @@ def del_empty_dirs(self, path):
                     os.rmdir(a)
                     Print(self,"Папка удалена: " + a)
                     flag = False
+        #Print(self,"Done")
         return flag
+

@@ -8,6 +8,8 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
+
+
 CheckBox_1 = "Удаление исполняемых файлов (.exe)"
 CheckBox_2 = "Переименование выходных файлов (Out_res.txt)"
 CheckBox_3 = "Удаление пустых папок"
@@ -31,10 +33,10 @@ class MainWindow(QMainWindow):
         
         self.File =  os.getcwd().replace('/', '\\')
         
-        ax = 700
+        ax = 600
         ay = 300        
         
-        aw = 620
+        aw = 700
         ah = 500
 
         self.setWindowTitle(Title)
@@ -49,12 +51,12 @@ class MainWindow(QMainWindow):
 #   Функция инициализации полей
     def LineEditesUI(self):
         self.lineEdit = QLineEdit(self)
-        self.lineEdit.setFixedSize(480,28)
+        self.lineEdit.setFixedSize(580,28)
         self.lineEdit.setText(self.File)
         self.lineEdit.move(15,15)
         self.Text = QTextBrowser(self)
-        self.Text.move(30,230)
-        self.Text.setFixedSize(555,200)
+        self.Text.move(30,190)
+        self.Text.setFixedSize(640,250)
 
 #   Функция инициализации чекбоксов
     def CheckBoxesUI(self):
@@ -66,7 +68,6 @@ class MainWindow(QMainWindow):
         self.checkBox_Rename.move(20, 80)
         self.checkBox_Rename.setFixedSize(400,20)
 
-        #self.checkBox_Delete.stateChanged.connect(self.CheckedBox)
         self.checkBox_EmptyDir = QCheckBox(CheckBox_3, self)
         self.checkBox_EmptyDir.move(20, 100)
         self.checkBox_EmptyDir.setFixedSize(400,20)
@@ -81,22 +82,22 @@ class MainWindow(QMainWindow):
         button5 = QPushButton('Txt to xlsx', self)
 
 
-        button1.move(490,450)
+        button1.move(570,450)
         button1.clicked.connect(self.on_click)
 
         button2.clicked.connect(self.exit)
         button2.move(30,450)
 
         button3.clicked.connect(self.SelectMainDirectory)
-        button3.move(500,14)
+        button3.move(600,14)
         button3.setFixedSize(90,30)
 
         button4.clicked.connect(self.open_new_window)
-        button4.move(493,190)
+        button4.move(580,150)
         button4.setFixedSize(90,30)
 
         button5.clicked.connect(self.SelectForConvert)
-        button5.move(400,190)
+        button5.move(480,150)
         button5.setFixedSize(90,30)
 
 
@@ -110,27 +111,46 @@ class MainWindow(QMainWindow):
 
     def open_new_window(self):
         self.w = CopyWindow.CopyWindow()
-        self.w.log_update.connect(self.kek)
+        self.w.log_update.connect(self.callback)
         self.w.show()
 
-    def kek(self):
+    def callback(self):
         func.Print(self, self.w.log_txt)
         QtGui.QGuiApplication.processEvents()
         
 
 
+
+
 #   Главная функция удаления исполняемых файлов
     def DeleteExeFiles(self):
         global Text
-        path = str()
+        path = ""
+        res = ""
+
+        Fsize = 0
         for root, _, files in os.walk(self.File):
                 for file in files:
                     if file.endswith(".exe"):
                         path = os.path.join(root, file)
+                        Fsize += os.stat(path).st_size 
                         os.remove(path)
                         func.Print(self,"Удалён: " + path)
         
+        if Fsize >= 1024: #byte -> kilobyte
+            Fsize /= 1024
+            res = "Kb"
 
+        if Fsize >= 1024: #kilobyte -> megabyte
+            Fsize /= 1024
+            res = "Mb"
+    
+        if Fsize >= 1024: #megabyte -> gigabyte 
+            Fsize /= 1024
+            res = "Gb"
+
+
+        func.Print(self,"Очищено: " + str(round(Fsize, 2)) + " " + res)
         return len(path)
 
 
@@ -147,12 +167,16 @@ class MainWindow(QMainWindow):
         folder = ""
         for root, _ , files in os.walk(self.File):
             for file in files:
-                if file.endswith("Out_res.txt"):
+                if file.endswith(".txt"):
                     folder = func.splitName(root)    #Директория поиска
                     data = self.findDatFiles()
-                    print(data)
-                    func.Print(self,root + "\\" + file + " -> " + folder + "_" + data)
-                    os.rename(os.path.join(root, file), os.path.join(root, folder) + "_" + data + ".txt")
+                    if data == None:
+                        func.Print(self,"В папке " + root + " Dat-файлов не найдено")
+                        os.rename(os.path.join(root, file), os.path.join(root, folder) + ".txt")
+                    else:
+                        func.Print(self,root + "\\" + file + " -> " + folder + "_" + data)
+                        os.rename(os.path.join(root, file), os.path.join(root, folder) + "_" + data + ".txt")
+        func.Print(self,"Done")
         return len(folder)
 
 
@@ -161,10 +185,12 @@ class MainWindow(QMainWindow):
         if self.checkBox_Delete.isChecked() == True:
             if self.DeleteExeFiles() == 0:
                 func.Print(self,ExeError)
+                
 
         if self.checkBox_Rename.isChecked() == True:
             if self.RenameTxtFiles() == 0:
                 func.Print(self,TxtError)
+
 
         if self.checkBox_EmptyDir.isChecked() == True:
             if func.del_empty_dirs(self, self.File) == True:
