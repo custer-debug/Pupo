@@ -5,7 +5,7 @@ from Function import *
 import logging
 
 Text = ""
-logging.basicConfig(filename='Pupo.log',level = logging.INFO, filemode='w', format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(filename='Pupo.log',level = logging.INFO, filemode='w', format='%(asctime)s - %(levelname)s - %(message)s', encoding='utf-8')
 
 
 
@@ -14,7 +14,7 @@ logging.basicConfig(filename='Pupo.log',level = logging.INFO, filemode='w', form
 def Print(self,text):
         global Text
         logging.info(text)
-        Text += "<b>[" + str(datetime.now().strftime("%H:%M:%S")) + "]</b> " + text + "<br> " 
+        Text += f'<b> [ {str(datetime.now().strftime("%H:%M:%S"))} ] </b> {text} <br> ' 
         self.Text.setHtml(Text)
         self.Text.moveCursor(QTextCursor.End)
         

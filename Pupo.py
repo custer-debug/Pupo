@@ -7,7 +7,7 @@ import Function as func
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-
+import timeit
 
 
 CheckBox_1 = "Удаление исполняемых файлов (.exe)"
@@ -158,7 +158,7 @@ class MainWindow(QMainWindow):
     def findDatFiles(self):
         for _, _ , files in os.walk(os.getcwd()):
             for file in files:
-                if file.endswith(".dat"):
+                if file.endswith('.dat'):
                     return func.splitDate(file)
 
 
@@ -183,18 +183,26 @@ class MainWindow(QMainWindow):
     @pyqtSlot()
     def on_click(self):
         if self.checkBox_Delete.isChecked() == True:
+            start = timeit.default_timer()
             if self.DeleteExeFiles() == 0:
                 func.Print(self,ExeError)
+            
+            print(f"Time delete: {timeit.default_timer() - start}")
+            
                 
 
         if self.checkBox_Rename.isChecked() == True:
+            start = timeit.default_timer()
             if self.RenameTxtFiles() == 0:
                 func.Print(self,TxtError)
+            print(f"Time rename: {timeit.default_timer() - start}")
 
 
         if self.checkBox_EmptyDir.isChecked() == True:
+            start = timeit.default_timer()
             if func.del_empty_dirs(self, self.File) == True:
                 func.Print(self,EmptyError)
+            print(f"Time empty dir: {timeit.default_timer() - start}")
 
 
     def exit(self):
