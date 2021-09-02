@@ -2,7 +2,7 @@ import sys
 import os
 
 from PyQt5 import QtGui
-import CopyWindow 
+import CopyTxtFiles
 import Function as func
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -80,8 +80,8 @@ class MainWindow(QMainWindow):
         button3 = QPushButton('Review', self)
         button4 = QPushButton('Copy Files', self)
         button5 = QPushButton('Txt to xlsx', self)
-
-
+        buttons = {}
+        
         button1.move(570,450)
         button1.clicked.connect(self.on_click)
 
@@ -110,7 +110,7 @@ class MainWindow(QMainWindow):
         self.lineEdit.setText(self.File)
 
     def open_new_window(self):
-        self.w = CopyWindow.CopyWindow()
+        self.w = CopyTxtFiles.CopyWindow()
         self.w.log_update.connect(self.callback)
         self.w.show()
 
@@ -167,7 +167,7 @@ class MainWindow(QMainWindow):
         folder = ""
         for root, _ , files in os.walk(self.File):
             for file in files:
-                if file.endswith(".txt"):
+                if file.endswith("Out_res.txt"):
                     folder = func.splitName(root)    #Директория поиска
                     data = self.findDatFiles()
                     if data == None:
