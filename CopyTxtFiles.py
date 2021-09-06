@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import *
 from PyQt5 import QtCore
+from PyQt5.QtGui import *
 import os
 import shutil
 from Function import *
@@ -8,7 +9,7 @@ From    = ""
 To      = ""
 
 def splitName(str):
-    return str.split('\\')[-1]
+    return str.split('\\')
 
 
 class CopyWindow(QMainWindow):
@@ -20,6 +21,8 @@ class CopyWindow(QMainWindow):
         self.log_txt = 'Начало копирования'
 
         self.setWindowTitle("Copy Files")
+        self.setWindowIcon(QIcon('Icon_copy.png'))
+
         label_1 = QLabel("From: ",self)
         label_1.setStyleSheet("font: bold 12px")
         label_1.move(10,15)
@@ -78,8 +81,8 @@ class CopyWindow(QMainWindow):
             for file in files:
                 if file.endswith(".txt"):
                     self.log_update.emit(1)
-                    self.log_txt = root + "\\" + file + " -> " + To + "\\" + splitName(root) + ".txt"
-                    shutil.copyfile(root + "\\" + file, To + "\\" + splitName(root) + ".txt")
+                    self.log_txt = root + "\\" + file + " -> " + To + "\\" + splitName(root)[-1] + ".txt"
+                    shutil.copyfile(root + "\\" + file, To + "\\" + splitName(root)[-2] + "_" + splitName(root)[-1] + ".txt")
         
         QMessageBox.information(self, 'Успех', "Файлы скопированы")
         self.close()
