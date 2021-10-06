@@ -18,7 +18,7 @@ def split_files(files,num):
             To  = f"{file[0]}\\Part_{i+1}\\{file[1]}"
             shutil.move(From,To)
             files.remove(files[0])
-            print(f"Success: {(size - len(files) )/100}")
+            print(f"Success: {len(files)} / {size}")
          
         
 

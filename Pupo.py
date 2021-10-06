@@ -6,11 +6,11 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 import timeit
-from DefaultVariable import *
 
-# пакеты созданные специально для Pupo
-import CopyTxtFiles
+# модули созданные специально для Pupo
+import SecondWindow
 import Function as func
+from DefaultVariable import *
 
 
 class MainWindow(QMainWindow):
@@ -91,7 +91,7 @@ class MainWindow(QMainWindow):
         self.lineEdit.setText(self.File)
 
     def open_new_window(self):
-        self.w = CopyTxtFiles.CopyWindow()
+        self.w = SecondWindow.SecondWindowClass()
         self.w.log_update.connect(self.callback)
         self.w.show()
 
@@ -151,7 +151,7 @@ class MainWindow(QMainWindow):
         for root, _ , files in os.walk(self.File):
             for file in files:
                 if file.endswith(out_res):
-                    folder = func.splitName(root)    #Директория поиска
+                    folder = func.splitName(root)[-1]    #Директория поиска
                     data = self.findDatFiles()
                     if data == None:
                         func.Print(self,"В папке " + root + " Dat-файлов не найдено")

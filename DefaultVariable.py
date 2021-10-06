@@ -2,25 +2,30 @@
 #-------> CopyWindow <-------#
 ##############################
 
+# количество частей разбиения dat-файлов
+split_count = 10
+
 # сообщения об успешном или ошибочном ты программы
-ErrorFromValue = "Выберите откуда надо копировать файлы"
-ErrorToValue   = "Выберите куда надо копировать файлы"
+ErrorFromValue = "Необходимо выбрать первый путь"
+ErrorToValue   = "Необходимо выбрать второй путь"
+ErrorExeValue = "Выберите exe-файл"
 MessageError   = "Ошибка"
 MsgSuccess = "Успех"
 SuccessCopyFiles = "Файлы скопированы"
 Begin_copy = "Начало копирования"
 End_copy = "Конец копирования"
+
 # название окна
 name_split = 'Split dat-files'
 copy_files = 'Copy txt-files'
 
-# координаты располоения окна 
+# координаты расположения окна 
 ax = 400
 ay = 200        
 
 # размер окна 
 aw = 600
-ah = 260
+ah = 200
 
 # Перемещение лейблов внутри окна
 lx = 10  
@@ -32,8 +37,9 @@ y3 = 170
 front = "font: bold 12px"
 
 # текст лейблов
-label_from = "From: "
-label_to = "To: "
+label_from = "Path From: "
+label_to = "Path To: "
+label_Path = "Path: "
 label_exe = "Exe: "
 
 
@@ -57,22 +63,21 @@ exe = '.exe'
 
 
 # координаты линий редактирования 
-xledit = 60
+xledit = 80
 yledit_1 = 45
 yledit_2 = 105
-yledit_3 = 170
+
 
 
 # размер линий
-wl = 420
+wl = 400
 hl = 30
 
 # координаты кнопок
 xb = 490
 yb1 = 43
 yb2 = 105
-yb3 = 170
-yb4 = 215
+yb3 = 155
 
 # размеры кнопок
 wb = 90
@@ -86,6 +91,7 @@ exit_ = "Выход"
 
 # выбор директорий 
 select_dir = "Select Directory"
+
 
 ###########################
 #-------> Pupo.py <-------#
@@ -106,7 +112,7 @@ Title = 'Cleaning program'
 # Пути к иконкам
 # ...
 
-# располоение и размеры окна 
+# расположение и размеры окна 
 window_X = 600
 window_Y = 300        
 
