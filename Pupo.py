@@ -2,25 +2,15 @@ import sys
 import os
 
 from PyQt5 import QtGui
-import CopyTxtFiles
-import Function as func
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 import timeit
+from DefaultVariable import *
 
-
-CheckBox_1 = "Удаление исполняемых файлов (.exe)"
-CheckBox_2 = "Переименование выходных файлов (Out_res.txt)"
-CheckBox_3 = "Удаление пустых папок"
-
-EmptyError = "Пустых директорий не найдено"
-ExeError = "Исполняемых файлов не найдено"
-TxtError = "Out_res-файлов не найдено"
-
-Warning = "Внимание!"
-Message = "Сообщение "
-
+# пакеты созданные специально для Pupo
+import CopyTxtFiles
+import Function as func
 
 
 class MainWindow(QMainWindow):
@@ -28,19 +18,14 @@ class MainWindow(QMainWindow):
 # Функция инициализации окна
     def __init__(self):
         super().__init__()
-        Title = 'Cleaning program'
-        self.setWindowIcon(QIcon('Icon.png'))
+        # self.setWindowIcon(QIcon('Icon.png'))
         
         self.File =  os.getcwd().replace('/', '\\')
         
-        ax = 600
-        ay = 300        
         
-        aw = 700
-        ah = 500
 
         self.setWindowTitle(Title)
-        self.setGeometry(ax, ay, aw, ah)
+        self.setGeometry(window_X, window_Y, window_Width, window_Height)
 
         self.ButtonUI()
         self.CheckBoxesUI()
@@ -51,67 +36,58 @@ class MainWindow(QMainWindow):
 #   Функция инициализации полей
     def LineEditesUI(self):
         self.lineEdit = QLineEdit(self)
-        self.lineEdit.setFixedSize(580,28)
+        self.lineEdit.setFixedSize(line_edit_wight,line_edit_height)
         self.lineEdit.setText(self.File)
-        self.lineEdit.move(15,15)
+        self.lineEdit.move(line_edit_xy,line_edit_xy)
         self.Text = QTextBrowser(self)
-        self.Text.move(30,190)
-        self.Text.setFixedSize(640,250)
+        self.Text.move(Text_X,Text_Y)
+        self.Text.setFixedSize(Text_Wight,Text_Height)
 
 #   Функция инициализации чекбоксов
     def CheckBoxesUI(self):
-        self.checkBox_Delete = QCheckBox(CheckBox_1, self)
-        self.checkBox_Delete.move(20, 60)
-        self.checkBox_Delete.setFixedSize(400,20)
+        self.checkBox_Delete = QCheckBox(delete_exe_str, self)
+        self.checkBox_Delete.move(check_boxes_x, check_box1_y)
+        self.checkBox_Delete.setFixedSize(check_boxes_wight,check_boxes_height)
 
-        self.checkBox_Rename = QCheckBox(CheckBox_2, self)
-        self.checkBox_Rename.move(20, 80)
-        self.checkBox_Rename.setFixedSize(400,20)
+        self.checkBox_Rename = QCheckBox(rename_Out_res, self)
+        self.checkBox_Rename.move(check_boxes_x, check_box2_y)
+        self.checkBox_Rename.setFixedSize(check_boxes_wight,check_boxes_height)
 
-        self.checkBox_EmptyDir = QCheckBox(CheckBox_3, self)
-        self.checkBox_EmptyDir.move(20, 100)
-        self.checkBox_EmptyDir.setFixedSize(400,20)
+        self.checkBox_EmptyDir = QCheckBox(delete_empty_dir, self)
+        self.checkBox_EmptyDir.move(check_boxes_x, check_box3_y)
+        self.checkBox_EmptyDir.setFixedSize(check_boxes_wight,check_boxes_height)
 
 
 #   Функция инициализации кнопок
     def ButtonUI(self):
-        button1 = QPushButton('Execute', self)
-        button2 = QPushButton('Exit', self)
-        button3 = QPushButton('Review', self)
-        button4 = QPushButton('Copy Files', self)
-        # button5 = QPushButton('Txt to xlsx', self)
+        btn_run = QPushButton(run, self)
+        btn_exit = QPushButton(exit_, self)
+        btn_review = QPushButton(review, self)
+        btn_move = QPushButton(move_, self)
         
         
-        button1.move(570,450)
-        button1.clicked.connect(self.on_click)
-        button1.setIcon(QIcon('Icon_play.png'))
-        button1.setIconSize(QSize(30, 30))
+        btn_run.move(btn_run_x,btn_run_y)
+        btn_run.clicked.connect(self.on_click)
+        # btn_run.setIcon(QIcon('Icon_play.png'))
+        # btn_run.setIconSize(QSize(30, 30))
         
 
-        button2.clicked.connect(self.exit)
-        button2.move(30,450)
+        btn_exit.clicked.connect(self.exit)
+        btn_exit.move(btn_exit_x,btn_exit_y)
 
-        button3.clicked.connect(self.SelectMainDirectory)
-        button3.move(600,14)
-        button3.setFixedSize(90,30)
-        button3.setIcon(QIcon('Icon_review.png'))
-        button3.setIconSize(QSize(20, 20))
+        btn_review.clicked.connect(self.SelectMainDirectory)
+        btn_review.move(btn_review_x,btn_review_y)
+        btn_review.setFixedSize(btn_wight,btn_height)
+        # btn_review.setIcon(QIcon('Icon_review.png'))
+        # btn_review.setIconSize(QSize(20, 20))
 
-        button4.clicked.connect(self.open_new_window)
-        button4.move(580,150)
-        button4.setFixedSize(90,30)
+        btn_move.clicked.connect(self.open_new_window)
+        btn_move.move(btn_move_x,btn_move_y)
+        btn_move.setFixedSize(btn_wight,btn_height)
 
-        # button5.clicked.connect(self.SelectForConvert)
-        # button5.move(480,150)
-        # button5.setFixedSize(90,30)
-
-
-    # def SelectForConvert(self):
-        # self.File = str(QFileDialog.getExistingDirectory(self, "Select Directory")).replace('/', '\\')
-        # self.lineEdit.setText(self.File)
 
     def SelectMainDirectory(self):
-        self.File = str(QFileDialog.getExistingDirectory(self, "Select Directory")).replace('/', '\\')
+        self.File = str(QFileDialog.getExistingDirectory(self, select_dir)).replace('/', '\\')
         self.lineEdit.setText(self.File)
 
     def open_new_window(self):
@@ -119,11 +95,13 @@ class MainWindow(QMainWindow):
         self.w.log_update.connect(self.callback)
         self.w.show()
 
+
     def callback(self):
         func.Print(self, self.w.log_txt)
         QtGui.QGuiApplication.processEvents()
-        
 
+
+        
 
 
 
@@ -136,7 +114,7 @@ class MainWindow(QMainWindow):
         Fsize = 0
         for root, _, files in os.walk(self.File):
                 for file in files:
-                    if file.endswith(".exe"):
+                    if file.endswith(exe):
                         path = os.path.join(root, file)
                         Fsize += os.stat(path).st_size 
                         os.remove(path)
@@ -163,7 +141,7 @@ class MainWindow(QMainWindow):
     def findDatFiles(self):
         for _, _ , files in os.walk(os.getcwd()):
             for file in files:
-                if file.endswith('.dat'):
+                if file.endswith(dat):
                     return func.splitDate(file)
 
 
@@ -172,7 +150,7 @@ class MainWindow(QMainWindow):
         folder = ""
         for root, _ , files in os.walk(self.File):
             for file in files:
-                if file.endswith("Out_res.txt"):
+                if file.endswith(out_res):
                     folder = func.splitName(root)    #Директория поиска
                     data = self.findDatFiles()
                     if data == None:
@@ -190,7 +168,7 @@ class MainWindow(QMainWindow):
         if self.checkBox_Delete.isChecked() == True:
             start = timeit.default_timer()
             if self.DeleteExeFiles() == 0:
-                func.Print(self,ExeError)
+                func.Print(self,exe_files_not_found)
             
             print(f"Time delete: {timeit.default_timer() - start}")
             
@@ -199,15 +177,15 @@ class MainWindow(QMainWindow):
         if self.checkBox_Rename.isChecked() == True:
             start = timeit.default_timer()
             if self.RenameTxtFiles() == 0:
-                func.Print(self,TxtError)
-            print(f"Time rename: {timeit.default_timer() - start}")
+                func.Print(self,Out_res_not_found)
+            # print(f"Time rename: {timeit.default_timer() - start}")
 
 
         if self.checkBox_EmptyDir.isChecked() == True:
             start = timeit.default_timer()
             if func.del_empty_dirs(self, self.File) == True:
-                func.Print(self,EmptyError)
-            print(f"Time empty dir: {timeit.default_timer() - start}")
+                func.Print(self,empty_dir_not_found)
+            # print(f"Time empty dir: {timeit.default_timer() - start}")
 
 
     def exit(self):

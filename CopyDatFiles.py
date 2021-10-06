@@ -2,8 +2,13 @@ import os
 import shutil
 from PyQt5.QtWidgets import *
 
+
 cwd = os.getcwd()
 print(cwd)
+
+From = ""
+To = ""
+
 files = []
 files_list = []
 for root, dirs, files in os.walk(cwd):  
@@ -26,7 +31,7 @@ for i in folders:
 
 
 
-class CopyDatFiles():
+class CopyDatFiles(QMainWindow):
 
     def __init__(self):
         super().__init__()
@@ -46,6 +51,43 @@ class CopyDatFiles():
         ah = 180
 
         self.setGeometry(ax,ay,aw,ah)
+        self.Line()
+        self.Buttons()
         self.show()
     
 
+    def Buttons(self):
+        button_1 = QPushButton("Обзор",self)
+        button_1.move(490,14)
+        button_1.setFixedSize(90,30)
+        button_1.clicked.connect(self.select_first_directory)
+
+        button_2 = QPushButton("Обзор",self)
+        button_2.move(490,70)
+        button_2.setFixedSize(90,30)
+        button_2.clicked.connect(self.select_second_directory)
+
+        button_3 = QPushButton("Копировать",self)
+        button_3.move(490,140)
+        button_3.clicked.connect(self.startCopy)
+
+
+    def Line(self):
+        self.lineEdit_1 = QLineEdit(self)
+        self.lineEdit_1.setFixedSize(420,30)
+        self.lineEdit_1.move(60,15)
+
+        self.lineEdit_2 = QLineEdit(self)
+        self.lineEdit_2.setFixedSize(420,30)
+        self.lineEdit_2.move(60,70)
+
+
+    def select_first_directory(self):
+        global From
+        From = str(QFileDialog.getExistingDirectory(self, "Select Directory")).replace('/', '\\')
+        self.lineEdit_1.setText(From)
+
+    def select_second_directory(self):
+        global To
+        To = str(QFileDialog.getExistingDirectory(self, "Select Directory")).replace('/', '\\')
+        self.lineEdit_2.setText(To)
