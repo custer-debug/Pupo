@@ -18,12 +18,9 @@ class MainWindow(QMainWindow):
 # Функция инициализации окна
     def __init__(self):
         super().__init__()
-        # self.setWindowIcon(QIcon('Icon.png'))
-        
+        self.setWindowIcon(QIcon(Icon))
         self.File =  os.getcwd().replace('/', '\\')
         
-        
-
         self.setWindowTitle(Title)
         self.setGeometry(window_X, window_Y, window_Width, window_Height)
 
@@ -68,8 +65,8 @@ class MainWindow(QMainWindow):
         
         btn_run.move(btn_run_x,btn_run_y)
         btn_run.clicked.connect(self.on_click)
-        # btn_run.setIcon(QIcon('Icon_play.png'))
-        # btn_run.setIconSize(QSize(30, 30))
+        btn_run.setIcon(QIcon(Icon_play))
+        btn_run.setIconSize(QSize(30, 30))
         
 
         btn_exit.clicked.connect(self.exit)
@@ -78,8 +75,8 @@ class MainWindow(QMainWindow):
         btn_review.clicked.connect(self.SelectMainDirectory)
         btn_review.move(btn_review_x,btn_review_y)
         btn_review.setFixedSize(btn_wight,btn_height)
-        # btn_review.setIcon(QIcon('Icon_review.png'))
-        # btn_review.setIconSize(QSize(20, 20))
+        btn_review.setIcon(QIcon(Icon_review))
+        btn_review.setIconSize(QSize(20, 20))
 
         btn_move.clicked.connect(self.open_new_window)
         btn_move.move(btn_move_x,btn_move_y)

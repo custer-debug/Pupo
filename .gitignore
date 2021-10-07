@@ -112,7 +112,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-
+*.ico
 *.dat
 *.png
 Pupo_2021_07_23_07_56_03.txt
@@ -124,3 +124,4 @@ RenameOutFile.py
 CopyFiles.py
 CopyFiles.py
 *.exe
+Test.py

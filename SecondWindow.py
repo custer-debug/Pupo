@@ -5,6 +5,7 @@ from DefaultVariable import *
 import os
 import shutil
 from Function import * 
+import pyexcel as pe
 
 
 class SecondWindowClass(QMainWindow):
@@ -14,11 +15,10 @@ class SecondWindowClass(QMainWindow):
         super().__init__()
         self.first_path = ""
         self.second_path   = ""
-        # self.Exe  = ""
         self.log_txt = ''
         self.radio_bool = False
         self.setWindowTitle(copy_files)
-        # self.setWindowIcon(QIcon('Icon_copy.png'))
+        self.setWindowIcon(QIcon(Icon_copy))
 
         first_label = QLabel(label_from,self)
         first_label.setStyleSheet(front)
@@ -31,7 +31,6 @@ class SecondWindowClass(QMainWindow):
         self.first_label = first_label
         self.second_label = second_label
 
-        
         self.default_variable()
         self.setWindowModality(QtCore.Qt.ApplicationModal)
         self.show()
@@ -131,7 +130,7 @@ class SecondWindowClass(QMainWindow):
             for file in files:
                 if file.endswith(txt):
                     self.print_log(f"{root}\\{file} -> {self.second_path}\\{splitName(root)[-1]}{txt}")
-                    # shutil.copyfile(root + "\\" + file, self.second_path + "\\" + splitName(root)[-2] + "_" + splitName(root)[-1] + txt)
+                    shutil.copyfile(root + "\\" + file, self.second_path + "\\" + splitName(root)[-2] + "_" + splitName(root)[-1] + txt)
         self.print_log(End_copy)
 
   
@@ -163,7 +162,7 @@ class SecondWindowClass(QMainWindow):
         
         if self.radio_bool:
             self.move_dat_files()
-            # QMessageBox.information(self, MsgSuccess, SuccessCopyFiles)
+            QMessageBox.information(self, MsgSuccess, SplitSucces)
         else:
             self.copy_txt_files()
             QMessageBox.information(self, MsgSuccess, SuccessCopyFiles)
@@ -184,3 +183,25 @@ class SecondWindowClass(QMainWindow):
         
 
 
+
+# def txt_to_xslx(csv_list):
+#     all = []
+#     for f in csv_list:
+#         with open(f,'r') as fin:
+#             cr = csv.reader(fin, delimiter='\t')
+#             filecontents = [line for line in cr]
+
+
+#         for line in filecontents:
+#             for x in range(1, len(line)-1):
+#                 line[x] = line[x].replace(' ', '')
+#                 line[x] = float(line[x])
+#                 try:
+#                     line[x] = line[x].replace('.dat', '').replace('.', ',')
+#                 except AttributeError:
+#                     continue
+#             line.pop(-1)
+
+#         all.extend(filecontents)
+#     # breakpoint()
+#     pe.save_as(array=all, start_row=1, sheet_name='List 1', dest_file_name = 'Res' + '.xlsx')

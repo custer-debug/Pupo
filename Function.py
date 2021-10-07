@@ -62,6 +62,7 @@ def make_directories(cwd,exe):
 
     if len(text) == 0:
         text = "Папки успешно созданы"
+        
     return text        
 
 
@@ -75,4 +76,4 @@ def split_files(files,num):
             To  = f"{file[0]}\\Part_{i+1}\\{file[1]}"
             shutil.move(From,To)
             files.remove(files[0])
-            print(f"Success: {size - len(files)} of {size}")
+            # print(f"Success: {size - len(files)} of {size}")

@@ -12,6 +12,7 @@ ErrorExeValue = "Выберите exe-файл"
 MessageError   = "Ошибка"
 MsgSuccess = "Успех"
 SuccessCopyFiles = "Файлы скопированы"
+SplitSucces = "Файлы успешно разделены"
 Begin_copy = "Начало копирования"
 End_copy = "Конец копирования"
 
@@ -110,8 +111,10 @@ Message = "Сообщение "
 Title = 'Cleaning program'
 
 # Пути к иконкам
-# ...
-
+Icon = 'Icon.png'
+Icon_play = 'Icon_play.png'
+Icon_review = 'Icon_review.png'
+Icon_copy = 'Icon_copy.png'
 # расположение и размеры окна 
 window_X = 600
 window_Y = 300        
@@ -165,3 +168,6 @@ btn_height = 30
 
 # название файла для поиска (.txt)
 out_res = 'Out_res.txt'
+
+
+# pyinstaller.exe --splash .\Icon_play.png .\Icon_copy.png .\Icon_review.png .\Icon.png -w -F --icon=Icon.ico Pupo.py  
