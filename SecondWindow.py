@@ -147,7 +147,9 @@ class SecondWindowClass(QMainWindow):
         self.print_log(End_copy)
 
         if self.checkbox.isChecked():
-            txt_to_xslx(filename_list,self.second_path + '\Res')
+            xslx = f'{self.second_path}\Res'
+            txt_to_xslx(filename_list,xslx)
+            self.print_log(f'Files concatinate to file: {xslx}.xslx')
             
   
     
