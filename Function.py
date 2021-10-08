@@ -4,6 +4,8 @@ from PyQt5.QtGui import QTextCursor
 import logging
 import shutil
 from DefaultVariable import *
+import pyexcel as pe
+from csv import reader
 
 Text = ""
 logging.basicConfig(filename='Pupo.log',level = logging.INFO, filemode='w', format='%(asctime)s - %(levelname)s - %(message)s', encoding='utf-8')
@@ -68,7 +70,7 @@ def make_directories(cwd,exe):
 
 
 def split_files(files,num): 
-    size = len(files)
+    # size = len(files)
     for i in range(10):
         for _ in range(num[i]):
             file = files[0]
@@ -77,3 +79,28 @@ def split_files(files,num):
             shutil.move(From,To)
             files.remove(files[0])
             # print(f"Success: {size - len(files)} of {size}")
+
+
+
+
+
+def txt_to_xslx(csv_list, path):
+    all = []
+    for f in csv_list:
+        with open(f,'r') as fin:
+            cr = reader(fin, delimiter='\t')
+            filecontents = [line for line in cr]
+
+
+        for line in filecontents:
+            for x in range(1, len(line)-1):
+                line[x] = line[x].replace(' ', '')
+                line[x] = float(line[x])
+                try:
+                    line[x] = line[x].replace('.dat', '').replace('.', ',')
+                except AttributeError:
+                    continue
+            line.pop(-1)
+
+        all.extend(filecontents)
+    pe.save_as(array=all, start_row=1, sheet_name='List 1', dest_file_name = path + '.xlsx')

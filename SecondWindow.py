@@ -5,7 +5,6 @@ from DefaultVariable import *
 import os
 import shutil
 from Function import * 
-import pyexcel as pe
 
 
 class SecondWindowClass(QMainWindow):
@@ -38,11 +37,16 @@ class SecondWindowClass(QMainWindow):
 
     def default_variable(self):
         self.setGeometry(ax,ay,aw,ah)
-        self.radio_buttons_variable()
-        self.line_edit_variable()
-        self.default_buttons_variable()
+        self.radio_buttons_create_function()
+        self.line_edit_create_function()
+        self.default_buttons_create_function()
+        self.checkbox_create_function()
 
  
+    def checkbox_create_function(self):
+        self.checkbox = QCheckBox("Txt to xslx",self)
+        self.checkbox.move(25,160)
+        self.checkbox.setFixedSize(100,20)
 
 
     def radio_button_checked_function(self):
@@ -51,16 +55,18 @@ class SecondWindowClass(QMainWindow):
             self.setWindowTitle(copy_files)
             self.first_label.setText(label_from)
             self.second_label.setText(label_to)
+            self.checkbox.setDisabled(False)
         else:
             self.radio_bool = True
             self.setWindowTitle(name_split)
             self.first_label.setText(label_Path)
             self.second_label.setText(label_exe)
+            self.checkbox.setDisabled(True)
 
 
 
 
-    def radio_buttons_variable(self):
+    def radio_buttons_create_function(self):
         radio_txt = QRadioButton(txt,self)
         radio_txt.setFixedSize(rsize_x,rsize_y)
         radio_txt.move(xr1,yr)
@@ -76,7 +82,7 @@ class SecondWindowClass(QMainWindow):
         group.buttonClicked.connect(self.radio_button_checked_function)
 
 
-    def line_edit_variable(self):
+    def line_edit_create_function(self):
         self.first_line_edit = QLineEdit(self)
         first_line_edit = self.first_line_edit
         first_line_edit.setFixedSize(wl,hl)
@@ -88,7 +94,7 @@ class SecondWindowClass(QMainWindow):
         second_line_edit.move(xledit,yledit_2)
 
 
-    def default_buttons_variable(self):
+    def default_buttons_create_function(self):
         btn_sel_first_dir = QPushButton(review,self)
         btn_sel_first_dir.move(xb,yb1)
         btn_sel_first_dir.setFixedSize(wb,hb)
@@ -105,6 +111,9 @@ class SecondWindowClass(QMainWindow):
         button_run.setFixedSize(wb,hb)
 
         button_run.clicked.connect(self.check_radio_buttons)
+
+
+
 
 
     # Проверка задания двух путей
@@ -125,16 +134,23 @@ class SecondWindowClass(QMainWindow):
         self.log_update.emit(1)
 
     def copy_txt_files(self):
+        filename_list= []
         self.print_log(Begin_copy)
         for root, _, files in os.walk(self.first_path):
             for file in files:
                 if file.endswith(txt):
-                    self.print_log(f"{root}\\{file} -> {self.second_path}\\{splitName(root)[-1]}{txt}")
-                    shutil.copyfile(root + "\\" + file, self.second_path + "\\" + splitName(root)[-2] + "_" + splitName(root)[-1] + txt)
+                    to_path = f'{self.second_path}\\{splitName(root)[-1]}_{file}'
+                    self.print_log(f"{root}\\{file} -> {to_path}")
+                    shutil.copyfile(root + "\\" + file, to_path)
+                    filename_list.append(to_path)
+        
         self.print_log(End_copy)
 
+        if self.checkbox.isChecked():
+            txt_to_xslx(filename_list,self.second_path + '\Res')
+            
   
-  
+    
   
   
     def move_dat_files(self):
@@ -183,25 +199,3 @@ class SecondWindowClass(QMainWindow):
         
 
 
-
-# def txt_to_xslx(csv_list):
-#     all = []
-#     for f in csv_list:
-#         with open(f,'r') as fin:
-#             cr = csv.reader(fin, delimiter='\t')
-#             filecontents = [line for line in cr]
-
-
-#         for line in filecontents:
-#             for x in range(1, len(line)-1):
-#                 line[x] = line[x].replace(' ', '')
-#                 line[x] = float(line[x])
-#                 try:
-#                     line[x] = line[x].replace('.dat', '').replace('.', ',')
-#                 except AttributeError:
-#                     continue
-#             line.pop(-1)
-
-#         all.extend(filecontents)
-#     # breakpoint()
-#     pe.save_as(array=all, start_row=1, sheet_name='List 1', dest_file_name = 'Res' + '.xlsx')
