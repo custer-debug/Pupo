@@ -169,5 +169,20 @@ btn_height = 30
 # название файла для поиска (.txt)
 out_res = 'Out_res.txt'
 
+first_row = ['Имя файла',
+    'Высота',
+    'Широта',
+    'Долгота',
+    'N',
+    'E',
+    'Период импульса',
+    'Частота',
+    ' ',
+    'Фронт',
+    'Спад',
+    'Dll',
+    'Глубина',
+    ' ',
+    'Rff']
 
 # pyinstaller.exe --splash .\Icon_play.png .\Icon_copy.png .\Icon_review.png .\Icon.png -w -F --icon=Icon.ico Pupo.py  

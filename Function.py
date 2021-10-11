@@ -85,21 +85,8 @@ def split_files(files,num):
 
 
 def txt_to_xslx(csv_list, path):
-    all = [['Имя файла',
-    'Высота',
-    'Широта',
-    'Долгота',
-    'N',
-    'E',
-    'Период импульса',
-    'Частота',
-    '',
-    'Фронт',
-    'Спад',
-    'Dll',
-    'Глубина',
-    '',
-    'Rff']]
+    
+    all = [first_row]
     for f in csv_list:
         with open(f,'r') as fin:
             cr = reader(fin, delimiter='\t')
@@ -117,5 +104,4 @@ def txt_to_xslx(csv_list, path):
             line.pop(-1)
 
         all.extend(filecontents)
-        print(all[:3])
-    pe.save_as(array=all, start_row=1, sheet_name='List 1', dest_file_name = path + '.xlsx')
+    pe.save_as(array=all, start_row=0, sheet_name='List 1', dest_file_name = path + '.xlsx')

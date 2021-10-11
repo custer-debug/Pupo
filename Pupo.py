@@ -18,7 +18,9 @@ class MainWindow(QMainWindow):
 # Функция инициализации окна
     def __init__(self):
         super().__init__()
-        self.setWindowIcon(QIcon(Icon))
+        pixmapi = getattr(QStyle, 'SP_DialogResetButton')
+        icon = self.style().standardIcon(pixmapi)
+        self.setWindowIcon(icon)
         self.File =  os.getcwd().replace('/', '\\')
         
         self.setWindowTitle(Title)
