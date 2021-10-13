@@ -7,7 +7,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
 # модули созданные специально для Pupo
-import SecondWindow
+from CopyWindow import CopyWindowClass
 import Function as func
 from DefaultVariable import *
 
@@ -68,15 +68,16 @@ class MainWindow(QMainWindow):
         self.create_button(run, self.on_click, btn_run_x, btn_run_y)
         self.create_button(exit_, self.exit, btn_exit_x, btn_exit_y)
         self.create_button(review, self.select_main_directory, btn_review_x, btn_review_y)
-        self.create_button(move_, self.open_new_window, btn_move_x, btn_move_y)
+        self.create_button(move_, self.open_copy_window, btn_move_x, btn_move_y)
+
 
 
     def select_main_directory(self):
         self.File = str(QFileDialog.getExistingDirectory(self, select_dir)).replace('/', '\\')
         self.lineEdit.setText(self.File)
 
-    def open_new_window(self):
-        self.w = SecondWindow.SecondWindowClass()
+    def open_copy_window(self):
+        self.w = CopyWindowClass()
         self.w.log_update.connect(self.callback)
         self.w.show()
 

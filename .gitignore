@@ -125,3 +125,4 @@ CopyFiles.py
 CopyFiles.py
 *.exe
 Test.py
+*.json

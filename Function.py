@@ -76,7 +76,6 @@ def make_directories(cwd,exe):
 
 
 def split_files(files,num): 
-    # size = len(files)
     for i in range(10):
         for _ in range(num[i]):
             file = files[0]
@@ -84,7 +83,7 @@ def split_files(files,num):
             To  = f"{file[0]}\\Part_{i+1}\\{file[1]}"
             shutil.move(From,To)
             files.remove(files[0])
-            # print(f"Success: {size - len(files)} of {size}")
+
 
 
 
@@ -129,4 +128,3 @@ def size_of_file(file_size):
 
 
 
-        
