@@ -37,9 +37,9 @@ class SecondWindowClass(QMainWindow):
 
     def default_variable(self):
         self.setGeometry(ax,ay,aw,ah)
-        self.radio_buttons_create_function()
-        self.line_edit_create_function()
-        self.default_buttons_create_function()
+        self.radio_button_handle()
+        self.line_edit_handle()
+        self.button_handle()
         self.checkbox_create_function()
 
  
@@ -48,72 +48,59 @@ class SecondWindowClass(QMainWindow):
         self.checkbox.move(25,160)
         self.checkbox.setFixedSize(100,20)
 
+    def change_elements_option_function(self,bool,window_title, first_label, second_label):
+        self.radio_bool = bool
+        self.setWindowTitle(window_title)
+        self.first_label.setText(first_label)
+        self.second_label.setText(second_label)
+        self.checkbox.setDisabled(bool)
+
 
     def radio_button_checked_function(self):
         if not self.radio_dat.isChecked():
-            self.radio_bool = False
-            self.setWindowTitle(copy_files)
-            self.first_label.setText(label_from)
-            self.second_label.setText(label_to)
-            self.checkbox.setDisabled(False)
+            self.change_elements_option_function(False, copy_files, label_from, label_to)
         else:
-            self.radio_bool = True
-            self.setWindowTitle(name_split)
-            self.first_label.setText(label_Path)
-            self.second_label.setText(label_exe)
-            self.checkbox.setDisabled(True)
+            self.change_elements_option_function(True, name_split, label_Path, label_exe)
 
+    def radio_button_create(self, name, x):
+        radio = QRadioButton(name,self)
+        radio.setFixedSize(rsize_x,rsize_y)
+        radio.move(x,yr)
+        return radio
 
-
-
-    def radio_buttons_create_function(self):
-        radio_txt = QRadioButton(txt,self)
-        radio_txt.setFixedSize(rsize_x,rsize_y)
-        radio_txt.move(xr1,yr)
+    def radio_button_handle(self):
+        radio_txt = self.radio_button_create(txt,xr1)
         radio_txt.setChecked(True)
-
-        radio_dat = QRadioButton(dat,self)
-        radio_dat.setFixedSize(rsize_x,rsize_y)
-        radio_dat.move(xr2,yr)
+        radio_dat = self.radio_button_create(dat,xr2)
         self.radio_dat = radio_dat
+
         group = QButtonGroup(self)
         group.addButton(radio_txt)
         group.addButton(radio_dat)
         group.buttonClicked.connect(self.radio_button_checked_function)
 
 
-    def line_edit_create_function(self):
-        self.first_line_edit = QLineEdit(self)
-        first_line_edit = self.first_line_edit
-        first_line_edit.setFixedSize(wl,hl)
-        first_line_edit.move(xledit,yledit_1)
+    def line_edit_create(self, y):
+        line_edit = QLineEdit(self)
+        line_edit.setFixedSize(wl,hl)
+        line_edit.move(xledit,y)
+        return line_edit
 
-        self.second_line_edit = QLineEdit(self)
-        second_line_edit = self.second_line_edit
-        second_line_edit.setFixedSize(wl,hl)
-        second_line_edit.move(xledit,yledit_2)
+    def line_edit_handle(self):
+        self.first_line_edit = self.line_edit_create(yledit_1)
+        self.second_line_edit = self.line_edit_create(yledit_2)
 
-
-    def default_buttons_create_function(self):
-        btn_sel_first_dir = QPushButton(review,self)
-        btn_sel_first_dir.move(xb,yb1)
+    def button_create(self, name, y, function):
+        btn_sel_first_dir = QPushButton(name,self)
+        btn_sel_first_dir.move(xb,y)
         btn_sel_first_dir.setFixedSize(wb,hb)
-        btn_sel_first_dir.clicked.connect(self.select_first_directory)
+        btn_sel_first_dir.clicked.connect(function)
+        
 
-        btn_sel_second_dir = QPushButton(review,self)
-        btn_sel_second_dir.move(xb,yb2)
-        btn_sel_second_dir.setFixedSize(wb,hb)
-        btn_sel_second_dir.clicked.connect(self.select_second_directory)
-
-
-        button_run = QPushButton(run,self)
-        button_run.move(xb,yb3)
-        button_run.setFixedSize(wb,hb)
-
-        button_run.clicked.connect(self.check_radio_buttons)
-
-
-
+    def button_handle(self):
+        self.button_create(review, yb1, self.select_first_directory)
+        self.button_create(review, yb2, self.select_second_directory)
+        self.button_create(run, yb3, self.check_radio_buttons)
 
 
     # Проверка задания двух путей
@@ -174,7 +161,6 @@ class SecondWindowClass(QMainWindow):
 
 
     def check_radio_buttons(self):
-
         if self.check_paths():
             return
         

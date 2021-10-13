@@ -45,7 +45,7 @@ def splitDate(str):
 
 
 def del_empty_dirs(self, path):
-        flag = True
+        flag = False
         for d in os.listdir(path):
             a = os.path.join(path, d)
             if os.path.isdir(a):
@@ -53,7 +53,7 @@ def del_empty_dirs(self, path):
                 if not os.listdir(a):
                     os.rmdir(a)
                     Print(self,"Папка удалена: " + a)
-                    flag = False
+                    flag = True
         return flag
 
 
@@ -111,3 +111,22 @@ def txt_to_xslx(csv_list, path):
 
         all.extend(filecontents)
     save_as(array=all, start_row=0, sheet_name='List 1', dest_file_name = path + '.xlsx')
+
+
+def size_of_file(file_size):
+
+    if file_size >= 1024: #byte -> kilobyte
+        file_size /= 1024
+        return "Kb"
+
+    if file_size >= 1024: #kilobyte -> megabyte
+        file_size /= 1024
+        return "Mb"
+
+    if file_size >= 1024: #megabyte -> gigabyte 
+        file_size /= 1024
+        return "Gb" 
+
+
+
+        

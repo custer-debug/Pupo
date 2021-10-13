@@ -1,12 +1,10 @@
 import logging
 import sys
 import os
-
 from PyQt5 import QtGui
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-import timeit
 
 # модули созданные специально для Pupo
 import SecondWindow
@@ -19,7 +17,7 @@ class MainWindow(QMainWindow):
 # Функция инициализации окна
     def __init__(self):
         super().__init__()
-        logging.info("\n")
+        logging.info("\n <============>")
         pixmapi = getattr(QStyle, 'SP_DialogResetButton')
         icon = self.style().standardIcon(pixmapi)
         self.setWindowIcon(icon)
@@ -28,14 +26,14 @@ class MainWindow(QMainWindow):
         self.setWindowTitle(Title)
         self.setGeometry(window_X, window_Y, window_Width, window_Height)
 
-        self.ButtonUI()
-        self.CheckBoxesUI()
-        self.LineEditesUI()
+        self.button_handle_function()
+        self.handle_checkbox_function()
+        self.handle_line_edit_function()
         self.show() # Функция отображения окна
 
 
 #   Функция инициализации полей
-    def LineEditesUI(self):
+    def handle_line_edit_function(self):
         self.lineEdit = QLineEdit(self)
         self.lineEdit.setFixedSize(line_edit_wight,line_edit_height)
         self.lineEdit.setText(self.File)
@@ -44,50 +42,36 @@ class MainWindow(QMainWindow):
         self.Text.move(Text_X,Text_Y)
         self.Text.setFixedSize(Text_Wight,Text_Height)
 
+
+    def create_check_box(self, name, y):
+        checkbox = QCheckBox(name, self)
+        checkbox.move(check_boxes_x, y)
+        checkbox.setFixedSize(check_boxes_wight, check_boxes_height)
+        return checkbox
+
 #   Функция инициализации чекбоксов
-    def CheckBoxesUI(self):
-        self.checkBox_Delete = QCheckBox(delete_exe_str, self)
-        self.checkBox_Delete.move(check_boxes_x, check_box1_y)
-        self.checkBox_Delete.setFixedSize(check_boxes_wight,check_boxes_height)
+    def handle_checkbox_function(self):
+        
+        self.checkbox_delete = self.create_check_box(delete_exe_str, check_box1_y)
+        self.checkbox_rename = self.create_check_box(rename_Out_res, check_box2_y)
+        self.checkbox_empty_dir = self.create_check_box(delete_empty_dir, check_box3_y)
 
-        self.checkBox_Rename = QCheckBox(rename_Out_res, self)
-        self.checkBox_Rename.move(check_boxes_x, check_box2_y)
-        self.checkBox_Rename.setFixedSize(check_boxes_wight,check_boxes_height)
+    def create_button(self, name, function, x, y):
+        btn = QPushButton(name, self)
+        btn.move(x,y)
+        btn.clicked.connect(function)
+        btn.setFixedSize(btn_wight,btn_height)
 
-        self.checkBox_EmptyDir = QCheckBox(delete_empty_dir, self)
-        self.checkBox_EmptyDir.move(check_boxes_x, check_box3_y)
-        self.checkBox_EmptyDir.setFixedSize(check_boxes_wight,check_boxes_height)
-
-
+        
 #   Функция инициализации кнопок
-    def ButtonUI(self):
-        btn_run = QPushButton(run, self)
-        btn_exit = QPushButton(exit_, self)
-        btn_review = QPushButton(review, self)
-        btn_move = QPushButton(move_, self)
-        
-        
-        btn_run.move(btn_run_x,btn_run_y)
-        btn_run.clicked.connect(self.on_click)
-        btn_run.setIcon(QIcon(Icon_play))
-        btn_run.setIconSize(QSize(30, 30))
-        
-
-        btn_exit.clicked.connect(self.exit)
-        btn_exit.move(btn_exit_x,btn_exit_y)
-
-        btn_review.clicked.connect(self.SelectMainDirectory)
-        btn_review.move(btn_review_x,btn_review_y)
-        btn_review.setFixedSize(btn_wight,btn_height)
-        btn_review.setIcon(QIcon(Icon_review))
-        btn_review.setIconSize(QSize(20, 20))
-
-        btn_move.clicked.connect(self.open_new_window)
-        btn_move.move(btn_move_x,btn_move_y)
-        btn_move.setFixedSize(btn_wight,btn_height)
+    def button_handle_function(self):
+        self.create_button(run, self.on_click, btn_run_x, btn_run_y)
+        self.create_button(exit_, self.exit, btn_exit_x, btn_exit_y)
+        self.create_button(review, self.select_main_directory, btn_review_x, btn_review_y)
+        self.create_button(move_, self.open_new_window, btn_move_x, btn_move_y)
 
 
-    def SelectMainDirectory(self):
+    def select_main_directory(self):
         self.File = str(QFileDialog.getExistingDirectory(self, select_dir)).replace('/', '\\')
         self.lineEdit.setText(self.File)
 
@@ -102,16 +86,9 @@ class MainWindow(QMainWindow):
         QtGui.QGuiApplication.processEvents()
 
 
-        
-
-
-
 #   Главная функция удаления исполняемых файлов
-    def DeleteExeFiles(self):
-        global Text
+    def delete_exe_files(self):
         path = ""
-        res = ""
-
         Fsize = 0
         for root, _, files in os.walk(self.File):
                 for file in files:
@@ -121,22 +98,13 @@ class MainWindow(QMainWindow):
                         os.remove(path)
                         func.Print(self,"Удалён: " + path)
         
-        if Fsize >= 1024: #byte -> kilobyte
-            Fsize /= 1024
-            res = "Kb"
+        func.Print(self,f'Очищено: {str(round(Fsize,2))} {func.size_of_file(Fsize)}')
 
-        if Fsize >= 1024: #kilobyte -> megabyte
-            Fsize /= 1024
-            res = "Mb"
-    
-        if Fsize >= 1024: #megabyte -> gigabyte 
-            Fsize /= 1024
-            res = "Gb"
-
-
-        func.Print(self,"Очищено: " + str(round(Fsize, 2)) + " " + res)
-        return len(path)
-
+        if len(path) == 0:
+            return False
+        
+        return True
+        
 
 #   Функция поиска dat-файлов
     def find_first_file(self,endswith, files):
@@ -144,56 +112,42 @@ class MainWindow(QMainWindow):
             if file.endswith(endswith):
                 return file
 
-
-
 #   Главная функция переименования выходных файлов
     def hangle_rename_txt_file(self):
-
         rename = ""
         for root, _, files in os.walk(self.File):
             dat_file = self.find_first_file(dat, files)
             txt_file = self.find_first_file(txt, files)
-
             if dat_file != None and txt_file != None:
                 rename = f'{func.splitName(root)[-1]}_{func.splitDate(dat_file)}{txt}'
-                func.Print(self,f'{root}/{txt_file} -> {root}/{rename}')
-                os.rename(os.path.join(root, txt_file), os.path.join(root, rename))
-        
+                func.Print(self,f'{root}/{txt_file} -> {root}/{rename}')        
             elif  dat_file == None and txt_file != None:
                 rename = f'{func.splitName(root)[-1]}{txt}'
                 func.Print(self, f'{root}/{txt_file} -> {root}/{func.splitName(root)[-1]}{txt}')
-                os.rename(os.path.join(root, txt_file), os.path.join(root, rename))
+        
+            os.rename(os.path.join(root, txt_file), os.path.join(root, rename))
         
         func.Print(self,"Done")
-        return len(rename)
 
+        if len(rename) == 0:
+            return False
+        
+        return True
+
+
+    def checked_some_box(self, check_box, function, text):
+        if check_box.isChecked() and function:
+            func.Print(self, text)
 
     @pyqtSlot()
     def on_click(self):
-        if self.checkBox_Delete.isChecked() == True:
-            start = timeit.default_timer()
-            if self.DeleteExeFiles() == 0:
-                func.Print(self,exe_files_not_found)
-            
-            print(f"Time delete: {timeit.default_timer() - start}")
-            
-                
-
-        if self.checkBox_Rename.isChecked() == True:
-            start = timeit.default_timer()
-            if self.hangle_rename_txt_file() == 0:
-                func.Print(self,Out_res_not_found)
-
-
-        if self.checkBox_EmptyDir.isChecked() == True:
-            start = timeit.default_timer()
-            if func.del_empty_dirs(self, self.File) == True:
-                func.Print(self,empty_dir_not_found)
-
+        self.checked_some_box(self.checkbox_delete, self.delete_exe_files, exe_files_not_found)
+        self.checked_some_box(self.checkbox_rename, self.hangle_rename_txt_file, Out_res_not_found)
+        self.checked_some_box(self.checkbox_empty_dir, func.del_empty_dirs, empty_dir_not_found)
+                       
 
     def exit(self):
         sys.exit()
-
 
 
 if __name__ == '__main__':
