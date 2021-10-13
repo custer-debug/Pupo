@@ -4,11 +4,11 @@ from PyQt5.QtGui import QTextCursor
 import logging
 import shutil
 from DefaultVariable import *
-import pyexcel as pe
+from pyexcel import save_as
 from csv import reader
 
 Text = ""
-logging.basicConfig(filename='Pupo.log',level = logging.INFO, filemode='w', format='%(asctime)s - %(levelname)s - %(message)s', encoding='utf-8')
+logging.basicConfig(filename='Pupo.log',level = logging.INFO, filemode='a', format='%(asctime)s - %(levelname)s - %(message)s', encoding='utf-8')
 
 
 
@@ -29,13 +29,19 @@ def splitName(str):
 
 
 def splitDate(str):
+    # print(str)
     s = str.split('_')
     s.pop(0)
-    a = s[-1].split('.')
-    s.pop(-1)
-    s.append(a[0])
+    try:
+        a = s[-1].split('.')
+        s.pop(-1)
+        s.append(a[0])
+    except IndexError:
+        return None
     res = '_'.join(s)
     return res
+
+
 
 
 def del_empty_dirs(self, path):
@@ -104,4 +110,4 @@ def txt_to_xslx(csv_list, path):
             line.pop(-1)
 
         all.extend(filecontents)
-    pe.save_as(array=all, start_row=0, sheet_name='List 1', dest_file_name = path + '.xlsx')
+    save_as(array=all, start_row=0, sheet_name='List 1', dest_file_name = path + '.xlsx')

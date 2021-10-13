@@ -1,3 +1,4 @@
+import logging
 import sys
 import os
 
@@ -18,6 +19,7 @@ class MainWindow(QMainWindow):
 # Функция инициализации окна
     def __init__(self):
         super().__init__()
+        logging.info("\n")
         pixmapi = getattr(QStyle, 'SP_DialogResetButton')
         icon = self.style().standardIcon(pixmapi)
         self.setWindowIcon(icon)
@@ -137,29 +139,33 @@ class MainWindow(QMainWindow):
 
 
 #   Функция поиска dat-файлов
-    def findDatFiles(self):
-        for _, _ , files in os.walk(os.getcwd()):
-            for file in files:
-                if file.endswith(dat):
-                    return func.splitDate(file)
+    def find_first_file(self,endswith, files):
+        for file in files:
+            if file.endswith(endswith):
+                return file
+
 
 
 #   Главная функция переименования выходных файлов
-    def RenameTxtFiles(self):
-        folder = ""
-        for root, _ , files in os.walk(self.File):
-            for file in files:
-                if file.endswith(out_res):
-                    folder = func.splitName(root)[-1]    #Директория поиска
-                    data = self.findDatFiles()
-                    if data == None:
-                        func.Print(self,"В папке " + root + " Dat-файлов не найдено")
-                        os.rename(os.path.join(root, file), os.path.join(root, folder) + ".txt")
-                    else:
-                        func.Print(self,root + "\\" + file + " -> " + folder + "_" + data)
-                        os.rename(os.path.join(root, file), os.path.join(root, folder) + "_" + data + ".txt")
+    def hangle_rename_txt_file(self):
+
+        rename = ""
+        for root, _, files in os.walk(self.File):
+            dat_file = self.find_first_file(dat, files)
+            txt_file = self.find_first_file(txt, files)
+
+            if dat_file != None and txt_file != None:
+                rename = f'{func.splitName(root)[-1]}_{func.splitDate(dat_file)}{txt}'
+                func.Print(self,f'{root}/{txt_file} -> {root}/{rename}')
+                os.rename(os.path.join(root, txt_file), os.path.join(root, rename))
+        
+            elif  dat_file == None and txt_file != None:
+                rename = f'{func.splitName(root)[-1]}{txt}'
+                func.Print(self, f'{root}/{txt_file} -> {root}/{func.splitName(root)[-1]}{txt}')
+                os.rename(os.path.join(root, txt_file), os.path.join(root, rename))
+        
         func.Print(self,"Done")
-        return len(folder)
+        return len(rename)
 
 
     @pyqtSlot()
@@ -175,16 +181,14 @@ class MainWindow(QMainWindow):
 
         if self.checkBox_Rename.isChecked() == True:
             start = timeit.default_timer()
-            if self.RenameTxtFiles() == 0:
+            if self.hangle_rename_txt_file() == 0:
                 func.Print(self,Out_res_not_found)
-            # print(f"Time rename: {timeit.default_timer() - start}")
 
 
         if self.checkBox_EmptyDir.isChecked() == True:
             start = timeit.default_timer()
             if func.del_empty_dirs(self, self.File) == True:
                 func.Print(self,empty_dir_not_found)
-            # print(f"Time empty dir: {timeit.default_timer() - start}")
 
 
     def exit(self):
