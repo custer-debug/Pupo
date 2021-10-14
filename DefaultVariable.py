@@ -45,7 +45,7 @@ label_exe = "Exe: "
 
 
 # размер радио-кнопок
-rsize_x = 40
+rsize_x = 50
 rsize_y = 30
 
 # отступы радио-кнопок
@@ -185,4 +185,11 @@ first_row = ['Имя файла',
     ' ',
     'Rff']
 
-# pyinstaller.exe --splash .\Icon_play.png .\Icon_copy.png .\Icon_review.png .\Icon.png -w -F --icon=Icon.ico Pupo.py  
+# pyinstaller.exe --splash .\Icon_play.png .\Icon_copy.png .\Icon_review.png .\Icon.png -w -F --icon=Icon.ico Pupo.py
+
+title_label_json = {
+    'Radar: ': 10,
+    'Mode: ': 35,
+    'Channel: ': 60
+}
+

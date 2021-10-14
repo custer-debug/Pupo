@@ -6,6 +6,7 @@ import shutil
 from DefaultVariable import *
 from pyexcel import save_as
 from csv import reader
+from PyQt5.QtWidgets import QLabel, QRadioButton
 
 Text = ""
 logging.basicConfig(filename='Pupo.log',level = logging.INFO, filemode='a', format='%(asctime)s - %(levelname)s - %(message)s', encoding='utf-8')
@@ -57,7 +58,7 @@ def del_empty_dirs(self, path):
         return flag
 
 
-def make_directories(cwd,exe):
+def make_directories(cwd,exe,json):
     text = ""
     for i in range(split_count):
         dir = f"{cwd}\Part_{str(i+1)}"
@@ -67,6 +68,7 @@ def make_directories(cwd,exe):
             text += f"Папка: {dir} уже существует <br>"
 
         shutil.copy(exe,dir + "\\" + exe.split('/')[-1])
+        shutil.copy(json,dir + "\\" + json.split('/')[-1])
 
     if len(text) == 0:
         text = "Папки успешно созданы"
@@ -76,13 +78,16 @@ def make_directories(cwd,exe):
 
 
 def split_files(files,num): 
-    for i in range(10):
+    for i in range(split_count):
         for _ in range(num[i]):
             file = files[0]
             From =  f"{file[0]}\\{file[1]}"
             To  = f"{file[0]}\\Part_{i+1}\\{file[1]}"
-            shutil.move(From,To)
-            files.remove(files[0])
+            try:
+                shutil.move(From,To)
+                files.remove(files[0])
+            except FileNotFoundError:
+                return 
 
 
 
@@ -128,3 +133,21 @@ def size_of_file(file_size):
 
 
 
+def create_label_function(self, title, y):
+    label = QLabel(title,self)
+    label.setStyleSheet(front)
+    label.move(lx,y)
+    return label 
+
+
+def radio_button_create(self, name, x, y):
+    radio = QRadioButton(name,self)
+    radio.setFixedSize(rsize_x,rsize_y)
+    radio.move(x,y)
+    return radio
+
+res_dict = {}
+
+def dict_to_json():
+    pass
+    

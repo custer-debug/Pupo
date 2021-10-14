@@ -1,4 +1,3 @@
-import re
 from PyQt5.QtWidgets import *
 from PyQt5 import QtCore
 from PyQt5.QtGui import *
@@ -65,17 +64,10 @@ class CopyWindowClass(QMainWindow):
             self.third_label.hide()
 
         
-
-    def create_label_function(self, title, y):
-        label = QLabel(title,self)
-        label.setStyleSheet(front)
-        label.move(lx,y)
-        return label 
-
     def label_handle(self):
-        self.first_label = self.create_label_function(label_from, y1)
-        self.second_label = self.create_label_function(label_to, y2)
-        self.third_label = self.create_label_function("Json: ", y2 + 60)
+        self.first_label = create_label_function(self,label_from, y1)
+        self.second_label = create_label_function(self, label_to, y2)
+        self.third_label = create_label_function(self, "Json: ", y2 + 60)
         self.third_label.hide()
 
     def radio_button_checked_function(self):
@@ -84,16 +76,16 @@ class CopyWindowClass(QMainWindow):
         else:
             self.change_elements_option_function(True, name_split, label_Path, label_exe,260,yb3 + 60, True)
 
-    def radio_button_create(self, name, x):
-        radio = QRadioButton(name,self)
-        radio.setFixedSize(rsize_x,rsize_y)
-        radio.move(x,yr)
-        return radio
+    # def radio_button_create(self, name, x):
+    #     radio = QRadioButton(name,self)
+    #     radio.setFixedSize(rsize_x,rsize_y)
+    #     radio.move(x,yr)
+    #     return radio
 
     def radio_button_handle(self):
-        radio_txt = self.radio_button_create(txt,xr1)
+        radio_txt = radio_button_create(self, txt,xr1, yr)
         radio_txt.setChecked(True)
-        radio_dat = self.radio_button_create(dat,xr2)
+        radio_dat = radio_button_create(self, dat,xr2, yr)
         self.radio_dat = radio_dat
 
         group = QButtonGroup(self)
@@ -141,7 +133,7 @@ class CopyWindowClass(QMainWindow):
         elif self.second_path == '':
             QMessageBox.critical(self, MessageError, ErrorToValue)
             return True
-        elif self.third_path == '':
+        elif self.third_path == '' and self.radio_dat.isChecked():
             QMessageBox.critical(self, MessageError, 'Введите третий путь')
             return True
 
@@ -186,7 +178,7 @@ class CopyWindowClass(QMainWindow):
         Count_files = len(files_list)
         split_list = [Count_files // split_count]*split_count
         split_list[-1] += Count_files % split_count
-        self.print_log(make_directories(self.first_path, self.second_path))
+        self.print_log(make_directories(self.first_path, self.second_path, self.third_path))
         split_files(files_list,split_list)
 
 
