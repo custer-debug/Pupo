@@ -16,11 +16,7 @@ class CopyWindowClass(QMainWindow):
         self.third_path = ''
         self.log_txt = ''
         self.radio_bool = False
-        self.setWindowTitle(copy_files)
-        self.setWindowIcon(QIcon(Icon_copy))
         
-
-
         self.default_variable()
         self.setWindowModality(QtCore.Qt.ApplicationModal)
         self.show()
@@ -32,13 +28,26 @@ class CopyWindowClass(QMainWindow):
         self.radio_button_handle()
         self.line_edit_handle()
         self.button_handle()
-        self.checkbox_create_function()
+        self.checkbox_handle_function()
+        print("Norm")
 
  
-    def checkbox_create_function(self):
-        self.checkbox = QCheckBox("Txt to xslx",self)
-        self.checkbox.move(25,160)
-        self.checkbox.setFixedSize(100,20)
+    def checkbox_handle_function(self):
+        self.checkbox = create_check_box(self, "Txt to xslx", 160)
+
+
+
+    def show_element(self):
+        self.checkbox.hide()
+        self.third_line_edit.show()
+        self.third_label.show()
+        self.button_review.show()
+
+    def hide_element(self):
+        self.button_review.hide()
+        self.checkbox.show()
+        self.third_line_edit.hide()
+        self.third_label.hide()
 
     def change_elements_option_function(self,bool,title, first_label, second_label,height, btn_y,checkbox_bool):
         self.radio_bool = bool
@@ -49,15 +58,9 @@ class CopyWindowClass(QMainWindow):
         self.setGeometry(ax,ay,aw,height)
         self.button_run.move(xb,btn_y)
         if checkbox_bool:
-            self.checkbox.hide()
-            self.third_line_edit.show()
-            self.third_label.show()
-            self.button_review.show()
+            self.show_element()
         else: 
-            self.button_review.hide()
-            self.checkbox.show()
-            self.third_line_edit.hide()
-            self.third_label.hide()
+            self.hide_element()
 
         
     def label_handle(self):
@@ -97,32 +100,26 @@ class CopyWindowClass(QMainWindow):
         self.third_line_edit.hide()
         
 
-    def button_create(self, name, x,y, function):
-        tmp = QPushButton(name,self)
-        tmp.move(x,y)
-        tmp.setFixedSize(wb,hb)
-        tmp.clicked.connect(function)
-        return tmp
-        
-
     def button_handle(self):
-        self.button_create(review, xb, yb1, self.select_first_directory)
-        self.button_create(review, xb, yb2, self.select_second_directory)
-        self.button_review = self.button_create(review, xb, yb2 + 60, self.select_third_directory)
+        create_button(self, review, xb, yb1, self.select_first_directory)
+        create_button(self, review, xb, yb2, self.select_second_directory)
+        self.button_review = create_button(self, review, xb, yb2 + 60, self.select_third_directory)
         self.button_review.hide()
-        self.button_run = self.button_create(run, xb, yb3, self.check_radio_buttons)
+        self.button_run = create_button(self, run, xb, yb3, self.check_radio_buttons)
 
+
+    
     # Проверка задания двух путей
     def check_paths(self):
+
         if self.first_path == '':
-            QMessageBox.critical(self,MessageError, ErrorFromValue)
-            return True
+            success(self, MessageError, ErrorFromValue); return True
+
         elif self.second_path == '':
-            QMessageBox.critical(self, MessageError, ErrorToValue)
-            return True
+            success(self, MessageError, ErrorToValue); return True
+
         elif self.third_path == '' and self.radio_dat.isChecked():
-            QMessageBox.critical(self, MessageError, 'Введите третий путь')
-            return True
+            success(self, MessageError, 'Введите третий путь'); return True
 
         return False
 
@@ -173,25 +170,23 @@ class CopyWindowClass(QMainWindow):
 
 
     def check_radio_buttons(self):
-        if self.check_paths():
-            return
+        if self.check_paths(): return
         
         if self.radio_bool:
-            self.move_dat_files()
-            QMessageBox.information(self, MsgSuccess, SplitSucces)
+            self.move_dat_files(); fail(self, MsgSuccess, SplitSucces) 
         else:
-            self.copy_txt_files()
-            QMessageBox.information(self, MsgSuccess, SuccessCopyFiles)
+            self.copy_txt_files(); fail(self, MsgSuccess, SuccessCopyFiles) 
+
+  
+    def select_first_directory(self):
+        self.first_path = str(QFileDialog.getExistingDirectory(self, select_dir)).replace('/', '\\')
+        self.first_line_edit.setText(self.first_path)
 
 
     def select_third_directory(self):
         self.third_path = str(QFileDialog.getOpenFileName(self,'Open File', None, '*.json')[0])
         self.third_line_edit.setText(self.third_path)
         
-  
-    def select_first_directory(self):
-        self.first_path = str(QFileDialog.getExistingDirectory(self, select_dir)).replace('/', '\\')
-        self.first_line_edit.setText(self.first_path)
 
     def select_second_directory(self):
         if self.radio_dat.isChecked():
@@ -200,5 +195,3 @@ class CopyWindowClass(QMainWindow):
             self.second_path = str(QFileDialog.getExistingDirectory(self, select_dir)).replace('/', '\\')
         self.second_line_edit.setText(self.second_path)
         
-
-

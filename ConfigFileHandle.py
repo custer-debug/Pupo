@@ -37,18 +37,12 @@ class ConfigFile(QMainWindow):
             self.create_group_button('1200', '2500', 10),
             self.create_group_button('Local', 'Reson', 35),
             self.create_group_button('2', '4', 60)]   
-        
-
-    def create_button_function(self, name,x, y, function):
-        btn = QPushButton(name, self)
-        btn.move(x,y)
-        btn.clicked.connect(function)
-        btn.setFixedSize(btn_wight,btn_height)
 
 
     def button_handle(self):
-        self.create_button_function("Save", 190, 250, self.button_checked_function)
+        create_button(self, "Save", 190, 250, self.button_checked_function)
         
+
     def compile_dict(self):
         res_dict = {}
         for label,text in zip(title_label_json,self.btn):
