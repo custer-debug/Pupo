@@ -6,7 +6,6 @@ import os
 import shutil
 from Function import * 
 
-
 class CopyWindowClass(QMainWindow):
     log_update = QtCore.pyqtSignal(int)
 
@@ -49,15 +48,12 @@ class CopyWindowClass(QMainWindow):
         self.checkbox.setDisabled(bool)
         self.setGeometry(ax,ay,aw,height)
         self.button_run.move(xb,btn_y)
-        self.button_config.move(xb - 100, btn_y)
         if checkbox_bool:
             self.checkbox.hide()
             self.third_line_edit.show()
             self.third_label.show()
-            self.button_config.show()
             self.button_review.show()
         else: 
-            self.button_config.hide()
             self.button_review.hide()
             self.checkbox.show()
             self.third_line_edit.hide()
@@ -75,12 +71,6 @@ class CopyWindowClass(QMainWindow):
             self.change_elements_option_function(False, copy_files, label_from, label_to,ah,yb3, False)
         else:
             self.change_elements_option_function(True, name_split, label_Path, label_exe,260,yb3 + 60, True)
-
-    # def radio_button_create(self, name, x):
-    #     radio = QRadioButton(name,self)
-    #     radio.setFixedSize(rsize_x,rsize_y)
-    #     radio.move(x,yr)
-    #     return radio
 
     def radio_button_handle(self):
         radio_txt = radio_button_create(self, txt,xr1, yr)
@@ -121,10 +111,7 @@ class CopyWindowClass(QMainWindow):
         self.button_review = self.button_create(review, xb, yb2 + 60, self.select_third_directory)
         self.button_review.hide()
         self.button_run = self.button_create(run, xb, yb3, self.check_radio_buttons)
-        self.button_config = self.button_create("Edit config file", xb - 100, yb3, self.open_window_edit_config)
 
-    def open_window_edit_config(self):
-        pass
     # Проверка задания двух путей
     def check_paths(self):
         if self.first_path == '':

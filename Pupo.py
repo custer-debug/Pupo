@@ -10,8 +10,10 @@ from PyQt5.QtWidgets import *
 from CopyWindow import CopyWindowClass
 import Function as func
 from DefaultVariable import *
+import ConfigFileHandle
 
 
+# 
 class MainWindow(QMainWindow):
 
 # Функция инициализации окна
@@ -69,8 +71,12 @@ class MainWindow(QMainWindow):
         self.create_button(exit_, self.exit, btn_exit_x, btn_exit_y)
         self.create_button(review, self.select_main_directory, btn_review_x, btn_review_y)
         self.create_button(move_, self.open_copy_window, btn_move_x, btn_move_y)
+        self.create_button("Edit config file",self.open_window_edit_config, xb - 10, yb3 - 5)
 
 
+    def open_window_edit_config(self):
+        self.w = ConfigFileHandle.ConfigFile()
+        self.w.show()
 
     def select_main_directory(self):
         self.File = str(QFileDialog.getExistingDirectory(self, select_dir)).replace('/', '\\')

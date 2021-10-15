@@ -1,9 +1,9 @@
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-import sys
 from DefaultVariable import *
 from Function import *
+from PyQt5 import QtCore
 
 class ConfigFile(QMainWindow):
     def __init__(self):
@@ -15,6 +15,7 @@ class ConfigFile(QMainWindow):
         self.button_handle()
         self.label_handle()
         self.radio_button_handle()
+        self.setWindowModality(QtCore.Qt.ApplicationModal)
         self.show()
 
 
@@ -49,28 +50,28 @@ class ConfigFile(QMainWindow):
         self.create_button_function("Save", 190, 250, self.button_checked_function)
         
     def compile_dict(self):
+        res_dict = {}
         for label,text in zip(title_label_json,self.btn):
-            label.replace(': ', '')
+            label = label.replace(': ', '')
             try:
                 temp = int(text.checkedButton().text())
             except ValueError:
                 temp = text.checkedButton().text()
 
             res_dict[label] = temp
-        
+        return res_dict
+
+
+    
 
     def button_checked_function(self):
-        for i in self.btn:
-            if i.checkedButton() == None:
-                QMessageBox.critical(self, MessageError, "Выберите все нужные параметры")
-                return
+        if check_data_to_json(self.btn):
+            QMessageBox.critical(self, MessageError, "Выберите все нужные параметры")
+            return
 
-        self.compile_dict()
+        dict_to_json(self.compile_dict())
+        QMessageBox.information(self, MsgSuccess, "Файл успешно сохранён")
+        self.close()
 
-
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    ex = ConfigFile()
-    app.exec_()
 
 

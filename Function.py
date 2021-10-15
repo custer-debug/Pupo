@@ -146,8 +146,17 @@ def radio_button_create(self, name, x, y):
     radio.move(x,y)
     return radio
 
-res_dict = {}
 
-def dict_to_json():
-    pass
+def check_data_to_json(btn):
+        for i in btn:
+            if i.checkedButton() == None:
+                return True
+        return False
+
+from json import dump
+
+def dict_to_json(dictinary):
+    with open('config.json', 'w') as outfile:
+        dump(dictinary, outfile, indent=4)
+
     
