@@ -91,11 +91,12 @@ class MainWindow(QMainWindow):
     def checked_some_box(self, check_box, text, function, extension = None):
         if check_box.isChecked() and function(self, self.File, extension):
             Print(self, text)
+        check_box.setChecked(False)
 
     @pyqtSlot()
     def on_click(self):
         self.checked_some_box(self.checkbox_delete, exe_files_not_found, delete_files, exe)
-        self.checked_some_box(self.checkbox_rename, Out_res_not_found, hangle_rename_txt_file)
+        self.checked_some_box(self.checkbox_rename, Out_res_not_found, handle_rename_txt_file)
         self.checked_some_box(self.checkbox_empty_dir, empty_dir_not_found, del_empty_dirs)
                        
 

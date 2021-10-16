@@ -15,7 +15,6 @@ logging.basicConfig(filename='Pupo.log',level = logging.INFO, filemode='a', form
 
 
 
-
 #   Функция записи событий в окне статуса
 def Print(self,text):
         global Text
@@ -24,7 +23,6 @@ def Print(self,text):
         self.Text.setHtml(Text)
         self.Text.moveCursor(QTextCursor.End)
         
-    
 
 
 def splitName(str):
@@ -34,7 +32,6 @@ def splitName(str):
 
 
 def splitDate(str):
-    # print(str)
     s = str.split('_')
     s.pop(0)
     try:
@@ -45,8 +42,6 @@ def splitDate(str):
         return None
     res = '_'.join(s)
     return res
-
-
 
 
 
@@ -87,11 +82,8 @@ def split_files(files,num):
 
 
 
-
 def success(self, success, text):
     return QMessageBox.critical(self,success, text)
-
-
 
 
 def fail(self, fail, text):
@@ -157,7 +149,6 @@ def dict_to_json(dictinary):
 
 
 # Create elements
-
 def create_button(self, name, x,y, function):
     tmp = QPushButton(name,self)
     tmp.move(x,y)
@@ -189,10 +180,11 @@ def radio_button_create(self, name, x, y):
 
 #   Главная функция удаления исполняемых файлов
 def delete_files(self, cwd, extension):
-    print('delete_files')
+    # print('delete_files')
 
-    path = ""
+    path = ''
     Fsize = 0
+    res = True
     for root, _, files in os.walk(cwd):
             for file in files:
                 if file.endswith(extension):
@@ -200,51 +192,59 @@ def delete_files(self, cwd, extension):
                     Fsize += os.stat(path).st_size 
                     os.remove(path)
                     Print(self,"Удалён: " + path)
-    
+                    res = False
     Print(self,f'Очищено: {str(round(Fsize,2))} {size_of_file(Fsize)}')
 
-    return False if len(path) == 0 else True
+    return res
 
 
-#   Функция поиска dat-файлов
-def find_first_file(endswith, files):
+def find_first_file(enswitch, files):
     for file in files:
-        print(file)
-        if file.endswith(endswith):
+        if file.endswith(enswitch):
             return file
+    return None
+
+
+def generate_filename_with_dat_file(root,dat_file):
+    return f'{splitName(root)[-1]}_{splitDate(dat_file)}{txt}'
+
+def generate_filename_without_dat_file(root):
+    return f'{splitName(root)[-1]}{txt}'
 
 
 #   Главная функция переименования выходных файлов
-def hangle_rename_txt_file(self, cwd, arg = None):
-    print('hangle_rename_txt_file')
-    # rename = ""
+def handle_rename_txt_file(self, cwd, arg = None):
+    rename = ''
     _bool = True
     for root, _, files in os.walk(cwd):
+
         dat_file = find_first_file(dat, files)
-        txt_file = find_first_file(txt, files)
+        txt_file = find_first_file(out_res, files)
+        print(txt_file)
+        if dat_file == None and txt_file == None:
+            continue
+         
         if dat_file != None and txt_file != None:
-            rename = f'{splitName(root)[-1]}_{splitDate(dat_file)}{txt}'
+            rename = generate_filename_with_dat_file(root,dat_file)
             Print(self,f'{root}\{txt_file} -> {root}\{rename}')
             _bool = False
         elif txt_file != None:
-            rename = f'{splitName(root)[-1]}{txt}'
+            rename = generate_filename_without_dat_file(root)
             Print(self, f'{root}\{txt_file} -> {root}\{splitName(root)[-1]}{txt}')
             _bool = False
-        # try: 
-        print(txt_file)
-        os.rename(os.path.join(root, txt_file), os.path.join(root, rename))
-        # except Exception:
-            # continue
-    # Print(self,"Done")
-
-    
+        try:
+            os.rename(os.path.join(root, txt_file), os.path.join(root, rename))
+        except Exception as ex:
+            print(ex)
+            continue         
+                
     return _bool
 
 
 
 #   Удаление пустых директорий
 def del_empty_dirs(self, path, arg = None):
-    print('del_empty_dirs')
+    # print('del_empty_dirs')
     flag = False
     for d in os.listdir(path):
         a = os.path.join(path, d)
