@@ -23,7 +23,6 @@ class MainWindow(QMainWindow):
         pixmapi = getattr(QStyle, 'SP_DialogResetButton')
         icon = self.style().standardIcon(pixmapi)
         self.setWindowIcon(icon)
-        # self.File =  os.getcwd().replace('/', '\\')
         self.setWindowTitle(Title)
         self.setGeometry(window_X, window_Y, window_Width, window_Height)
 
@@ -37,17 +36,27 @@ class MainWindow(QMainWindow):
     def handle_line_edit_function(self):
         self.main_line_edit = create_line_edit(self, line_edit_xy, line_edit_xy, line_edit_wight)
         self.main_line_edit.setText(os.getcwd().replace('/', '\\'))
-        self.line_extension = create_line_edit(self, 140, 58, 50, 25)
+        
+        self.line_extension = create_line_edit(self, 140, 57, 50, 25)
         self.line_extension.setDisabled(True)
         self.line_extension.setText(exe)
+
+        self.line_name_file = create_line_edit(self, 175, 90, 80, 25)
+        self.line_name_file.setDisabled(True)
+        self.line_name_file.setText(out_res)
+
         self.Text = QTextBrowser(self)
         self.Text.move(Text_X,Text_Y)
         self.Text.setFixedSize(Text_Wight,Text_Height)
 
 
-    def ednabled_line_edit(self):
+    def enabled_line_delete(self):
         return self.line_extension.setDisabled(False) if self.checkbox_delete.isChecked() else self.line_extension.setDisabled(True)
         
+    def enabled_line_rename(self):
+        return self.line_name_file.setDisabled(False) if self.checkbox_rename.isChecked() else self.line_name_file.setDisabled(True)
+
+
 
     def create_check_box(self, name, y):
         checkbox = QCheckBox(name, self)
@@ -61,7 +70,10 @@ class MainWindow(QMainWindow):
         self.checkbox_delete = self.create_check_box(delete_exe_str, check_box1_y)
         self.checkbox_rename = self.create_check_box(rename_Out_res, check_box2_y)
         self.checkbox_empty_dir = self.create_check_box(delete_empty_dir, check_box3_y)
-        self.checkbox_delete.clicked.connect(self.ednabled_line_edit)
+        self.checkbox_delete.clicked.connect(self.enabled_line_delete)
+        self.checkbox_rename.clicked.connect(self.enabled_line_rename)
+
+
         
     #   Функция инициализации кнопок
     def button_handle_function(self):
@@ -91,32 +103,27 @@ class MainWindow(QMainWindow):
         QtGui.QGuiApplication.processEvents()
         
 
-    def check_boxes_disabled(self):
-        self.checkbox_delete.setDisabled(True)
-        self.checkbox_rename.setDisabled(True)
-        self.checkbox_empty_dir.setDisabled(True)
 
-
-    def check_boxes_enabled(self):
-        self.checkbox_delete.setDisabled(False)
-        self.checkbox_rename.setDisabled(False)
-        self.checkbox_empty_dir.setDisabled(False)
-        self.line_extension.setDisabled(True)
 
     def checked_some_box(self, check_box, text, function, extension = None):
         if check_box.isChecked() and function(self, self.main_line_edit.text(), extension):
             Print(self, text)
         check_box.setChecked(False)
 
+    def check_boxes_default_view(self):
+        self.checkbox_rename.setChecked(False)
+        self.checkbox_delete.setChecked(False)
+        self.checkbox_empty_dir.setChecked(False)
+        self.enabled_line_rename()
+        self.enabled_line_delete()
+
 
     @pyqtSlot()
     def on_click(self):
-        self.check_boxes_disabled()
         self.checked_some_box(self.checkbox_delete, exe_files_not_found, delete_files,self.line_extension.text())
-        self.checked_some_box(self.checkbox_rename, Out_res_not_found, handle_rename_txt_file)
+        self.checked_some_box(self.checkbox_rename, Out_res_not_found, handle_rename_txt_file, self.line_name_file.text())
         self.checked_some_box(self.checkbox_empty_dir, empty_dir_not_found, del_empty_dirs)
-        self.check_boxes_enabled()
-                       
+        self.check_boxes_default_view()
 
     def exit(self):
         sys.exit()

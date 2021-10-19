@@ -195,12 +195,6 @@ def delete_files(self, cwd, extension):
     return res
 
 
-def find_first_file(enswitch, files):
-    for file in files:
-        if file.endswith(enswitch):
-            return file
-    return None
-
 
 def generate_filename_with_dat_file(root,dat_file):
     return f'{splitName(root)[-1]}_{splitDate(dat_file)}{txt}'
@@ -209,15 +203,22 @@ def generate_filename_without_dat_file(root):
     return f'{splitName(root)[-1]}{txt}'
 
 
+def find_first_file(enswitch, files):
+    for file in files:
+        if file.endswith(enswitch):
+            return file
+    return None
+
+
 #   Главная функция переименования выходных файлов
-def handle_rename_txt_file(self, cwd, arg = None):
+def handle_rename_txt_file(self, cwd, name):
     rename = ''
     _bool = True
     for root, _, files in os.walk(cwd):
 
         dat_file = find_first_file(dat, files)
-        txt_file = find_first_file(out_res, files)
-        print(txt_file)
+        txt_file = find_first_file(name, files)
+        # print(txt_file)
         if dat_file == None and txt_file == None:
             continue
          

@@ -108,7 +108,7 @@ select_dir = "Select Directory"
 
 #текстовые переменные для сообщений
 delete_exe_str = "Удаление файлов"
-rename_Out_res = "Переименование выходных файлов (Out_res.txt)"
+rename_Out_res = "Переименование файлов"
 delete_empty_dir = "Удаление пустых папок"
 
 
