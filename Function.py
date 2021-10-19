@@ -6,7 +6,7 @@ import shutil
 from DefaultVariable import *
 from pyexcel import save_as
 from csv import reader
-from PyQt5.QtWidgets import QCheckBox, QLabel, QRadioButton, QMessageBox, QPushButton
+from PyQt5.QtWidgets import *
 from json import dump
 
 
@@ -25,8 +25,8 @@ def Print(self,text):
         
 
 
-def splitName(str):
-    return str.split('\\')
+def splitName(str, sep = '\\'):
+    return str.split(sep)
 
 
 
@@ -82,12 +82,12 @@ def split_files(files,num):
 
 
 
-def success(self, success, text):
-    return QMessageBox.critical(self,success, text)
+def fail(self, text):
+    return QMessageBox.critical(self,MsgSuccess, text)
 
 
-def fail(self, fail, text):
-    return QMessageBox.information(self,fail, text)
+def success(self, text):
+    return QMessageBox.information(self,MessageError, text)
 
 
 
@@ -114,22 +114,6 @@ def txt_to_xslx(csv_list, path):
         all.extend(filecontents)
     save_as(array=all, start_row=0, sheet_name='List 1', dest_file_name = path + '.xlsx')
 
-
-def size_of_file(file_size):
-
-    if file_size >= 1024: #byte -> kilobyte
-        file_size /= 1024
-        return "Kb"
-
-    if file_size >= 1024: #kilobyte -> megabyte
-        file_size /= 1024
-        return "Mb"
-
-    if file_size >= 1024: #megabyte -> gigabyte 
-        file_size /= 1024
-        return "Gb" 
-
-    return "byte"
 
 
 
@@ -175,25 +159,38 @@ def radio_button_create(self, name, x, y):
     radio.move(x,y)
     return radio
 
-
+def create_line_edit(self, x, y, w, h = line_edit_height):
+    line_edit = QLineEdit(self)
+    line_edit.setFixedSize(w,h)
+    line_edit.move(x,y)
+    return line_edit
 
 
 #   Главная функция удаления исполняемых файлов
 def delete_files(self, cwd, extension):
-    # print('delete_files')
-
+    # print(f'{extension}')
     path = ''
     Fsize = 0
     res = True
+    count = 0
+    # print(cwd)
+    if not extension: return res
+
     for root, _, files in os.walk(cwd):
             for file in files:
                 if file.endswith(extension):
+                    print(root+'\\'+file)
                     path = os.path.join(root, file)
                     Fsize += os.stat(path).st_size 
                     os.remove(path)
                     Print(self,"Удалён: " + path)
                     res = False
-    Print(self,f'Очищено: {str(round(Fsize,2))} {size_of_file(Fsize)}')
+                    count += 1
+    i = 0 
+    while Fsize > 1000:
+        Fsize /= 1024  
+        i += 1
+    Print(self,f'Очищено:{count} файлов. Общий размер: {round(Fsize,2)} {Size[i]}.')
 
     return res
 
@@ -244,7 +241,6 @@ def handle_rename_txt_file(self, cwd, arg = None):
 
 #   Удаление пустых директорий
 def del_empty_dirs(self, path, arg = None):
-    # print('del_empty_dirs')
     flag = False
     for d in os.listdir(path):
         a = os.path.join(path, d)

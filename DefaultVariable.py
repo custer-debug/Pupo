@@ -5,6 +5,14 @@ from os import cpu_count
 # количество частей разбиения dat-файлов
 split_count = cpu_count()
 
+Size = [
+    'Byte',
+    'Kilobyte',
+    'Megabyte',
+    'Gigabyte'
+    'Terabyte'
+]
+
 # сообщения об успешном или ошибочном ты программы
 ErrorFromValue = "Необходимо выбрать первый путь"
 ErrorToValue   = "Необходимо выбрать второй путь"
@@ -45,12 +53,13 @@ label_exe = "Exe: "
 
 
 # размер радио-кнопок
-rsize_x = 50
+rsize_x = 60
 rsize_y = 30
 
 # отступы радио-кнопок
 xr1 = 10
-xr2 = 55
+xr2 = 65
+xr3 = 120
 yr = 7
 
 # пути к иконкам
@@ -72,7 +81,6 @@ yledit_2 = 105
 
 # размер линий
 wl = 400
-hl = 30
 
 # координаты кнопок
 xb = 490
@@ -99,7 +107,7 @@ select_dir = "Select Directory"
 ###########################
 
 #текстовые переменные для сообщений
-delete_exe_str = "Удаление исполняемых файлов (.exe)"
+delete_exe_str = "Удаление файлов"
 rename_Out_res = "Переименование выходных файлов (Out_res.txt)"
 delete_empty_dir = "Удаление пустых папок"
 
@@ -125,7 +133,7 @@ window_Height = 500
 #------> Поля редактирования <------#
 
 line_edit_wight = 580
-line_edit_height = 28
+line_edit_height = 30
 
 line_edit_xy = 15
 
@@ -143,8 +151,8 @@ empty_dir_not_found = "Пустых директорий не найдено"
 
 check_boxes_x = 20
 check_box1_y = 60
-check_box2_y = 80
-check_box3_y = 100
+check_box2_y = 90
+check_box3_y = 120
 
 check_boxes_wight = 400
 check_boxes_height = 20
