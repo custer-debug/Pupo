@@ -90,11 +90,11 @@ HEIGHT_BUTTON = 30
 # названия кнопок
 TITLE_REVIEW = 'Обзор'
 TITLE_RUN = 'Выполнить'
-TITLE_MOVE = "Move файлов"
-TITLE_EXIT = "Выход"
-
+TITLE_MOVE = 'Move файлов'
+TITLE_EXIT = 'Выход'
+TITLE_CONFIG = 'Config file'
 # выбор директорий
-select_dir = "Select Directory"
+SELECT_DIRECTORY = "Select Directory"
 
 
 ###########################

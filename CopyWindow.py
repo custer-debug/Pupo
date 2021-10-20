@@ -1,14 +1,12 @@
-from typing import List, Match
-from PyQt5.QtWidgets import *
-from PyQt5 import QtCore
-from PyQt5.QtGui import *
-from DefaultVariable import *
 import os
 import shutil
-from Function import *
+import PyQt5.QtWidgets as widgets
+import PyQt5.QtCore as core
+import Utilities as utils
+import DefaultVariable as dv
 
-class CopyWindowClass(QMainWindow):
-    log_update = QtCore.pyqtSignal(int)
+class CopyWindowClass(widgets.QMainWindow):
+    log_update = core.pyqtSignal(int)
 
     def __init__(self):
         super().__init__()
@@ -18,12 +16,12 @@ class CopyWindowClass(QMainWindow):
         self.log_txt = ''
         self.radio_bool = False
         self.default_variable()
-        self.setWindowModality(QtCore.Qt.ApplicationModal)
+        self.setWindowModality(core.Qt.ApplicationModal)
         self.show()
 
 
     def default_variable(self):
-        self.setGeometry(WIN_X,WIN_Y,WIN_WIDHT,WIN_HEIGHT)
+        self.setGeometry(dv.WIN_X,dv.WIN_Y,dv.WIN_WIDHT,dv.WIN_HEIGHT)
         self.label_handle()
         self.radio_button_handle()
         self.line_edit_handle()
@@ -32,13 +30,13 @@ class CopyWindowClass(QMainWindow):
 
 
     def checkbox_handle_function(self):
-        self.checkbox = create_check_box(self, "Txt to xslx", 160)
+        self.checkbox = utils.create_check_box(self, "Txt to xslx", 160)
 
 
     def label_handle(self):
-        self.first_label = create_label_function(self,LABEL_FROM, Y_LABEL_1)
-        self.second_label = create_label_function(self, LABEL_TO, Y_LABEL_2)
-        self.third_label = create_label_function(self, LABEL_JSON, Y_LABEL_3)
+        self.first_label = utils.create_label_function(self,dv.ABEL_FROM, dv.Y_LABEL_1)
+        self.second_label = utils.create_label_function(self, dv.LABEL_TO, dv.Y_LABEL_2)
+        self.third_label = utils.create_label_function(self, dv.LABEL_JSON, dv.Y_LABEL_3)
         self.third_label.hide()
 
     def show_elements(self):
@@ -60,8 +58,8 @@ class CopyWindowClass(QMainWindow):
         self.setWindowTitle(title)
         self.first_label.setText(first_label)
         self.second_label.setText(second_label)
-        self.setGeometry(WIN_X, WIN_Y, WIN_WIDHT, height)
-        self.button_run.move(X_BUTTON,btn_y)
+        self.setGeometry(dv.WIN_X, dv.WIN_Y, dv.WIN_WIDHT, height)
+        self.button_run.move(dv.X_BUTTON,btn_y)
 
         self.difference_func(
             check_box,
@@ -95,9 +93,9 @@ class CopyWindowClass(QMainWindow):
         self.difference_args(
             button.text(),
             self.change_elements_option_function,
-            [TITLE_COPY, LABEL_FROM, LABEL_TO,WIN_HEIGHT,Y_BUTTON_3, TXT],
-            [TITLE_SPLITE, LABEL_PATH, LABEL_EXE,WIN_HEIGHT_NEW,Y_BUTTON_3 + 60, DAT],
-            [TITLE_SEND_OUT, LABEL_PATH, LABEL_EXE,WIN_HEIGHT_NEW,Y_BUTTON_3 + 60, EXE]
+            [dv.TITLE_COPY, dv.LABEL_FROM, dv.LABEL_TO,dv.WIN_HEIGHT,dv.Y_BUTTON_3, dv.TXT],
+            [dv.TITLE_SPLITE, dv.LABEL_PATH, dv.LABEL_EXE,dv.WIN_HEIGHT_NEW,dv.Y_BUTTON_3 + 60, dv.DAT],
+            [dv.TITLE_SEND_OUT, dv.LABEL_PATH, dv.LABEL_EXE,dv.WIN_HEIGHT_NEW,dv.Y_BUTTON_3 + 60, dv.EXE]
         )
 
 
@@ -110,21 +108,21 @@ class CopyWindowClass(QMainWindow):
             self.move_dat_files,
             self.send_out_file
         ),
-        success,
-        [self, MSG_SUCCESSFUL_COPY],
-        [self, MSG_SUCCESSFUL_SPLIT],
-        [self, MSG_SUCCESSFUL_COPY]
+        utils.success,
+        [self, dv.MSG_SUCCESSFUL_COPY],
+        [self, dv.MSG_SUCCESSFUL_SPLIT],
+        [self, dv.MSG_SUCCESSFUL_COPY]
         )
 
 
 
     def radio_button_handle(self):
-        self.radio_txt = radio_button_create(self, TXT,X_RADIO_BUTTON_1, Y_RADIO_BUTTON)
-        self.radio_dat = radio_button_create(self, DAT,X_RADIO_BUTTON_2, Y_RADIO_BUTTON)
-        self.radio_exe = radio_button_create(self, EXE,X_RADIO_BUTTON_3, Y_RADIO_BUTTON)
+        self.radio_txt = utils.radio_button_create(self, dv.TXT,dv.X_RADIO_BUTTON_1, dv.Y_RADIO_BUTTON)
+        self.radio_dat = utils.radio_button_create(self, dv.DAT,dv.X_RADIO_BUTTON_2, dv.Y_RADIO_BUTTON)
+        self.radio_exe = utils.radio_button_create(self, dv.EXE,dv.X_RADIO_BUTTON_3, dv.Y_RADIO_BUTTON)
         self.radio_txt.setChecked(True)
 
-        group = QButtonGroup(self)
+        group = widgets.QButtonGroup(self)
         group.addButton(self.radio_txt)
         group.addButton(self.radio_dat)
         group.addButton(self.radio_exe)
@@ -133,29 +131,29 @@ class CopyWindowClass(QMainWindow):
 
 
     def line_edit_handle(self):
-        self.first_line_edit = create_line_edit(self, X_LINE_EDIT, Y_LINE_EDIT_1, LINE_WIDHT)
-        self.second_line_edit = create_line_edit(self, X_LINE_EDIT, Y_LINE_EDIT_2, LINE_WIDHT)
-        self.third_line_edit = create_line_edit(self, X_LINE_EDIT, Y_LINE_EDIT_3, LINE_WIDHT)
+        self.first_line_edit = utils.create_line_edit(self, dv.X_LINE_EDIT, dv.Y_LINE_EDIT_1, dv.LINE_WIDHT)
+        self.second_line_edit = utils.create_line_edit(self, dv.X_LINE_EDIT, dv.Y_LINE_EDIT_2, dv.LINE_WIDHT)
+        self.third_line_edit = utils.create_line_edit(self, dv.X_LINE_EDIT, dv.Y_LINE_EDIT_3, dv.LINE_WIDHT)
         self.third_line_edit.hide()
 
 
     def button_handle(self):
-        create_button(self, TITLE_REVIEW, X_BUTTON, Y_BUTTON_1, self.select_first_directory)
-        create_button(self, TITLE_REVIEW, X_BUTTON, Y_BUTTON_2, self.select_second_directory)
-        self.button_review = create_button(self, TITLE_REVIEW, X_BUTTON, Y_BUTTON_3 , self.select_third_directory)
+        utils.create_button(self, dv.TITLE_REVIEW, dv.X_BUTTON, dv.Y_BUTTON_1, self.select_first_directory)
+        utils.create_button(self, dv.TITLE_REVIEW, dv.X_BUTTON, dv.Y_BUTTON_2, self.select_second_directory)
+        self.button_review = utils.create_button(self, dv.TITLE_REVIEW, dv.X_BUTTON, dv.Y_BUTTON_3 , self.select_third_directory)
         self.button_review.hide()
-        self.button_run = create_button(self, TITLE_RUN, X_BUTTON, Y_BUTTON_3, self.check_radio_buttons)
+        self.button_run = utils.create_button(self, dv.TITLE_RUN, dv.X_BUTTON, dv.Y_BUTTON_3, self.check_radio_buttons)
 
 
 
     # Проверка задания двух путей
     def check_paths(self):
         if not self.first_path:
-            fail(self, ERROR_FROM_VALUE); return False
+            utils.fail(self, dv.ERROR_FROM_VALUE); return False
         elif not self.second_path:
-            fail(self, ERROR_TO_VALUE); return False
+            utils.fail(self, dv.ERROR_TO_VALUE); return False
         elif not self.third_path and self.radio_dat.isChecked():
-            fail(self, ERROR_FILE_PATH_VALUE); return False
+            utils.fail(self, dv.ERROR_FILE_PATH_VALUE); return False
         return True
 
 
@@ -168,28 +166,28 @@ class CopyWindowClass(QMainWindow):
     def collect_files(self):
         '''Many to one'''
         filename_list = []
-        self.print_log(MSG_START_COPY)
+        self.print_log(dv.MSG_START_COPY)
         for root, _, files in os.walk(self.first_path):
             for file in files:
-                if file.endswith(TXT):
-                    to_path = f'{self.second_path}\\{splitName(root)[-1]}_{file}'
+                if file.endswith(dv.TXT):
+                    to_path = f'{self.second_path}\\{utils.splitName(root)[-1]}_{file}'
                     self.print_log(f"{root}\\{file} -> {to_path}")
                     shutil.copyfile(root + "\\" + file, to_path)
                     filename_list.append(to_path)
 
-        self.print_log(MSG_FINISH_COPY)
+        self.print_log(dv.MSG_FINISH_COPY)
 
         if self.checkbox.isChecked():
-            xslx = f'{self.second_path}\{XSLX_NAME_FILE}'
-            txt_to_xslx(filename_list,xslx)
+            xslx = f'{self.second_path}\{dv.XSLX_NAME_FILE}'
+            utils.txt_to_xslx(filename_list,xslx)
             self.print_log(f'Files concatinate to file: {xslx}')
-        return TXT
+        return dv.TXT
 
 
     def send_out_file(self):
         '''One to Many'''
-        _exe = splitName(self.second_path, '/')[-1]
-        _json = splitName(self.third_path, '/')[-1]
+        _exe = utils.splitName(self.second_path, '/')[-1]
+        _json = utils.splitName(self.third_path, '/')[-1]
         for root, folders, _ in os.walk(self.first_path):
             for folder in folders:
                 try:
@@ -197,7 +195,7 @@ class CopyWindowClass(QMainWindow):
                     shutil.copyfile(self.third_path, f'{root}\\{folder}\\{_json}')
                 except Exception as ex:
                     print(ex)
-        return EXE
+        return dv.EXE
 
 
     def move_dat_files(self):
@@ -205,33 +203,33 @@ class CopyWindowClass(QMainWindow):
         files_list = []
         for root, _, files in os.walk(self.first_path):
             for file in files:
-                if file.endswith(DAT) and file not in [f[1] for f in files_list]:
+                if file.endswith(dv.DAT) and file not in [f[1] for f in files_list]:
                     files_list.append([root, file])
 
         Count_files = len(files_list)
-        split_list = [Count_files // SPLIT_NUM]*SPLIT_NUM
-        split_list[-1] += Count_files % SPLIT_NUM
-        self.print_log(make_directories(self.first_path, self.second_path, self.third_path))
-        split_files(files_list,split_list)
-        return DAT
+        split_list = [Count_files // dv.SPLIT_NUM]*dv.SPLIT_NUM
+        split_list[-1] += Count_files % dv.SPLIT_NUM
+        self.print_log(utils.make_directories(self.first_path, self.second_path, self.third_path))
+        utils.split_files(files_list,split_list)
+        return dv.DAT
 
 
 
 
 
     def select_first_directory(self):
-        self.first_path = str(QFileDialog.getExistingDirectory(self, select_dir)).replace('/', '\\')
+        self.first_path = str(widgets.QFileDialog.getExistingDirectory(self, dv.SELECT_DIRECTORY)).replace('/', '\\')
         self.first_line_edit.setText(self.first_path)
 
 
     def select_third_directory(self):
-        self.third_path = str(QFileDialog.getOpenFileName(self,'Open File', None, '*.json')[0])
+        self.third_path = str(widgets.QFileDialog.getOpenFileName(self,'Open File', None, '*.json')[0])
         self.third_line_edit.setText(self.third_path)
 
 
     def select_second_directory(self):
         if self.radio_dat.isChecked() or self.radio_exe.isChecked():
-            self.second_path = str(QFileDialog.getOpenFileName(self,'Open File', None, '*.exe')[0])
+            self.second_path = str(widgets.QFileDialog.getOpenFileName(self,'Open File', None, '*.exe')[0])
         else:
-            self.second_path = str(QFileDialog.getExistingDirectory(self, select_dir)).replace('/', '\\')
+            self.second_path = str(widgets.QFileDialog.getExistingDirectory(self, dv.SELECT_DIRECTORY)).replace('/', '\\')
         self.second_line_edit.setText(self.second_path)

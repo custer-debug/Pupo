@@ -1,13 +1,13 @@
-import os
-from datetime import datetime
 from PyQt5.QtGui import QTextCursor
-import logging
-import shutil
-from DefaultVariable import *
+import PyQt5.QtWidgets as widgets
+from datetime import datetime
+import DefaultVariable as dv
 from pyexcel import save_as
 from csv import reader
-from PyQt5.QtWidgets import *
 from json import dump
+import logging
+import shutil
+import os
 
 
 Text = ""
@@ -49,7 +49,7 @@ def splitDate(str):
 
 def make_directories(cwd,exe,json):
     text = ""
-    for i in range(SPLIT_NUM):
+    for i in range(dv.SPLIT_NUM):
         dir = f"{cwd}\Part_{str(i+1)}"
         try:
             os.makedirs(dir)
@@ -69,7 +69,7 @@ def make_directories(cwd,exe,json):
 
 
 def split_files(files,num):
-    for i in range(SPLIT_NUM):
+    for i in range(dv.SPLIT_NUM):
         for _ in range(num[i]):
             file = files[0]
             From =  f"{file[0]}\\{file[1]}"
@@ -83,18 +83,18 @@ def split_files(files,num):
 
 
 def fail(self, text):
-    return QMessageBox.critical(self,TITLE_WINDOW_SUCCESSFUL, text)
+    return widgets.QMessageBox.critical(self,dv.TITLE_WINDOW_SUCCESSFUL, text)
 
 
 def success(self, text):
-    return QMessageBox.information(self,TITLE_WINDOW_ERROR, text)
+    return widgets.QMessageBox.information(self,dv.TITLE_WINDOW_ERROR, text)
 
 
 
 
 def txt_to_xslx(csv_list, path):
 
-    all = [FIRST_ROW]
+    all = [dv.FIRST_ROW]
     for f in csv_list:
         with open(f,'r') as fin:
             cr = reader(fin, delimiter='\t')
@@ -134,33 +134,33 @@ def dict_to_json(dictinary):
 
 # Create elements
 def create_button(self, name, x,y, function):
-    tmp = QPushButton(name,self)
+    tmp = widgets.QPushButton(name,self)
     tmp.move(x,y)
-    tmp.setFixedSize(WIDHT_BUTTON,HEIGHT_BUTTON)
+    tmp.setFixedSize(dv.WIDHT_BUTTON,dv.HEIGHT_BUTTON)
     tmp.clicked.connect(function)
     return tmp
 
 def create_check_box(self, name, y):
-    checkbox = QCheckBox(name, self)
-    checkbox.move(CHECK_BOXES_X, y)
-    checkbox.setFixedSize(CHECK_BOXES_WIGHT, CHECK_BOXES_HEIGHT)
+    checkbox = widgets.QCheckBox(name, self)
+    checkbox.move(dv.CHECK_BOXES_X, y)
+    checkbox.setFixedSize(dv.CHECK_BOXES_WIGHT, dv.CHECK_BOXES_HEIGHT)
     return checkbox
 
 def create_label_function(self, title, y):
-    label = QLabel(title,self)
-    label.setStyleSheet(FRONT_LABEL_TITLE )
-    label.move(X_LABEL,y)
+    label = widgets.QLabel(title,self)
+    label.setStyleSheet(dv.FRONT_LABEL_TITLE )
+    label.move(dv.X_LABEL,y)
     return label
 
 
 def radio_button_create(self, name, x, y):
-    radio = QRadioButton(name,self)
-    radio.setFixedSize(RADIO_SIZE_WIDHT,RADIO_SIZE_HEIGHT)
+    radio = widgets.QRadioButton(name,self)
+    radio.setFixedSize(dv.RADIO_SIZE_WIDHT,dv.RADIO_SIZE_HEIGHT)
     radio.move(x,y)
     return radio
 
-def create_line_edit(self, x, y, w, h = MAIN_LINE_EDIT_HEIGHT):
-    line_edit = QLineEdit(self)
+def create_line_edit(self, x, y, w, h = dv.MAIN_LINE_EDIT_HEIGHT):
+    line_edit = widgets.QLineEdit(self)
     line_edit.setFixedSize(w,h)
     line_edit.move(x,y)
     return line_edit
@@ -190,17 +190,17 @@ def delete_files(self, cwd, extension):
     while Fsize > 1000:
         Fsize /= 1024
         i += 1
-    Print(self,f'Очищено:{count} файлов. Общий размер: {round(Fsize,2)} {SIZE[i]}.')
+    Print(self,f'Очищено:{count} файлов. Общий размер: {round(Fsize,2)} {dv.SIZE[i]}.')
 
     return res
 
 
 
 def generate_filename_with_dat_file(root,dat_file):
-    return f'{splitName(root)[-1]}_{splitDate(dat_file)}{TXT}'
+    return f'{splitName(root)[-1]}_{splitDate(dat_file)}{dv.TXT}'
 
 def generate_filename_without_dat_file(root):
-    return f'{splitName(root)[-1]}{TXT}'
+    return f'{splitName(root)[-1]}{dv.TXT}'
 
 
 def find_first_file(enswitch, files):
@@ -216,7 +216,7 @@ def handle_rename_txt_file(self, cwd, name):
     _bool = True
     for root, _, files in os.walk(cwd):
 
-        dat_file = find_first_file(DAT, files)
+        dat_file = find_first_file(dv.DAT, files)
         txt_file = find_first_file(name, files)
         # print(txt_file)
         if dat_file == None and txt_file == None:
@@ -228,7 +228,7 @@ def handle_rename_txt_file(self, cwd, name):
             _bool = False
         elif txt_file != None:
             rename = generate_filename_without_dat_file(root)
-            Print(self, f'{root}\{txt_file} -> {root}\{splitName(root)[-1]}{DAT}')
+            Print(self, f'{root}\{txt_file} -> {root}\{splitName(root)[-1]}{dv.DAT}')
             _bool = False
         try:
             os.rename(os.path.join(root, txt_file), os.path.join(root, rename))
