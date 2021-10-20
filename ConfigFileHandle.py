@@ -8,10 +8,8 @@ from PyQt5 import QtCore
 class ConfigFile(QMainWindow):
     def __init__(self):
         super().__init__()
-        x = y = 500
-        a = 300
         self.setWindowTitle("Config")
-        self.setGeometry(x,y,a,a)
+        self.setGeometry(WINDOW_CONFIG_COORDINATE ,WINDOW_CONFIG_COORDINATE ,WINDOW_CONFIG_SIZE ,WINDOW_CONFIG_SIZE)
         self.button_handle()
         self.label_handle()
         self.radio_button_handle()
@@ -20,32 +18,32 @@ class ConfigFile(QMainWindow):
 
 
     def label_handle(self):
-        for item in title_label_json:
-            create_label_function(self, item, title_label_json[item])
+        for item in TITLE_JSON_LABEL:
+            create_label_function(self, item, TITLE_JSON_LABEL[item])
 
 
 
     def create_group_button(self, firstname, secondname, y):
         group = QButtonGroup(self)
-        group.addButton(radio_button_create(self, firstname, 90,y)) 
-        group.addButton(radio_button_create(self, secondname, 150,y)) 
-        return group 
+        group.addButton(radio_button_create(self, firstname, 90,y))
+        group.addButton(radio_button_create(self, secondname, 150,y))
+        return group
 
 
     def radio_button_handle(self):
         self.btn = [
             self.create_group_button('1200', '2500', 10),
             self.create_group_button('Local', 'Reson', 35),
-            self.create_group_button('2', '4', 60)]   
+            self.create_group_button('2', '4', 60)]
 
 
     def button_handle(self):
         create_button(self, "Save", 190, 250, self.button_checked_function)
-        
+
 
     def compile_dict(self):
         res_dict = {}
-        for label,text in zip(title_label_json,self.btn):
+        for label,text in zip(TITLE_JSON_LABEL,self.btn):
             label = label.replace(': ', '')
             try:
                 temp = int(text.checkedButton().text())
@@ -56,16 +54,13 @@ class ConfigFile(QMainWindow):
         return res_dict
 
 
-    
+
 
     def button_checked_function(self):
         if check_data_to_json(self.btn):
-            QMessageBox.critical(self, MessageError, "Выберите все нужные параметры")
+            QMessageBox.critical(self, TITLE_WINDOW_ERROR, MSG_ERROR_PARAM)
             return
 
         dict_to_json(self.compile_dict())
-        QMessageBox.information(self, MsgSuccess, "Файл успешно сохранён")
+        QMessageBox.information(self, TITLE_WINDOW_SUCCESSFUL, MSG_SUCCESSFUL_SAVE)
         self.close()
-
-
-

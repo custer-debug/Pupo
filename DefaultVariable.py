@@ -3,102 +3,97 @@
 ##############################
 from os import cpu_count
 # количество частей разбиения dat-файлов
-split_count = cpu_count()
-
-Size = [
-    'Byte',
-    'Kilobyte',
-    'Megabyte',
-    'Gigabyte'
-    'Terabyte'
-]
+SPLIT_NUM = cpu_count()
 
 # сообщения об успешном или ошибочном ты программы
-ErrorFromValue = "Необходимо выбрать первый путь"
-ErrorToValue   = "Необходимо выбрать второй путь"
-ErrorExeValue = "Выберите exe-файл"
-MessageError   = "Ошибка"
-MsgSuccess = "Успех"
-SuccessCopyFiles = "Файлы скопированы"
-SplitSucces = "Файлы успешно разделены"
-Begin_copy = "Начало копирования"
-End_copy = "Конец копирования"
+ERROR_FROM_VALUE = "Необходимо выбрать первый путь"
+ERROR_TO_VALUE   = "Необходимо выбрать второй путь"
+ERROR_FILE_PATH_VALUE = "Выберите файл"
+TITLE_WINDOW_ERROR   = "Ошибка"
+TITLE_WINDOW_SUCCESSFUL = "Успех"
+MSG_SUCCESSFUL_COPY = "Файлы скопированы"
+MSG_SUCCESSFUL_SPLIT = "Файлы успешно разделены"
+
+MSG_START_COPY = "Начало копирования"
+MSG_FINISH_COPY = "Конец копирования"
 
 # название окна
-name_split = 'Split dat-files'
-copy_files = 'Copy txt-files'
+TITLE_COPY = 'Copy txt'
+TITLE_SPLITE = 'Split dat'
+TITLE_SEND_OUT = 'Send out exe'
 
-# координаты расположения окна 
-ax = 400
-ay = 200        
+# координаты расположения окна
+WIN_X = 400
+WIN_Y = 200
 
-# размер окна 
-aw = 600
-ah = 200
+# размер окна
+WIN_WIDHT = 600
+WIN_HEIGHT = 210
+WIN_HEIGHT_NEW = 270
+
 
 # Перемещение лейблов внутри окна
-lx = 10  
-y1 = 45
-y2 = 105
-y3 = 170
+X_LABEL = 10
+Y_LABEL_1 = 45
+Y_LABEL_2 = Y_LABEL_1 + 60  #150
+Y_LABEL_3 = Y_LABEL_1 + 125 #170
 
 # шрифт для лейбла
-front = "font: bold 12px"
+FRONT_LABEL_TITLE = "font: bold 12px"
 
 # текст лейблов
-label_from = "Path From: "
-label_to = "Path To: "
-label_Path = "Path: "
-label_exe = "Exe: "
+LABEL_FROM = 'Path From:'
+LABEL_TO = 'Path To:'
+LABEL_PATH = 'Path:'
+LABEL_EXE = 'Exe:'
+LABEL_JSON = 'Json: '
 
 
 # размер радио-кнопок
-rsize_x = 60
-rsize_y = 30
+RADIO_SIZE_WIDHT = 60
+RADIO_SIZE_HEIGHT = 30
 
 # отступы радио-кнопок
-xr1 = 10
-xr2 = 65
-xr3 = 120
-yr = 7
-
-# пути к иконкам
-# ...
+X_RADIO_BUTTON_1 = 10
+X_RADIO_BUTTON_2 = X_RADIO_BUTTON_1 + 55 #65
+X_RADIO_BUTTON_3 = X_RADIO_BUTTON_1 + 110 #120
+Y_RADIO_BUTTON = 10
 
 
 # расширения файлов
-dat = '.dat'
-txt = '.txt'
-exe = '.exe'
+DAT = '.dat'
+TXT = '.txt'
+EXE = '.exe'
 
 
-# координаты линий редактирования 
-xledit = 80
-yledit_1 = 45
-yledit_2 = 105
-
-
+# координаты линий редактирования
+X_LINE_EDIT = 80
+Y_LINE_EDIT_1 = 45
+Y_LINE_EDIT_2 = Y_LINE_EDIT_1 + 60 #105
+Y_LINE_EDIT_3 = Y_LINE_EDIT_2 + 60 #165
 
 # размер линий
-wl = 400
+LINE_WIDHT = 400
+# высота линий редактирования см. линии редактирования главного окна
+
 
 # координаты кнопок
-xb = 490
-yb1 = 43
-yb2 = 105
-yb3 = 155
+X_BUTTON = 490
+Y_BUTTON_1 = 43
+Y_BUTTON_2 = Y_BUTTON_1 + 62 #105
+Y_BUTTON_3 = Y_BUTTON_2 + 60 #155
 
 # размеры кнопок
-wb = 90
-hb = 30
+WIDHT_BUTTON = 90
+HEIGHT_BUTTON = 30
 
 # названия кнопок
-review = 'Обзор'
-run = 'Выполнить'
-move_ = "Move файлов"
-exit_ = "Выход"
+TITLE_REVIEW = 'Обзор'
+TITLE_RUN = 'Выполнить'
+TITLE_MOVE = "Move файлов"
+TITLE_EXIT = "Выход"
 
-# выбор директорий 
+# выбор директорий
 select_dir = "Select Directory"
 
 
@@ -106,78 +101,82 @@ select_dir = "Select Directory"
 #-------> Pupo.py <-------#
 ###########################
 
-#текстовые переменные для сообщений
-delete_exe_str = "Удаление файлов"
-rename_Out_res = "Переименование файлов"
-delete_empty_dir = "Удаление пустых папок"
+#Сообщения
+MSG_DELETE_FILES = "Удаление файлов"
+MSG_RENAME_FILES = "Переименование файлов"
+MSG_DELETE_EMPTY_DIR = "Удаление пустых папок"
 
 
-Warning = "Внимание!"
-Message = "Сообщение "
+# Message = "Сообщение "
 
 #Название окна
-Title = 'Cleaning program'
+TITLE_MAIN_WINDOW = 'Cleaning program'
 
-# Пути к иконкам
-Icon = 'Icon.png'
-Icon_play = 'Icon_play.png'
-Icon_review = 'Icon_review.png'
-Icon_copy = 'Icon_copy.png'
-# расположение и размеры окна 
-window_X = 600
-window_Y = 300        
+# расположение и размеры окна
+WINDOW_X = 600
+WINDOW_Y = 300
 
-window_Width = 700
-window_Height = 500
+WINDOW_WIDHT = 700
+WINDOW_HEIGHT = 500
 
 #------> Поля редактирования <------#
 
-line_edit_wight = 580
-line_edit_height = 30
+MAIN_LINE_EDIT_WIDHT = 580
+MAIN_LINE_EDIT_HEIGHT = 30
 
-line_edit_xy = 15
+LINE_EDIT_XY = 15
 
-Text_X = 30
-Text_Y = 190
+LINE_EXTENSION_X = 140
+LINE_EXTENSION_Y = 57
+LINE_EXTENSION_WIDHT = 50
+LINE_EXTENSION_NAMEFILE_HIEGHT = 25
 
-Text_Wight = 640
-Text_Height = 250
+LINE_NAMEFILE_X = 175
+LINE_NAMEFILE_Y = 90
+LINE_NAMEFILE_WIDHT = 80
+
+
+
+TEXT_FIELD_X = 30
+TEXT_FILED_Y = 190
+
+TEXT_FILED_WIDHT = 640
+TEXT_FILED_HEIGHT = 250
 
 #------> Чек боксы <------#
 
-exe_files_not_found = "Исполняемых файлов не найдено"
-Out_res_not_found = "Out_res-файлов не найдено"
-empty_dir_not_found = "Пустых директорий не найдено"
+MSG_FILES_NOT_FOUND = "Искомых файлов не найдено"
+MSG_EMPTY_DIR_NOT_FOUND = "Пустых директорий не найдено"
 
-check_boxes_x = 20
-check_box1_y = 60
-check_box2_y = 90
-check_box3_y = 120
+CHECK_BOXES_X = 20
+CHECK_BOX_Y1 = 60
+CHECK_BOX_Y2 = CHECK_BOX_Y1 + 30
+CHECK_BOX_Y3 = CHECK_BOX_Y2 + 30
 
-check_boxes_wight = 400
-check_boxes_height = 20
+CHECK_BOXES_WIGHT = 400
+CHECK_BOXES_HEIGHT = 20
 
 #------> Кнопки <------#
-# название кнопок см. строку 73
-btn_run_x = 570
-btn_run_y = 450
 
-btn_exit_x = 30
-btn_exit_y = 450
+BUTTON_RUN_X = 570
+BUTTON_RUN_Y = 450
 
-btn_review_x = 600
-btn_review_y = 15
+BUTTON_EXIT_X = 30
+BUTTON_EXIT_Y = 450
 
-btn_move_x = 580
-btn_move_y = 150
+BUTTON_REVIEW_X = 600
+BUTTON_REVIEW_Y = 15
 
-btn_wight = 90
-btn_height = 30
+BUTTON_MOVE_X = 580
+BUTTON_MOVE_Y = 150
+
+# btn_wight = 90
+# btn_height = 30
 
 # название файла для поиска (.txt)
-out_res = 'Out_res.txt'
+OUT_RES = 'Out_res.txt'
 
-first_row = ['Имя файла',
+FIRST_ROW = ['Имя файла',
     'Высота',
     'Широта',
     'Долгота',
@@ -193,13 +192,26 @@ first_row = ['Имя файла',
     ' ',
     'Rff']
 
-# pyinstaller.exe --splash .\Icon_play.png .\Icon_copy.png .\Icon_review.png .\Icon.png -w -F --icon=Icon.ico Pupo.py
 
-title_label_json = {
+TITLE_JSON_LABEL = {
     'Radar: ': 10,
     'Mode: ': 35,
     'Channel: ': 60
 }
 
 
+SIZE = [
+    'Byte',
+    'Kilobyte',
+    'Megabyte',
+    'Gigabyte'
+    'Terabyte'
+]
 
+# имя резльтирующего xslx-файла
+XSLX_NAME_FILE = 'Res.xslx'
+
+MSG_ERROR_PARAM = 'Выберите все нужные параметры'
+MSG_SUCCESSFUL_SAVE = 'Файл успешно сохранён'
+WINDOW_CONFIG_COORDINATE = 500
+WINDOW_CONFIG_SIZE = 300

@@ -19,10 +19,10 @@ logging.basicConfig(filename='Pupo.log',level = logging.INFO, filemode='a', form
 def Print(self,text):
         global Text
         logging.info(text)
-        Text += f'<b> [{str(datetime.now().strftime("%H:%M:%S"))}] </b> {text} <br> ' 
+        Text += f'<b> [{str(datetime.now().strftime("%H:%M:%S"))}] </b> {text} <br> '
         self.Text.setHtml(Text)
         self.Text.moveCursor(QTextCursor.End)
-        
+
 
 
 def splitName(str, sep = '\\'):
@@ -49,7 +49,7 @@ def splitDate(str):
 
 def make_directories(cwd,exe,json):
     text = ""
-    for i in range(split_count):
+    for i in range(SPLIT_NUM):
         dir = f"{cwd}\Part_{str(i+1)}"
         try:
             os.makedirs(dir)
@@ -61,15 +61,15 @@ def make_directories(cwd,exe,json):
 
     if len(text) == 0:
         text = "Папки успешно созданы"
-        
-    return text        
+
+    return text
 
 
 
 
 
-def split_files(files,num): 
-    for i in range(split_count):
+def split_files(files,num):
+    for i in range(SPLIT_NUM):
         for _ in range(num[i]):
             file = files[0]
             From =  f"{file[0]}\\{file[1]}"
@@ -78,23 +78,23 @@ def split_files(files,num):
                 shutil.move(From,To)
                 files.remove(files[0])
             except FileNotFoundError:
-                return 
+                return
 
 
 
 def fail(self, text):
-    return QMessageBox.critical(self,MsgSuccess, text)
+    return QMessageBox.critical(self,TITLE_WINDOW_SUCCESSFUL, text)
 
 
 def success(self, text):
-    return QMessageBox.information(self,MessageError, text)
+    return QMessageBox.information(self,TITLE_WINDOW_ERROR, text)
 
 
 
 
 def txt_to_xslx(csv_list, path):
-    
-    all = [first_row]
+
+    all = [FIRST_ROW]
     for f in csv_list:
         with open(f,'r') as fin:
             cr = reader(fin, delimiter='\t')
@@ -125,7 +125,7 @@ def check_data_to_json(btn):
         return False
 
 
-# Write to file config info 
+# Write to file config info
 def dict_to_json(dictinary):
     with open('config.json', 'w') as outfile:
         dump(dictinary, outfile, indent = 4)
@@ -136,30 +136,30 @@ def dict_to_json(dictinary):
 def create_button(self, name, x,y, function):
     tmp = QPushButton(name,self)
     tmp.move(x,y)
-    tmp.setFixedSize(wb,hb)
+    tmp.setFixedSize(WIDHT_BUTTON,HEIGHT_BUTTON)
     tmp.clicked.connect(function)
     return tmp
 
 def create_check_box(self, name, y):
     checkbox = QCheckBox(name, self)
-    checkbox.move(check_boxes_x, y)
-    checkbox.setFixedSize(check_boxes_wight, check_boxes_height)
+    checkbox.move(CHECK_BOXES_X, y)
+    checkbox.setFixedSize(CHECK_BOXES_WIGHT, CHECK_BOXES_HEIGHT)
     return checkbox
 
 def create_label_function(self, title, y):
     label = QLabel(title,self)
-    label.setStyleSheet(front)
-    label.move(lx,y)
-    return label 
+    label.setStyleSheet(FRONT_LABEL_TITLE )
+    label.move(X_LABEL,y)
+    return label
 
 
 def radio_button_create(self, name, x, y):
     radio = QRadioButton(name,self)
-    radio.setFixedSize(rsize_x,rsize_y)
+    radio.setFixedSize(RADIO_SIZE_WIDHT,RADIO_SIZE_HEIGHT)
     radio.move(x,y)
     return radio
 
-def create_line_edit(self, x, y, w, h = line_edit_height):
+def create_line_edit(self, x, y, w, h = MAIN_LINE_EDIT_HEIGHT):
     line_edit = QLineEdit(self)
     line_edit.setFixedSize(w,h)
     line_edit.move(x,y)
@@ -181,26 +181,26 @@ def delete_files(self, cwd, extension):
                 if file.endswith(extension):
                     print(root+'\\'+file)
                     path = os.path.join(root, file)
-                    Fsize += os.stat(path).st_size 
+                    Fsize += os.stat(path).st_size
                     os.remove(path)
                     Print(self,"Удалён: " + path)
                     res = False
                     count += 1
-    i = 0 
+    i = 0
     while Fsize > 1000:
-        Fsize /= 1024  
+        Fsize /= 1024
         i += 1
-    Print(self,f'Очищено:{count} файлов. Общий размер: {round(Fsize,2)} {Size[i]}.')
+    Print(self,f'Очищено:{count} файлов. Общий размер: {round(Fsize,2)} {SIZE[i]}.')
 
     return res
 
 
 
 def generate_filename_with_dat_file(root,dat_file):
-    return f'{splitName(root)[-1]}_{splitDate(dat_file)}{txt}'
+    return f'{splitName(root)[-1]}_{splitDate(dat_file)}{TXT}'
 
 def generate_filename_without_dat_file(root):
-    return f'{splitName(root)[-1]}{txt}'
+    return f'{splitName(root)[-1]}{TXT}'
 
 
 def find_first_file(enswitch, files):
@@ -216,26 +216,26 @@ def handle_rename_txt_file(self, cwd, name):
     _bool = True
     for root, _, files in os.walk(cwd):
 
-        dat_file = find_first_file(dat, files)
+        dat_file = find_first_file(DAT, files)
         txt_file = find_first_file(name, files)
         # print(txt_file)
         if dat_file == None and txt_file == None:
             continue
-         
+
         if dat_file != None and txt_file != None:
             rename = generate_filename_with_dat_file(root,dat_file)
             Print(self,f'{root}\{txt_file} -> {root}\{rename}')
             _bool = False
         elif txt_file != None:
             rename = generate_filename_without_dat_file(root)
-            Print(self, f'{root}\{txt_file} -> {root}\{splitName(root)[-1]}{txt}')
+            Print(self, f'{root}\{txt_file} -> {root}\{splitName(root)[-1]}{DAT}')
             _bool = False
         try:
             os.rename(os.path.join(root, txt_file), os.path.join(root, rename))
         except Exception as ex:
             print(ex)
-            continue         
-                
+            continue
+
     return _bool
 
 
