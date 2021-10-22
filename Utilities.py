@@ -10,20 +10,27 @@ import shutil
 import os
 
 
-Text = ""
-logging.basicConfig(filename='Pupo.log',level = logging.INFO, filemode='a', format='%(asctime)s - %(levelname)s - %(message)s', encoding='utf-8')
+# Text = ""
+logging.basicConfig(
+    filename='Pupo.log',
+    level = logging.INFO,
+    filemode='a',
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    encoding='utf-8')
 
 
 
 #   Функция записи событий в окне статуса
 def Print(self,text):
-        global Text
+        # global Text
+        # Text = ''
         logging.info(text)
-        Text += f'<b> [{str(datetime.now().strftime("%H:%M:%S"))}] </b> {text} <br> '
-        self.Text.setHtml(Text)
+        dv.Text += f'<b> [{str(datetime.now().strftime("%H:%M:%S"))}] </b> {text} <br> '
+        self.Text.setHtml(dv.Text)
         self.Text.moveCursor(QTextCursor.End)
 
 
+# region split
 
 def splitName(str, sep = '\\'):
     return str.split(sep)
@@ -44,6 +51,19 @@ def splitDate(str):
     return res
 
 
+def split_files(files,num):
+    for i in range(dv.SPLIT_NUM):
+        for _ in range(num[i]):
+            file = files[0]
+            From =  f"{file[0]}\\{file[1]}"
+            To  = f"{file[0]}\\Part_{i+1}\\{file[1]}"
+            try:
+                shutil.move(From,To)
+                files.remove(files[0])
+            except FileNotFoundError:
+                return
+
+# endregion
 
 
 
@@ -67,20 +87,7 @@ def make_directories(cwd,exe,json):
 
 
 
-
-def split_files(files,num):
-    for i in range(dv.SPLIT_NUM):
-        for _ in range(num[i]):
-            file = files[0]
-            From =  f"{file[0]}\\{file[1]}"
-            To  = f"{file[0]}\\Part_{i+1}\\{file[1]}"
-            try:
-                shutil.move(From,To)
-                files.remove(files[0])
-            except FileNotFoundError:
-                return
-
-
+# region Message
 
 def fail(self, text):
     return widgets.QMessageBox.critical(self,dv.TITLE_WINDOW_SUCCESSFUL, text)
@@ -89,7 +96,7 @@ def fail(self, text):
 def success(self, text):
     return widgets.QMessageBox.information(self,dv.TITLE_WINDOW_ERROR, text)
 
-
+# endregion
 
 
 def txt_to_xslx(csv_list, path):
@@ -112,12 +119,11 @@ def txt_to_xslx(csv_list, path):
             line.pop(-1)
 
         all.extend(filecontents)
-    save_as(array=all, start_row=0, sheet_name='List 1', dest_file_name = path + '.xlsx')
+    save_as(array=all, start_row=0, sheet_name='List 1', dest_file_name = path)
 
 
+# region json
 
-
-# Check fill info
 def check_data_to_json(btn):
         for i in btn:
             if i.checkedButton() == None:
@@ -130,9 +136,11 @@ def dict_to_json(dictinary):
     with open('config.json', 'w') as outfile:
         dump(dictinary, outfile, indent = 4)
 
+# endregion
 
 
-# Create elements
+# region create elements
+
 def create_button(self, name, x,y, function):
     tmp = widgets.QPushButton(name,self)
     tmp.move(x,y)
@@ -163,8 +171,10 @@ def create_line_edit(self, x, y, w, h = dv.MAIN_LINE_EDIT_HEIGHT):
     line_edit = widgets.QLineEdit(self)
     line_edit.setFixedSize(w,h)
     line_edit.move(x,y)
+    # line_edit.setText(None)
     return line_edit
 
+# endregion
 
 #   Главная функция удаления исполняемых файлов
 def delete_files(self, cwd, extension):
@@ -193,6 +203,8 @@ def delete_files(self, cwd, extension):
     Print(self,f'Очищено:{count} файлов. Общий размер: {round(Fsize,2)} {dv.SIZE[i]}.')
 
     return res
+
+
 
 
 
@@ -240,7 +252,6 @@ def handle_rename_txt_file(self, cwd, name):
 
 
 
-#   Удаление пустых директорий
 def del_empty_dirs(self, path, arg = None):
     flag = False
     for d in os.listdir(path):
@@ -252,3 +263,23 @@ def del_empty_dirs(self, path, arg = None):
                 Print(self,"Папка удалена: " + a)
                 flag = True
     return flag
+
+
+
+# region Select
+
+def select_directory(self, line_edit):
+    line_edit.setText(
+            str(widgets.QFileDialog.getExistingDirectory(
+            self,
+            dv.SELECT_DIRECTORY)).replace('/', '\\'))
+    return line_edit.text()
+
+
+def select_file(self, line, extension):
+    line.setText(
+         str(widgets.QFileDialog.getOpenFileName(self,'Open File', None, extension)[0])
+    )
+    return line.text()
+
+# endregion

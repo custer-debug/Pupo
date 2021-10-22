@@ -10,9 +10,6 @@ class CopyWindowClass(widgets.QMainWindow):
 
     def __init__(self):
         super().__init__()
-        self.first_path = ''
-        self.second_path = ''
-        self.third_path = ''
         self.log_txt = ''
         self.radio_bool = False
         self.default_variable()
@@ -20,24 +17,18 @@ class CopyWindowClass(widgets.QMainWindow):
         self.show()
 
 
+    # Draw window with default value
     def default_variable(self):
         self.setGeometry(dv.WIN_X,dv.WIN_Y,dv.WIN_WIDHT,dv.WIN_HEIGHT)
         self.label_handle()
         self.radio_button_handle()
         self.line_edit_handle()
         self.button_handle()
-        self.checkbox_handle_function()
+        self.checkbox_handler()
 
 
-    def checkbox_handle_function(self):
-        self.checkbox = utils.create_check_box(self, "Txt to xslx", 160)
 
-
-    def label_handle(self):
-        self.first_label = utils.create_label_function(self,dv.ABEL_FROM, dv.Y_LABEL_1)
-        self.second_label = utils.create_label_function(self, dv.LABEL_TO, dv.Y_LABEL_2)
-        self.third_label = utils.create_label_function(self, dv.LABEL_JSON, dv.Y_LABEL_3)
-        self.third_label.hide()
+    # region Redraw-window
 
     def show_elements(self):
         # print('show')
@@ -46,6 +37,7 @@ class CopyWindowClass(widgets.QMainWindow):
         self.third_label.show()
         self.button_review.show()
 
+
     def hide_elements(self):
         # print('hide')
         self.button_review.hide()
@@ -53,7 +45,7 @@ class CopyWindowClass(widgets.QMainWindow):
         self.third_line_edit.hide()
         self.third_label.hide()
 
-    def change_elements_option_function(self,title, first_label, second_label,height, btn_y,check_box):
+    def change_elements_option_function(self,title, first_label, second_label,height, btn_y,check_box:str):
         self.radio_bool = check_box
         self.setWindowTitle(title)
         self.first_label.setText(first_label)
@@ -68,28 +60,14 @@ class CopyWindowClass(widgets.QMainWindow):
             self.show_elements
         )
 
-
-    def difference_func(self, argc, function_1,function_2,function_3):
-        match argc:
-            case '.txt':
-                return function_1()
-            case '.dat':
-                return function_2()
-            case '.exe':
-                return function_3()
+    # endregion
 
 
-    def difference_args(self, arg:str, function, args1 = [], args2 = [], args3 = [] ):
-        match arg:
-            case '.txt':
-                return function(*args1)
-            case '.dat':
-                return function(*args2)
-            case '.exe':
-                return function(*args3)
 
+    # region Check-radio-buttons
 
     def radio_button_checked_function(self, button):
+        print(f'{button.text()=}')
         self.difference_args(
             button.text(),
             self.change_elements_option_function,
@@ -100,7 +78,7 @@ class CopyWindowClass(widgets.QMainWindow):
 
 
     def check_radio_buttons(self):
-        if not self.check_paths(): return
+        if self.check_paths(): return
 
         self.difference_args(self.difference_func(
             self.radio_bool,
@@ -113,6 +91,17 @@ class CopyWindowClass(widgets.QMainWindow):
         [self, dv.MSG_SUCCESSFUL_SPLIT],
         [self, dv.MSG_SUCCESSFUL_COPY]
         )
+
+    # endregion
+
+
+    # region Handlers-of-elements
+
+    def label_handle(self):
+        self.first_label = utils.create_label_function(self,dv.LABEL_FROM, dv.Y_LABEL_1)
+        self.second_label = utils.create_label_function(self, dv.LABEL_TO, dv.Y_LABEL_2)
+        self.third_label = utils.create_label_function(self, dv.LABEL_JSON, dv.Y_LABEL_3)
+        self.third_label.hide()
 
 
 
@@ -137,34 +126,74 @@ class CopyWindowClass(widgets.QMainWindow):
         self.third_line_edit.hide()
 
 
+
     def button_handle(self):
-        utils.create_button(self, dv.TITLE_REVIEW, dv.X_BUTTON, dv.Y_BUTTON_1, self.select_first_directory)
-        utils.create_button(self, dv.TITLE_REVIEW, dv.X_BUTTON, dv.Y_BUTTON_2, self.select_second_directory)
-        self.button_review = utils.create_button(self, dv.TITLE_REVIEW, dv.X_BUTTON, dv.Y_BUTTON_3 , self.select_third_directory)
+        utils.create_button(self,
+            dv.TITLE_REVIEW,
+            dv.X_BUTTON,
+            dv.Y_BUTTON_1,
+            self.select_first_directory)
+
+        utils.create_button(self,
+        dv.TITLE_REVIEW,
+        dv.X_BUTTON, dv.Y_BUTTON_2,
+        self.select_second_directory)
+
+        self.button_review = utils.create_button(self,
+             dv.TITLE_REVIEW,
+             dv.X_BUTTON,
+             dv.Y_BUTTON_3,
+             self.select_third_directory)
+
         self.button_review.hide()
-        self.button_run = utils.create_button(self, dv.TITLE_RUN, dv.X_BUTTON, dv.Y_BUTTON_3, self.check_radio_buttons)
+        self.button_run = utils.create_button(self,
+            dv.TITLE_RUN,
+            dv.X_BUTTON,
+            dv.Y_BUTTON_3,
+            self.check_radio_buttons)
+
+
+    def checkbox_handler(self):
+        self.checkbox = utils.create_check_box(self, "Txt to xslx", 160)
+
+    # endregion
 
 
 
-    # Проверка задания двух путей
-    def check_paths(self):
-        if not self.first_path:
-            utils.fail(self, dv.ERROR_FROM_VALUE); return False
-        elif not self.second_path:
-            utils.fail(self, dv.ERROR_TO_VALUE); return False
-        elif not self.third_path and self.radio_dat.isChecked():
-            utils.fail(self, dv.ERROR_FILE_PATH_VALUE); return False
-        return True
 
-
+    # region logging
 
     def print_log(self,text):
         self.log_txt = text
         self.log_update.emit(1)
 
+    # endregion
+
+
+    # region Check-path
+
+    def get_path(self, line):
+        return line.text()
+
+
+    def check_paths(self):
+
+        if not self.get_path(self.first_line_edit):
+            utils.fail(self, dv.ERROR_FROM_VALUE); return True
+        elif not self.get_path(self.second_line_edit):
+            utils.fail(self, dv.ERROR_TO_VALUE); return True
+        elif not self.get_path(self.third_line_edit) and self.radio_dat.isChecked():
+            utils.fail(self, dv.ERROR_FILE_PATH_VALUE); return True
+        return False
+
+    # endregion
+
+
+    # region Move-files
 
     def collect_files(self):
-        '''Many to one'''
+        # '''Many to one'''
+        print('Collect')
         filename_list = []
         self.print_log(dv.MSG_START_COPY)
         for root, _, files in os.walk(self.first_path):
@@ -184,6 +213,8 @@ class CopyWindowClass(widgets.QMainWindow):
         return dv.TXT
 
 
+
+
     def send_out_file(self):
         '''One to Many'''
         _exe = utils.splitName(self.second_path, '/')[-1]
@@ -198,6 +229,8 @@ class CopyWindowClass(widgets.QMainWindow):
         return dv.EXE
 
 
+
+
     def move_dat_files(self):
         files = []
         files_list = []
@@ -209,27 +242,75 @@ class CopyWindowClass(widgets.QMainWindow):
         Count_files = len(files_list)
         split_list = [Count_files // dv.SPLIT_NUM]*dv.SPLIT_NUM
         split_list[-1] += Count_files % dv.SPLIT_NUM
-        self.print_log(utils.make_directories(self.first_path, self.second_path, self.third_path))
+        self.print_log(utils.make_directories(
+            self.first_path,
+            self.second_path,
+            self.third_path))
+
         utils.split_files(files_list,split_list)
         return dv.DAT
 
+    # endregion
 
 
-
+    # region Select
 
     def select_first_directory(self):
-        self.first_path = str(widgets.QFileDialog.getExistingDirectory(self, dv.SELECT_DIRECTORY)).replace('/', '\\')
-        self.first_line_edit.setText(self.first_path)
+        self.first_path = utils.select_directory(self, self.first_line_edit)
 
 
-    def select_third_directory(self):
-        self.third_path = str(widgets.QFileDialog.getOpenFileName(self,'Open File', None, '*.json')[0])
-        self.third_line_edit.setText(self.third_path)
+
+    def check_radio_dat(self):
+        return self.radio_dat.isChecked() or self.radio_exe.isChecked()
 
 
     def select_second_directory(self):
-        if self.radio_dat.isChecked() or self.radio_exe.isChecked():
-            self.second_path = str(widgets.QFileDialog.getOpenFileName(self,'Open File', None, '*.exe')[0])
+        if self.check_radio_dat():
+            self.second_path = utils.select_file(self, self.second_line_edit, '*.exe')
         else:
-            self.second_path = str(widgets.QFileDialog.getExistingDirectory(self, dv.SELECT_DIRECTORY)).replace('/', '\\')
-        self.second_line_edit.setText(self.second_path)
+            self.second_path = utils.select_directory(self, self.second_line_edit)
+
+
+
+    def select_third_directory(self):
+        self.third_path = utils.select_file(self, self.third_line_edit, '*.json')
+
+    # endregion
+
+
+
+    # region Match-case
+
+    def difference_func(self, argc, function_1,function_2,function_3):
+        """Router for different function
+
+        Args:
+            argc (str): seption
+            function_1 (function): [return function_1]
+            function_2 (function): [return function_2]
+            function_3 (function): [return function_3]
+
+        Returns:
+            [type]: [description]
+        """
+        match argc:
+            case '.txt':
+                return function_1()
+            case '.dat':
+                return function_2()
+            case '.exe':
+                return function_3()
+            case _:
+                return function_1()
+
+
+    def difference_args(self, arg, function, args1 = [], args2 = [], args3 = [] ):
+        match arg:
+            case '.txt':
+                return function(*args1)
+            case '.dat':
+                return function(*args2)
+            case '.exe':
+                return function(*args3)
+
+    # endregion

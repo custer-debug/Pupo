@@ -126,3 +126,5 @@ CopyFiles.py
 *.exe
 Test.py
 *.json
+
+!requirements.txt

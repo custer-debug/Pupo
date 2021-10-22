@@ -215,3 +215,6 @@ MSG_ERROR_PARAM = 'Выберите все нужные параметры'
 MSG_SUCCESSFUL_SAVE = 'Файл успешно сохранён'
 WINDOW_CONFIG_COORDINATE = 500
 WINDOW_CONFIG_SIZE = 300
+
+
+Text = ''

@@ -30,7 +30,8 @@ class MainWindow(widgets.QMainWindow):
         self.show() # Функция отображения окна
 
 
-    #   Функция инициализации полей
+    # region Hanlders
+
     def handle_line_edit_function(self):
         self.main_line_edit = utils.create_line_edit(self,
         dv.LINE_EDIT_XY,
@@ -59,36 +60,16 @@ class MainWindow(widgets.QMainWindow):
         self.Text.setFixedSize(dv.TEXT_FILED_WIDHT,dv.TEXT_FILED_HEIGHT)
 
 
-    def enabled_line_delete(self):
-        return (
-            self.line_extension.setDisabled(False)
-            if self.checkbox_delete.isChecked()
-            else self.line_extension.setDisabled(True))
-
-    def enabled_line_rename(self):
-        return (
-            self.line_name_file.setDisabled(False)
-            if self.checkbox_rename.isChecked()
-            else self.line_name_file.setDisabled(True))
-
-
-
-    # def create_check_box(self, name, y):
-    #     checkbox = widgets.QCheckBox(name, self)
-    #     checkbox.move(dv.CHECK_BOXES_X, y)
-    #     checkbox.setFixedSize(dv.CHECK_BOXES_WIGHT, dv.CHECK_BOXES_HEIGHT)
-    #     return checkbox
 
     def handle_checkbox_function(self):
-        self.checkbox_delete = utils.create_check_box(dv.MSG_DELETE_FILES, dv.CHECK_BOX_Y1)
-        self.checkbox_rename = utils.create_check_box(dv.MSG_RENAME_FILES, dv.CHECK_BOX_Y2)
-        self.checkbox_empty_dir = utils.create_check_box(dv.MSG_DELETE_EMPTY_DIR, dv.CHECK_BOX_Y3)
+        self.checkbox_delete = utils.create_check_box(self, dv.MSG_DELETE_FILES, dv.CHECK_BOX_Y1)
+        self.checkbox_rename = utils.create_check_box(self, dv.MSG_RENAME_FILES, dv.CHECK_BOX_Y2)
+        self.checkbox_empty_dir = utils.create_check_box(self, dv.MSG_DELETE_EMPTY_DIR, dv.CHECK_BOX_Y3)
         self.checkbox_delete.clicked.connect(self.enabled_line_delete)
         self.checkbox_rename.clicked.connect(self.enabled_line_rename)
 
 
 
-    #   Обработчик кнопок
     def button_handle_function(self):
         utils.create_button(self,
         dv.TITLE_RUN,
@@ -120,17 +101,15 @@ class MainWindow(widgets.QMainWindow):
         dv.Y_BUTTON_3 - 15,
         self.open_window_edit_config)
 
+    # endregion
 
+    #  region new window
 
     def open_window_edit_config(self):
         self.config = ConfigFile()
         self.config.show()
 
-    def select_main_directory(self):
-        path = str(widgets.getExistingDirectory(
-            self,
-            dv.SELECT_DIRECTORY)).replace('/', '\\')
-        self.main_line_edit.setText(path)
+
 
     def open_copy_window(self):
         self.CopyWindow = CopyWindowClass()
@@ -142,8 +121,23 @@ class MainWindow(widgets.QMainWindow):
         utils.Print(self, self.CopyWindow.log_txt)
         gui.QGuiApplication.processEvents()
 
+    # endregion
 
+    # region enable
 
+    def enabled_line_delete(self):
+        return (
+            self.line_extension.setDisabled(False)
+            if self.checkbox_delete.isChecked()
+            else self.line_extension.setDisabled(True))
+
+    def enabled_line_rename(self):
+        return (
+            self.line_name_file.setDisabled(False)
+            if self.checkbox_rename.isChecked()
+            else self.line_name_file.setDisabled(True))
+
+    # endregion
 
     def checked_some_box(self, check_box, text, function, extension = None):
         if check_box.isChecked() and function(self, self.main_line_edit.text(), extension):
@@ -178,8 +172,17 @@ class MainWindow(widgets.QMainWindow):
 
         self.check_boxes_default_view()
 
+
+    def select_main_directory(self):
+        path = str(widgets.QFileDialog.getExistingDirectory(
+            self,
+            dv.SELECT_DIRECTORY)).replace('/', '\\')
+        self.main_line_edit.setText(path)
+
+
     def exit(self):
         sys.exit()
+
 
 
 if __name__ == '__main__':
