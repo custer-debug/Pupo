@@ -3,8 +3,8 @@ import shutil
 import PyQt5.QtWidgets as widgets
 import PyQt5.QtCore as core
 import Utilities as utils
-import DefaultVariable as dv
-
+import Dvar as dv
+# open
 class CopyWindowClass(widgets.QMainWindow):
     log_update = core.pyqtSignal(int)
 
@@ -20,6 +20,7 @@ class CopyWindowClass(widgets.QMainWindow):
     # Draw window with default value
     def default_variable(self):
         self.setGeometry(dv.WIN_X,dv.WIN_Y,dv.WIN_WIDHT,dv.WIN_HEIGHT)
+        self.setWindowTitle(dv.TITLE_MAIN_WINDOW)
         self.label_handle()
         self.radio_button_handle()
         self.line_edit_handle()
@@ -45,9 +46,8 @@ class CopyWindowClass(widgets.QMainWindow):
         self.third_line_edit.hide()
         self.third_label.hide()
 
-    def change_elements_option_function(self,title, first_label, second_label,height, btn_y,check_box:str):
+    def change_elements_option_function(self, first_label, second_label,height, btn_y,check_box:str):
         self.radio_bool = check_box
-        self.setWindowTitle(title)
         self.first_label.setText(first_label)
         self.second_label.setText(second_label)
         self.setGeometry(dv.WIN_X, dv.WIN_Y, dv.WIN_WIDHT, height)
@@ -57,7 +57,8 @@ class CopyWindowClass(widgets.QMainWindow):
             check_box,
             self.hide_elements,
             self.show_elements,
-            self.show_elements
+            self.show_elements,
+            self.hide_elements
         )
 
     # endregion
@@ -71,9 +72,10 @@ class CopyWindowClass(widgets.QMainWindow):
         self.difference_args(
             button.text(),
             self.change_elements_option_function,
-            [dv.TITLE_COPY, dv.LABEL_FROM, dv.LABEL_TO,dv.WIN_HEIGHT,dv.Y_BUTTON_3, dv.TXT],
-            [dv.TITLE_SPLITE, dv.LABEL_PATH, dv.LABEL_EXE,dv.WIN_HEIGHT_NEW,dv.Y_BUTTON_3 + 60, dv.DAT],
-            [dv.TITLE_SEND_OUT, dv.LABEL_PATH, dv.LABEL_EXE,dv.WIN_HEIGHT_NEW,dv.Y_BUTTON_3 + 60, dv.EXE]
+            [dv.LABEL_FROM, dv.LABEL_TO,dv.WIN_HEIGHT,dv.Y_BUTTON_3, dv.COLLECT_TXT],
+            [dv.LABEL_PATH, dv.LABEL_EXE,dv.WIN_HEIGHT_NEW,dv.Y_BUTTON_3 + 60, dv.SPLIT_DAT],
+            [dv.LABEL_PATH, dv.LABEL_EXE,dv.WIN_HEIGHT_NEW,dv.Y_BUTTON_3 + 60, dv.SEND_OUT_EXE],
+            [dv.LABEL_FROM, dv.LABEL_TO,dv.WIN_HEIGHT,dv.Y_BUTTON_3, dv.COLLECT_DAT]
         )
 
 
@@ -83,12 +85,14 @@ class CopyWindowClass(widgets.QMainWindow):
         self.difference_args(self.difference_func(
             self.radio_bool,
             self.collect_files,
-            self.move_dat_files,
-            self.send_out_file
+            self.split_dat,
+            self.send_out_file,
+            self.collect_dat
         ),
         utils.success,
         [self, dv.MSG_SUCCESSFUL_COPY],
         [self, dv.MSG_SUCCESSFUL_SPLIT],
+        [self, dv.MSG_SUCCESSFUL_COPY],
         [self, dv.MSG_SUCCESSFUL_COPY]
         )
 
@@ -106,15 +110,18 @@ class CopyWindowClass(widgets.QMainWindow):
 
 
     def radio_button_handle(self):
-        self.radio_txt = utils.radio_button_create(self, dv.TXT,dv.X_RADIO_BUTTON_1, dv.Y_RADIO_BUTTON)
-        self.radio_dat = utils.radio_button_create(self, dv.DAT,dv.X_RADIO_BUTTON_2, dv.Y_RADIO_BUTTON)
-        self.radio_exe = utils.radio_button_create(self, dv.EXE,dv.X_RADIO_BUTTON_3, dv.Y_RADIO_BUTTON)
-        self.radio_txt.setChecked(True)
+        self.collect_txt = utils.radio_button_create(self, dv.COLLECT_TXT, dv.X_RADIO_BUTTON_1, dv.Y_RADIO_BUTTON) #collect txt
+        self.split_dat = utils.radio_button_create(self, dv.SPLIT_DAT, dv.X_RADIO_BUTTON_2, dv.Y_RADIO_BUTTON) #split dat files
+        self.send_out_exe = utils.radio_button_create(self, dv.SEND_OUT_EXE, dv.X_RADIO_BUTTON_3, dv.Y_RADIO_BUTTON) #send out exe
+        self.collect_dat = utils.radio_button_create(self, dv.COLLECT_DAT, dv.X_RADIO_BUTTON_4, dv.Y_RADIO_BUTTON) #collect dat
+
+        self.collect_txt.setChecked(True)
 
         group = widgets.QButtonGroup(self)
-        group.addButton(self.radio_txt)
-        group.addButton(self.radio_dat)
-        group.addButton(self.radio_exe)
+        group.addButton(self.collect_txt)
+        group.addButton(self.split_dat)
+        group.addButton(self.send_out_exe)
+        group.addButton(self.collect_dat)
         group.buttonClicked.connect(self.radio_button_checked_function)
 
 
@@ -182,7 +189,7 @@ class CopyWindowClass(widgets.QMainWindow):
             utils.fail(self, dv.ERROR_FROM_VALUE); return True
         elif not self.get_path(self.second_line_edit):
             utils.fail(self, dv.ERROR_TO_VALUE); return True
-        elif not self.get_path(self.third_line_edit) and self.radio_dat.isChecked():
+        elif not self.get_path(self.third_line_edit) and self.radio_send_out_dat.isChecked():
             utils.fail(self, dv.ERROR_FILE_PATH_VALUE); return True
         return False
 
@@ -210,7 +217,7 @@ class CopyWindowClass(widgets.QMainWindow):
             xslx = f'{self.second_path}\{dv.XSLX_NAME_FILE}'
             utils.txt_to_xslx(filename_list,xslx)
             self.print_log(f'Files concatinate to file: {xslx}')
-        return dv.TXT
+        return dv.COLLECT_TXT
 
 
 
@@ -226,12 +233,13 @@ class CopyWindowClass(widgets.QMainWindow):
                     shutil.copyfile(self.third_path, f'{root}\\{folder}\\{_json}')
                 except Exception as ex:
                     print(ex)
-        return dv.EXE
+        return dv.SEND_OUT_EXE
 
 
+    def collect_dat():
+        return dv.COLLECT_DAT
 
-
-    def move_dat_files(self):
+    def split_dat(self):
         files = []
         files_list = []
         for root, _, files in os.walk(self.first_path):
@@ -248,7 +256,7 @@ class CopyWindowClass(widgets.QMainWindow):
             self.third_path))
 
         utils.split_files(files_list,split_list)
-        return dv.DAT
+        return dv.SPLIT_DAT
 
     # endregion
 
@@ -260,12 +268,12 @@ class CopyWindowClass(widgets.QMainWindow):
 
 
 
-    def check_radio_dat(self):
-        return self.radio_dat.isChecked() or self.radio_exe.isChecked()
+    def check_radio_send_out_dat(self):
+        return self.send_out_exe.isChecked() or self.split_dat.isChecked()
 
 
     def select_second_directory(self):
-        if self.check_radio_dat():
+        if self.check_radio_send_out_dat():
             self.second_path = utils.select_file(self, self.second_line_edit, '*.exe')
         else:
             self.second_path = utils.select_directory(self, self.second_line_edit)
@@ -280,37 +288,29 @@ class CopyWindowClass(widgets.QMainWindow):
 
 
     # region Match-case
+    def difference_func(self, argc, function_1,function_2,function_3, function_4):
 
-    def difference_func(self, argc, function_1,function_2,function_3):
-        """Router for different function
-
-        Args:
-            argc (str): seption
-            function_1 (function): [return function_1]
-            function_2 (function): [return function_2]
-            function_3 (function): [return function_3]
-
-        Returns:
-            [type]: [description]
-        """
         match argc:
-            case '.txt':
+            case 'Collect txt':
                 return function_1()
-            case '.dat':
+            case 'Split dat':
                 return function_2()
-            case '.exe':
+            case 'Send out exe':
                 return function_3()
-            case _:
-                return function_1()
+            case 'Collect dat':
+                return function_4()
 
 
-    def difference_args(self, arg, function, args1 = [], args2 = [], args3 = [] ):
+
+    def difference_args(self, arg, function, args1 = [], args2 = [], args3 = [], args4 = []):
         match arg:
-            case '.txt':
+            case 'Collect txt':
                 return function(*args1)
-            case '.dat':
+            case 'Split dat':
                 return function(*args2)
-            case '.exe':
+            case 'Send out exe':
                 return function(*args3)
+            case 'Collect dat':
+                return function(*args4)
 
     # endregion

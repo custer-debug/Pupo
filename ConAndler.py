@@ -1,5 +1,5 @@
 import PyQt5.QtWidgets as widgets
-import DefaultVariable as dv
+import Dvar as dv
 import Utilities as utils
 import PyQt5.QtCore as core
 

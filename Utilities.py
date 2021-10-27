@@ -1,7 +1,7 @@
 from PyQt5.QtGui import QTextCursor
 import PyQt5.QtWidgets as widgets
 from datetime import datetime
-import DefaultVariable as dv
+import Dvar as dv
 from pyexcel import save_as
 from csv import reader
 from json import dump
@@ -142,7 +142,7 @@ def dict_to_json(dictinary):
 # region create elements
 
 def create_button(self, name, x,y, function):
-    tmp = widgets.QPushButton(name,self)
+    tmp =   widgets.QPushButton(name,self)
     tmp.move(x,y)
     tmp.setFixedSize(dv.WIDHT_BUTTON,dv.HEIGHT_BUTTON)
     tmp.clicked.connect(function)
@@ -171,7 +171,6 @@ def create_line_edit(self, x, y, w, h = dv.MAIN_LINE_EDIT_HEIGHT):
     line_edit = widgets.QLineEdit(self)
     line_edit.setFixedSize(w,h)
     line_edit.move(x,y)
-    # line_edit.setText(None)
     return line_edit
 
 # endregion

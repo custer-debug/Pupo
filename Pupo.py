@@ -1,13 +1,15 @@
 import sys
 import os
 import PyQt5.QtWidgets as widgets
+import PyQt5.QtWidgets as widgets
 import PyQt5.QtGui as gui
+# from darktheme.widget_template import DarkPalette
 
 # модули созданные специально для Pupo
-from CopyWindow import CopyWindowClass
-from ConfigFileHandle import ConfigFile
+from WinC import CopyWindowClass
+from ConAndler import ConfigFile
 import Utilities as utils
-import DefaultVariable as dv
+import Dvar as dv
 
 
 class MainWindow(widgets.QMainWindow):
@@ -30,7 +32,7 @@ class MainWindow(widgets.QMainWindow):
         self.show() # Функция отображения окна
 
 
-    # region Hanlders
+    # region Handlers
 
     def handle_line_edit_function(self):
         self.main_line_edit = utils.create_line_edit(self,
@@ -67,7 +69,6 @@ class MainWindow(widgets.QMainWindow):
         self.checkbox_empty_dir = utils.create_check_box(self, dv.MSG_DELETE_EMPTY_DIR, dv.CHECK_BOX_Y3)
         self.checkbox_delete.clicked.connect(self.enabled_line_delete)
         self.checkbox_rename.clicked.connect(self.enabled_line_rename)
-
 
 
     def button_handle_function(self):

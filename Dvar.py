@@ -50,13 +50,15 @@ LABEL_JSON = 'Json: '
 
 
 # размер радио-кнопок
-RADIO_SIZE_WIDHT = 60
+RADIO_SIZE_WIDHT = 85
 RADIO_SIZE_HEIGHT = 30
 
 # отступы радио-кнопок
 X_RADIO_BUTTON_1 = 10
-X_RADIO_BUTTON_2 = X_RADIO_BUTTON_1 + 55 #65
-X_RADIO_BUTTON_3 = X_RADIO_BUTTON_1 + 110 #120
+X_RADIO_BUTTON_2 = X_RADIO_BUTTON_1 + RADIO_SIZE_WIDHT #65
+X_RADIO_BUTTON_3 = X_RADIO_BUTTON_2 + RADIO_SIZE_WIDHT #120
+X_RADIO_BUTTON_4 = X_RADIO_BUTTON_3 + RADIO_SIZE_WIDHT + 20 #120
+
 Y_RADIO_BUTTON = 10
 
 
@@ -65,6 +67,10 @@ DAT = '.dat'
 TXT = '.txt'
 EXE = '.exe'
 
+COLLECT_DAT = 'Collect dat'
+COLLECT_TXT = 'Collect txt'
+SEND_OUT_EXE = 'Send out exe'
+SPLIT_DAT = 'Split dat'
 
 # координаты линий редактирования
 X_LINE_EDIT = 80
