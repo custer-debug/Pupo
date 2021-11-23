@@ -215,7 +215,7 @@ SIZE = [
 ]
 
 # имя резльтирующего xslx-файла
-XSLX_NAME_FILE = 'Res.xslx'
+XSLX_NAME_FILE = 'Res.xlsx'
 
 MSG_ERROR_PARAM = 'Выберите все нужные параметры'
 MSG_SUCCESSFUL_SAVE = 'Файл успешно сохранён'

@@ -11,7 +11,7 @@ class CopyWindowClass(widgets.QMainWindow):
     def __init__(self):
         super().__init__()
         self.log_txt = ''
-        self.radio_bool = False
+        self.radio_case = 'Collect txt'
         self.default_variable()
         self.setWindowModality(core.Qt.ApplicationModal)
         self.show()
@@ -30,7 +30,6 @@ class CopyWindowClass(widgets.QMainWindow):
 
 
     # region Redraw-window
-
     def show_elements(self):
         # print('show')
         self.checkbox.hide()
@@ -47,7 +46,7 @@ class CopyWindowClass(widgets.QMainWindow):
         self.third_label.hide()
 
     def change_elements_option_function(self, first_label, second_label,height, btn_y,check_box:str):
-        self.radio_bool = check_box
+        self.radio_case = check_box
         self.first_label.setText(first_label)
         self.second_label.setText(second_label)
         self.setGeometry(dv.WIN_X, dv.WIN_Y, dv.WIN_WIDHT, height)
@@ -81,9 +80,10 @@ class CopyWindowClass(widgets.QMainWindow):
 
     def check_radio_buttons(self):
         if self.check_paths(): return
+        print("Hello")
 
         self.difference_args(self.difference_func(
-            self.radio_bool,
+            self.radio_case,
             self.collect_files,
             self.split_dat,
             self.send_out_file,
@@ -184,12 +184,11 @@ class CopyWindowClass(widgets.QMainWindow):
 
 
     def check_paths(self):
-
         if not self.get_path(self.first_line_edit):
             utils.fail(self, dv.ERROR_FROM_VALUE); return True
         elif not self.get_path(self.second_line_edit):
             utils.fail(self, dv.ERROR_TO_VALUE); return True
-        elif not self.get_path(self.third_line_edit) and self.radio_send_out_dat.isChecked():
+        elif not self.get_path(self.third_line_edit) and self.check_radio_send_out_dat(): #check_radio_send_out_dat
             utils.fail(self, dv.ERROR_FILE_PATH_VALUE); return True
         return False
 
@@ -199,7 +198,7 @@ class CopyWindowClass(widgets.QMainWindow):
     # region Move-files
 
     def collect_files(self):
-        # '''Many to one'''
+        '''Many to one'''
         print('Collect')
         filename_list = []
         self.print_log(dv.MSG_START_COPY)
@@ -215,6 +214,7 @@ class CopyWindowClass(widgets.QMainWindow):
 
         if self.checkbox.isChecked():
             xslx = f'{self.second_path}\{dv.XSLX_NAME_FILE}'
+            print(xslx)
             utils.txt_to_xslx(filename_list,xslx)
             self.print_log(f'Files concatinate to file: {xslx}')
         return dv.COLLECT_TXT
@@ -289,7 +289,7 @@ class CopyWindowClass(widgets.QMainWindow):
 
     # region Match-case
     def difference_func(self, argc, function_1,function_2,function_3, function_4):
-
+        print(argc)
         match argc:
             case 'Collect txt':
                 return function_1()
