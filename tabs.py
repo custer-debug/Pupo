@@ -1,61 +1,43 @@
 # from sys import last_type
 from typing import Sized
-from PyQt5.QtWidgets import QLayout,QButtonGroup, QCheckBox, QHBoxLayout, QLineEdit, QRadioButton, QTextEdit, QWidget, QVBoxLayout, QTabWidget, QPushButton
+from PyQt5.QtWidgets import QGridLayout, QLayout,QButtonGroup, QCheckBox, QHBoxLayout, QLineEdit, QRadioButton, QTextEdit, QWidget, QVBoxLayout, QTabWidget, QPushButton
 from PyQt5 import QtCore
+from PyQt5.QtCore import Qt
 class MyTableWidget(QWidget):
 
     def __init__(self, parent):
         super(QWidget, self).__init__(parent)
         self.initTabs()
         self.init_first_tab()
-        self.initButtons()
-        # self.initLineEdit()
-        # self.initTextEdit()
         self.initRadioButtons()
-        # self.initCheckBoxes()
 
 
 
     def init_first_tab(self):
-        layout = QHBoxLayout()
-        # layout.setSizeConstraint()
+        grid = QGridLayout()
         self.btn1 = QPushButton('Review', self.cleanUp_tab)
         self.btn1.setObjectName('btn1')
-        # self.btn1.resize(65,30)
-        self.line1 = QLineEdit(self.cleanUp_tab)
-        layout.addWidget(self.line1, alignment= QtCore.Qt.AlignTop)
-        layout.addWidget(self.btn1, alignment= QtCore.Qt.AlignTop)
-        self.cleanUp_tab.setLayout(layout)
-
-
-    def initButtons(self):
-        # self.btn1 = QPushButton('Review', self.cleanUp_tab)
-        # self.btn1.setGeometry(QtCore.QRect(380,10,65,30))
-
         self.btn2 = QPushButton('Execute', self.cleanUp_tab)
-        self.btn2.setGeometry(QtCore.QRect(370,420,75,30))
 
-
-    def initCheckBoxes(self):
-        self.check_box1 = QCheckBox('Delete files', self.cleanUp_tab)
-        self.check_box1.setGeometry(QtCore.QRect(20,50, 100, 30))
-
-        self.check_box2 = QCheckBox('Rename files', self.cleanUp_tab)
-        self.check_box2.setGeometry(QtCore.QRect(20,80, 100, 30))
-
-        self.check_box2 = QCheckBox('Delete empty dir', self.cleanUp_tab)
-        self.check_box2.setGeometry(QtCore.QRect(20,110, 100, 30))
-
-    def initTextEdit(self):
-        self.text = QTextEdit(self.cleanUp_tab)
-        self.text.setGeometry(QtCore.QRect(10,150, 430, 250))
-        self.text.setReadOnly(True)
-
-
-    def initLineEdit(self):
         self.line1 = QLineEdit(self.cleanUp_tab)
-        self.line1.setGeometry(QtCore.QRect(10,10, 360, 30))
+        self.line1.setObjectName('line1')
 
+        self.check_box1 = QCheckBox('Delete files', self.cleanUp_tab)
+        self.check_box2 = QCheckBox('Rename files', self.cleanUp_tab)
+        self.check_box3 = QCheckBox('Delete empty dir', self.cleanUp_tab)
+        self.text = QTextEdit(self.cleanUp_tab)
+
+
+        grid.addWidget(self.line1, 0, 0)
+        grid.addWidget(self.btn1, 0, 1)
+        grid.addWidget(self.check_box1, 1,0)
+        grid.addWidget(self.check_box2, 2,0)
+        grid.addWidget(self.check_box3, 3,0)
+        grid.addWidget(self.text, 4,0,5,2)
+        grid.addWidget(self.btn2, 10, 1)
+
+
+        self.cleanUp_tab.setLayout(grid)
 
 
     def initTabs(self):
@@ -88,13 +70,6 @@ class MyTableWidget(QWidget):
         l.addWidget(self.radio_button2,alignment=QtCore.Qt.AlignTop)
         l.addWidget(self.radio_button3, alignment=QtCore.Qt.AlignTop)
         self.movefiles_tab.setLayout(l)
-
-
-        # y = 5
-        # self.radio_button1.setGeometry(QtCore.QRect(10,y, 360, 20))
-        # self.radio_button2.setGeometry(QtCore.QRect(180,y, 360, 20))
-        # self.radio_button3.setGeometry(QtCore.QRect(350,y, 360, 20))
-
 
         group = QButtonGroup(self.movefiles_tab)
         group.addButton(self.radio_button1)

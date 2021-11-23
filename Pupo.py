@@ -2,7 +2,8 @@ import sys
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 import tabs
-
+import pyautogui
+# from win32api import GetSystemMetrics
 style = '''
 QMenuBar{
     background-color: lightgray;
@@ -15,15 +16,21 @@ QTabBar::tab {
 QTabBar::tab:selected {
   background: white;
 }
-QPushButton#btn1{
+QPushButton{
     padding : 8px 20px;
+}
+QLineEdit#line1{
+    height : 25px;
 }
 '''
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setGeometry(500,300,500,500)
+        w, h = pyautogui.size()
+        x = int(w/4)
+        y = int(h/4)
+        self.setGeometry(x,y, 700,600)
         self.setObjectName('MainWindow')
         pixmapi = getattr(QStyle, 'SP_DialogResetButton')
         icon = self.style().standardIcon(pixmapi)
