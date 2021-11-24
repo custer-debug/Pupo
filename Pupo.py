@@ -3,7 +3,6 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 import tabs
 from platform import platform
-# import pyautogui
 
 style = '''
 QMenuBar{
