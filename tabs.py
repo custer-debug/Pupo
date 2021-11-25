@@ -1,5 +1,8 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import Qt
+import os
+from datetime import datetime
+from json import dump
 
 class MyTableWidget(QWidget):
     def __init__(self, parent):
@@ -10,45 +13,120 @@ class MyTableWidget(QWidget):
         self.init_tab3()
         self.init_tab4()
 
-
+    # region tab1
     def init_tab1(self):
         # Create elements
         self.btn1 = QPushButton('Review', self.tab1)
-        self.btn1.clicked.connect(lambda : self.line1.setText(
+        self.btn1.clicked.connect(lambda : self.main_line1.setText(
                 QFileDialog().getExistingDirectory(None,'Select directory')))
 
         self.btn2 = QPushButton('Run', self.tab1)
-
-        self.line1 = QLineEdit(self.tab1)
-        self.line2 = QLineEdit('.exe',self.tab1)
-        self.line3 = QLineEdit('Out_res.txt',self.tab1)
-        self.line2.setEnabled(False)
-        self.line3.setEnabled(False)
+        self.btn2.clicked.connect(self.check_elements)
+        self.main_line1 = QLineEdit(self.tab1)
+        self.line_extension = QLineEdit('.exe',self.tab1)
+        self.line_rename_file = QLineEdit('test.txt',self.tab1)
+        self.line_extension.setEnabled(False)
+        self.line_rename_file.setEnabled(False)
 
         self.check_box1 = QCheckBox('Delete files', self.tab1)
         self.check_box2 = QCheckBox('Rename files', self.tab1)
         self.check_box3 = QCheckBox('Delete empty dir', self.tab1)
-        self.check_box1.clicked.connect(lambda state: self.line2.setEnabled(state))
-        self.check_box2.clicked.connect(lambda state: self.line3.setEnabled(state))
+        self.check_box1.clicked.connect(lambda state: self.line_extension.setEnabled(state))
+        self.check_box2.clicked.connect(lambda state: self.line_rename_file.setEnabled(state))
 
         self.text = QTextEdit(self.tab1)
         self.text.setReadOnly(True)
 
         # Create grid
         grid = QGridLayout()
-        grid.addWidget(self.line1, 0, 0,1,6)
+        grid.addWidget(self.main_line1, 0, 0,1,6)
         grid.addWidget(self.btn1, 0, 6)
         grid.addWidget(self.check_box1, 1,0)
-        grid.addWidget(self.line2,1,1, alignment=Qt.AlignCenter)
+        grid.addWidget(self.line_extension,1,1, alignment=Qt.AlignCenter)
         grid.addWidget(self.check_box2, 2,0)
-        grid.addWidget(self.line3, 2,1, alignment=Qt.AlignCenter)
+        grid.addWidget(self.line_rename_file, 2,1, alignment=Qt.AlignCenter)
         grid.addWidget(self.check_box3, 3,0)
         grid.addWidget(self.text, 4,0,5,7)
         grid.addWidget(self.btn2, 10, 6)
 
         self.tab1.setLayout(grid)
 
+    def check_elements(self):
+        self.text.clear()
+        if not os.path.exists(self.main_line1.text()):
+            QMessageBox.warning(self, 'Error', 'Path is not exists')
+            return
 
+        if self.check_box1.isChecked() and self.line_extension.text():
+            self.delete_files()
+        if self.check_box2.isChecked() and self.line_rename_file.text():
+            self.rename_files()
+        if self.check_box3.isChecked():
+            self.delete_empty_directories(self.main_line1.text())
+
+        if not (self.check_box1.isChecked() or self.check_box2.isChecked() or self.check_box3.isChecked()):
+            QMessageBox.warning(self, 'Error', 'Choose action')
+
+
+    def convert_bytes(self,size):
+        for x in ['bytes', 'KB', 'MB', 'GB', 'TB']:
+            if size < 1024.0:
+                return "%3.1f %s" % (size, x)
+            size /= 1024.0
+
+        return size
+
+
+    def delete_files(self):
+        extension = self.line_extension.text()
+        size = 0
+        count = 0
+        self.Print('Start deleting...')
+        for root, _, files in os.walk(self.main_line1.text()):
+            for file in files:
+                if file.endswith(extension):
+                    path = os.path.join(root,file)
+                    self.Print(path)
+                    # os.remove(path)
+                    size += os.stat(path).st_size
+                    count += 1
+        self.Print(f'Delete {count} files ({self.convert_bytes(size)})')
+
+
+
+
+    def find_first_file(self, endswitch:str, files:list) -> str:
+        for file in files:
+            if file.endswith(endswitch):
+                return file
+        return ''
+
+
+
+    def rename_files(self) -> None:
+        self.Print('Start renaming...')
+        for root, _, files in os.walk(self.main_line1.text()):
+            dat =  self.find_first_file('.dat', files)
+            txt =  self.find_first_file(self.line_rename_file.text(), files)
+            if not txt: continue
+            rename = f'{root.split("/")[-1]}_{txt.split(".")[0]}_{"_".join(dat.split("_")[1:5])}.txt'
+            os.rename(f'{root}/{txt}',f'{root}/{rename}')
+            self.Print(f'{root}/{txt} -> {rename}'.replace('\\','/'))
+
+        self.Print('End renaming...')
+
+
+
+    def delete_empty_directories(self, path):
+        for _dir in os.listdir(path):
+            current_dir = os.path.join(path, _dir)
+            if os.path.isdir(current_dir):
+                self.delete_empty_directories(current_dir)
+                if not os.listdir(current_dir):
+                    os.rmdir(current_dir)
+                    self.Print("Папка удалена: " + current_dir)
+
+    # endregion
 
 
     def init_tab2(self):
@@ -162,9 +240,23 @@ class MyTableWidget(QWidget):
         self.tab3.setLayout(grid)
 
 
+    def changeItems(self, flag) -> None:
+        for item in range(self.list.count()):
+            self.list.item(item).setSelected(flag)
+        self.item_clicked()
 
+    def select_items(self) -> None:
+        return self.changeItems(True)
 
-    def init_tab4(self):
+    def hide_items(self) -> None:
+        return self.changeItems(False)
+
+    def item_clicked(self) -> None:
+        return self.label_select.setText(f'Selected: {len(self.list.selectedItems())} items')
+
+    #region tab4
+
+    def init_tab4(self) -> None:
         # Create elements
         self.radio_config1 = QRadioButton('1200', self.tab4)
         self.radio_config2 = QRadioButton('2500', self.tab4)
@@ -173,19 +265,20 @@ class MyTableWidget(QWidget):
         self.radio_config5 = QRadioButton('2', self.tab4)
         self.radio_config6 = QRadioButton('4', self.tab4)
 
-        group1 = QButtonGroup(self.tab4)
-        group1.addButton(self.radio_config1)
-        group1.addButton(self.radio_config2)
+        self.group1 = QButtonGroup(self.tab4)
+        self.group1.addButton(self.radio_config1)
+        self.group1.addButton(self.radio_config2)
 
-        group2 = QButtonGroup(self.tab4)
-        group2.addButton(self.radio_config3)
-        group2.addButton(self.radio_config4)
+        self.group2 = QButtonGroup(self.tab4)
+        self.group2.addButton(self.radio_config3)
+        self.group2.addButton(self.radio_config4)
 
-        group3 = QButtonGroup(self.tab4)
-        group3.addButton(self.radio_config5)
-        group3.addButton(self.radio_config6)
+        self.group3 = QButtonGroup(self.tab4)
+        self.group3.addButton(self.radio_config5)
+        self.group3.addButton(self.radio_config6)
 
-        self.save_json = QPushButton('Save',self.tab4)
+        self.save_json_btn = QPushButton('Save',self.tab4)
+        self.save_json_btn.clicked.connect(self.generate_config_file)
 
         grid = QGridLayout()
         grid.addWidget(QLabel('Radar'), 0,0)
@@ -197,7 +290,7 @@ class MyTableWidget(QWidget):
         grid.addWidget(QLabel('Channel'), 2,0)
         grid.addWidget(self.radio_config5, 2,1)
         grid.addWidget(self.radio_config6, 2,2)
-        grid.addWidget(self.save_json, 3,2, alignment=Qt.AlignCenter)
+        grid.addWidget(self.save_json_btn, 3,2, alignment=Qt.AlignCenter)
         grid.setRowStretch(4,2)
         grid.setVerticalSpacing(20)
 
@@ -206,8 +299,31 @@ class MyTableWidget(QWidget):
 
 
 
-    def initTabsWidget(self):
+    def generate_config_file(self):
 
+        Radar = self.group1.checkedButton()
+        Mode = self.group2.checkedButton()
+        Channel = self.group3.checkedButton()
+
+        if Radar == None or Mode == None or Channel == None:
+            return
+
+        _dict = {
+            'Radar':Radar.text(),
+            'Mode':Mode.text(),
+            'Channel':Channel.text()
+
+        }
+
+        with open('config.json', 'w') as json:
+            dump(_dict,json,indent=4)
+
+        QMessageBox.information(self, 'Success', 'File successful saved')
+
+    # endregion
+
+
+    def initTabsWidget(self) -> None:
 
         self.tabs = QTabWidget()
         self.tabs.setTabPosition(QTabWidget.West)
@@ -217,26 +333,18 @@ class MyTableWidget(QWidget):
         self.tab4 = QWidget()
         self.tabs.resize(300,200)
 
-        self.tabs.addTab(self.tab4,"Config file")
         self.tabs.addTab(self.tab1,"Clean up")
         self.tabs.addTab(self.tab2,"Move files")
         self.tabs.addTab(self.tab3,"Txt to xlsx")
+        self.tabs.addTab(self.tab4,"Config file")
 
         vbox = QVBoxLayout()
         vbox.addWidget(self.tabs)
         self.setLayout(vbox)
 
 
-    def changeItems(self, flag):
-        for item in range(self.list.count()):
-            self.list.item(item).setSelected(flag)
-        self.item_clicked()
 
-    def select_items(self):
-        return self.changeItems(True)
 
-    def hide_items(self):
-        return self.changeItems(False)
 
-    def item_clicked(self):
-        self.label_select.setText(f'Selected: {len(self.list.selectedItems())} items')
+    def Print(self, string:str) -> None:
+        return self.text.append(f'[{datetime.now().strftime("%d-%m-%Y %H:%M:%S")}] {string}')

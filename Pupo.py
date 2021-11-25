@@ -30,9 +30,8 @@ QProgressBar{
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        x = int(1920/3)
-        y = int(1080/3)
-        self.setGeometry(x,y, 700,600)
+
+        self.setGeometry(500,300, 900,600)
         self.setObjectName('MainWindow')
         pixmapi = getattr(QStyle, 'SP_FileDialogNewFolder')
         icon = self.style().standardIcon(pixmapi)
