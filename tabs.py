@@ -81,16 +81,16 @@ class MyTableWidget(QWidget):
         extension = self.line_extension.text()
         size = 0
         count = 0
-        self.Print('Start deleting...')
+        self.Print(self.text, 'Start deleting...')
         for root, _, files in os.walk(self.main_line1.text()):
             for file in files:
                 if file.endswith(extension):
                     path = os.path.join(root,file)
-                    self.Print(path)
+                    self.Print(self.text, path)
                     # os.remove(path)
                     size += os.stat(path).st_size
                     count += 1
-        self.Print(f'Delete {count} files ({self.convert_bytes(size)})')
+        self.Print(self.text, f'Delete {count} files ({self.convert_bytes(size)})')
 
 
 
@@ -104,7 +104,7 @@ class MyTableWidget(QWidget):
 
 
     def rename_files(self) -> None:
-        self.Print('Start renaming...')
+        self.Print(self.text,'Start renaming...')
         for root, _, files in os.walk(self.main_line1.text()):
             dat =  self.find_first_file('.dat', files)
             txt =  self.find_first_file(self.line_rename_file.text(), files)
@@ -113,7 +113,7 @@ class MyTableWidget(QWidget):
             os.rename(f'{root}/{txt}',f'{root}/{rename}')
             self.Print(f'{root}/{txt} -> {rename}'.replace('\\','/'))
 
-        self.Print('End renaming...')
+        self.Print(self.text,'End renaming...')
 
 
 
@@ -124,7 +124,7 @@ class MyTableWidget(QWidget):
                 self.delete_empty_directories(current_dir)
                 if not os.listdir(current_dir):
                     os.rmdir(current_dir)
-                    self.Print("Папка удалена: " + current_dir)
+                    self.Print(self.text,"Папка удалена: " + current_dir)
 
     # endregion
 
@@ -134,29 +134,32 @@ class MyTableWidget(QWidget):
         self.radio_button1 = QRadioButton('Collect txt', self.tab2)
         self.radio_button2 = QRadioButton('Split dat', self.tab2)
         self.radio_button3 = QRadioButton('Send out exe', self.tab2)
+        self.radio_button1.setChecked(True)
 
         group = QButtonGroup(self.tab2)
         group.addButton(self.radio_button1)
         group.addButton(self.radio_button2)
         group.addButton(self.radio_button3)
 
+
         self.label_1 = QLabel('Path', self.tab2)
         self.label_2 = QLabel('Path', self.tab2)
-        self.label_3 = QLabel('Path', self.tab2)
+        # self.label_3 = QLabel('Path', self.tab2)
 
         self.path1 = QLineEdit(self.tab2)
         self.path2 = QLineEdit(self.tab2)
-        self.path3 = QLineEdit(self.tab2)
-
+        # self.path3 = QLineEdit(self.tab2)
+        self.area = QTextEdit(self.tab2)
+        self.area.setReadOnly(True)
         self.probar = QProgressBar(self.tab2)
-        self.probar.setValue(20)
         self.probar.setAlignment(Qt.AlignCenter)
 
         self.btn1 = QPushButton('Review',self.tab2)
         self.btn2 = QPushButton('Review',self.tab2)
-        self.btn3 = QPushButton('Review',self.tab2)
+        # self.btn3 = QPushButton('Review',self.tab2)
         self.btn4 = QPushButton('Run',self.tab2)
 
+        # self.hide_elements()
         # Create grid for paint elements
         grid = QGridLayout()
         grid.setVerticalSpacing(30)
@@ -173,17 +176,17 @@ class MyTableWidget(QWidget):
 
         grid.addWidget(self.label_1, 1,0)
         grid.addWidget(self.label_2, 2,0)
-        grid.addWidget(self.label_3, 3,0)
+        # grid.addWidget(self.label_3, 3,0)
 
         grid.addWidget(self.path1, 1,1,1,3)
         grid.addWidget(self.path2, 2,1,1,3)
-        grid.addWidget(self.path3, 3,1,1,3)
+        grid.addWidget(self.area, 3,1,3,3)
+        grid.addWidget(self.probar, 6, 1, 1, 3)
 
         grid.addWidget(self.btn1, 1, 4, 1,1)
         grid.addWidget(self.btn2, 2, 4, 1,1)
-        grid.addWidget(self.btn3, 3, 4, 1,1)
-        grid.addWidget(self.btn4, 5, 4, 1,1)
-        grid.addWidget(self.probar, 4, 1, 1, 4)
+        # grid.addWidget(self.btn3, 3, 4, 1,1)
+        grid.addWidget(self.btn4, 6, 4, 1,1, alignment=Qt.AlignBottom)
 
         self.tab2.setLayout(grid)
 
@@ -253,6 +256,8 @@ class MyTableWidget(QWidget):
 
     def item_clicked(self) -> None:
         return self.label_select.setText(f'Selected: {len(self.list.selectedItems())} items')
+
+
 
     #region tab4
 
@@ -333,18 +338,18 @@ class MyTableWidget(QWidget):
         self.tab4 = QWidget()
         self.tabs.resize(300,200)
 
-        self.tabs.addTab(self.tab1,"Clean up")
         self.tabs.addTab(self.tab2,"Move files")
+        self.tabs.addTab(self.tab1,"Clean up")
         self.tabs.addTab(self.tab3,"Txt to xlsx")
         self.tabs.addTab(self.tab4,"Config file")
 
         vbox = QVBoxLayout()
         vbox.addWidget(self.tabs)
         self.setLayout(vbox)
+        # self.area.Print('hello')
 
 
 
 
-
-    def Print(self, string:str) -> None:
-        return self.text.append(f'[{datetime.now().strftime("%d-%m-%Y %H:%M:%S")}] {string}')
+    def Print(self,textEdit,string:str) -> None:
+        return textEdit.append(f'[{datetime.now().strftime("%d-%m-%Y %H:%M:%S")}] {string}')
