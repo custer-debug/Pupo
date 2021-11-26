@@ -3,6 +3,7 @@ from PyQt5.QtCore import Qt
 import os
 from datetime import datetime
 from json import dump
+import shutil
 
 class MyTableWidget(QWidget):
     def __init__(self, parent):
@@ -117,7 +118,7 @@ class MyTableWidget(QWidget):
 
 
 
-    def delete_empty_directories(self, path):
+    def delete_empty_directories(self, path:str) -> None:
         for _dir in os.listdir(path):
             current_dir = os.path.join(path, _dir)
             if os.path.isdir(current_dir):
@@ -135,7 +136,9 @@ class MyTableWidget(QWidget):
         self.radio_button2 = QRadioButton('Split dat', self.tab2)
         self.radio_button3 = QRadioButton('Send out exe', self.tab2)
         self.radio_button1.setChecked(True)
-
+        self.radio_button1.clicked.connect(self.show_elements)
+        self.radio_button2.clicked.connect(self.hide_elements)
+        self.radio_button3.clicked.connect(self.show_elements)
         group = QButtonGroup(self.tab2)
         group.addButton(self.radio_button1)
         group.addButton(self.radio_button2)
@@ -144,11 +147,9 @@ class MyTableWidget(QWidget):
 
         self.label_1 = QLabel('Path', self.tab2)
         self.label_2 = QLabel('Path', self.tab2)
-        # self.label_3 = QLabel('Path', self.tab2)
 
         self.path1 = QLineEdit(self.tab2)
         self.path2 = QLineEdit(self.tab2)
-        # self.path3 = QLineEdit(self.tab2)
         self.area = QTextEdit(self.tab2)
         self.area.setReadOnly(True)
         self.probar = QProgressBar(self.tab2)
@@ -156,10 +157,12 @@ class MyTableWidget(QWidget):
 
         self.btn1 = QPushButton('Review',self.tab2)
         self.btn2 = QPushButton('Review',self.tab2)
-        # self.btn3 = QPushButton('Review',self.tab2)
-        self.btn4 = QPushButton('Run',self.tab2)
+        self.btn1.clicked.connect(lambda : self.path1.setText(
+                QFileDialog().getExistingDirectory(None,'Select directory')))
+        self.btn2.clicked.connect(self.select_second_path)
 
-        # self.hide_elements()
+        self.btn4 = QPushButton('Run',self.tab2)
+        self.btn4.clicked.connect(self.start_move)
         # Create grid for paint elements
         grid = QGridLayout()
         grid.setVerticalSpacing(30)
@@ -176,7 +179,6 @@ class MyTableWidget(QWidget):
 
         grid.addWidget(self.label_1, 1,0)
         grid.addWidget(self.label_2, 2,0)
-        # grid.addWidget(self.label_3, 3,0)
 
         grid.addWidget(self.path1, 1,1,1,3)
         grid.addWidget(self.path2, 2,1,1,3)
@@ -185,12 +187,61 @@ class MyTableWidget(QWidget):
 
         grid.addWidget(self.btn1, 1, 4, 1,1)
         grid.addWidget(self.btn2, 2, 4, 1,1)
-        # grid.addWidget(self.btn3, 3, 4, 1,1)
         grid.addWidget(self.btn4, 6, 4, 1,1, alignment=Qt.AlignBottom)
 
         self.tab2.setLayout(grid)
 
 
+    def hide_elements(self) -> None:
+        self.path2.setText('')
+        self.path2.setDisabled(True)
+        self.btn2.setDisabled(True)
+
+    def show_elements(self) -> None:
+        self.path2.setText('')
+        self.path2.setDisabled(False)
+        self.btn2.setDisabled(False)
+
+
+    def select_second_path(self):
+        if self.radio_button1.isChecked():
+            self.path2.setText(
+                QFileDialog().getExistingDirectory(None,'Select directory'))
+        else:
+            self.path2.setText(
+                QFileDialog.getOpenFileName(self,'Open File', None, '*.exe')[0])
+
+
+
+    def start_move(self):
+        if not self.path1.text():
+            QMessageBox.warning(self, 'Error', 'First path is empty')
+
+        if self.radio_button1.isChecked() and self.path2.text():
+            self.collect_files()
+
+        if self.radio_button2.isChecked():
+            print('split dat')
+
+        if self.radio_button3.isChecked():
+            print('send out exe')
+
+
+    def collect_files(self) -> None:
+        self.Print(self.area, 'Start copy...')
+        files_list = self.find_files(self.path1.text())
+
+        for item in files_list:
+            split = item.replace('\\','/').split('/')
+            rename = f'{split[-2]}_{split[-1]}'
+            to_path = os.path.join(self.path2.text(),rename)
+            shutil.copyfile(item,to_path)
+            percents = int((files_list.index(item)+1) / len(files_list)) * 100
+            self.probar.setValue(percents)
+            self.Print(self.area, f'{item} -> {to_path}')
+        self.Print(self.area, 'End copy')
+
+    # region tab3
 
 
     def init_tab3(self):
@@ -257,9 +308,9 @@ class MyTableWidget(QWidget):
     def item_clicked(self) -> None:
         return self.label_select.setText(f'Selected: {len(self.list.selectedItems())} items')
 
+    # endregion
 
-
-    #region tab4
+    # region tab4
 
     def init_tab4(self) -> None:
         # Create elements
@@ -349,7 +400,13 @@ class MyTableWidget(QWidget):
         # self.area.Print('hello')
 
 
-
+    def find_files(self, cwd:str) -> list[str]:
+        files_list = []
+        for root, _, files in os.walk(cwd):
+            for file in files:
+                if file.endswith('.txt'):
+                    files_list.append(f'{root}/{file}')
+        return files_list
 
     def Print(self,textEdit,string:str) -> None:
-        return textEdit.append(f'[{datetime.now().strftime("%d-%m-%Y %H:%M:%S")}] {string}')
+        textEdit.append(f'[{datetime.now().strftime("%d-%m-%Y %H:%M:%S")}] {string}')
