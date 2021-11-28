@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import Qt
 import os
-from datetime import datetime
+from datetime import date, datetime
 from json import dump
 import shutil
 
@@ -221,7 +221,8 @@ class MyTableWidget(QWidget):
             self.collect_files()
 
         if self.radio_button2.isChecked():
-            print('split dat')
+            self.cpu_count = os.cpu_count()
+            self.split_files()
 
         if self.radio_button3.isChecked():
             print('send out exe')
@@ -230,7 +231,7 @@ class MyTableWidget(QWidget):
     def collect_files(self) -> None:
         self.Print(self.area, 'Start copy...')
         files_list = self.find_files(self.path1.text())
-
+        size = len(files_list)
         for item in files_list:
             split = item.replace('\\','/').split('/')
             rename = f'{split[-2]}_{split[-1]}'
@@ -239,7 +240,45 @@ class MyTableWidget(QWidget):
             percents = int((files_list.index(item)+1) / len(files_list)) * 100
             self.probar.setValue(percents)
             self.Print(self.area, f'{item} -> {to_path}')
+        self.Print(self.area, f'{size} files copied')
         self.Print(self.area, 'End copy')
+
+
+    def split_files(self):
+        folders = self.make_directories()
+        cwd = self.path1.text()
+        files = os.listdir(cwd)
+        # поиск файлов dat
+        dat_files = [os.path.join(cwd,item) for item in files if item.endswith('.dat')]
+        count_dat_files = len(dat_files)
+        split_list = [count_dat_files // self.cpu_count] * self.cpu_count
+        split_list[-1] += count_dat_files % self.cpu_count
+        for i in range(self.cpu_count):
+            for _ in range(split_list[i]):
+                try:
+                    shutil.move(dat_files[0],os.path.join(folders[i],dat_files[0].replace('\\','/').split('/')[-1]))
+                    dat_files.pop(0)
+                except FileNotFoundError:
+                    self.Print(self.area, 'File Not Found Error')
+
+
+    def make_directories(self) -> list[str]:
+        cwd = self.path1.text()
+        folders = []
+        for i in range(self.cpu_count):
+            try:
+                folder = os.path.join(cwd,f'Path_{i+1}')
+                folders.append(folder)
+                os.makedirs(folder)
+            except FileExistsError:
+                self.Print(self.area, f'Folder {folder} already exists')
+                continue
+
+        self.Print(self.area,f'Folders successfull created')
+        return folders
+
+
+
 
     # region tab3
 
