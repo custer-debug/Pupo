@@ -1,5 +1,6 @@
+from abc import ABCMeta
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import QLine, Qt
 import os
 from datetime import date, datetime
 from json import dump
@@ -13,7 +14,7 @@ class MyTableWidget(QWidget):
         self.init_tab2()
         self.init_tab3()
         self.init_tab4()
-
+        self.init_tab5()
     # region tab1
     def init_tab1(self):
         # Create elements
@@ -129,6 +130,7 @@ class MyTableWidget(QWidget):
 
     # endregion
 
+    # region tab2
 
     def init_tab2(self):
         # Create elements
@@ -277,8 +279,7 @@ class MyTableWidget(QWidget):
         self.Print(self.area,f'Folders successfull created')
         return folders
 
-
-
+    # endregion
 
     # region tab3
 
@@ -417,6 +418,59 @@ class MyTableWidget(QWidget):
 
     # endregion
 
+    # region tab5
+
+    def init_tab5(self):
+        self.radio_optimization = QRadioButton('Splitting to optimize processing', self.tab5)
+        self.radio_profile = QRadioButton('Splitting by profiles')
+
+        self.radio_optimization.setChecked(True)
+
+        self.line_split_review = QLineEdit(self.tab5)
+        self.line_first_file = QLineEdit(self.tab5)
+        self.line_last_file = QLineEdit(self.tab5)
+
+        self.radio_optimization.clicked.connect(self.optimizate_radio_elements)
+        self.radio_profile.clicked.connect(self.profile_radio_elements)
+
+        self.btn_split_review = QPushButton('Review', self.tab5)
+
+        self.combo = QComboBox(self.tab5)
+        self.combo.addItems(['1','2','3','4','5','6','7','8','9','10'])
+
+        self.optimizate_radio_elements()
+        group = QButtonGroup(self.tab5)
+        group.addButton(self.radio_optimization)
+        group.addButton(self.radio_profile)
+
+
+        grid = QGridLayout()
+        grid.addWidget(QLabel('Path'), 0,0)
+        grid.addWidget(self.line_split_review, 0,1,1,4)
+        grid.addWidget(self.btn_split_review, 0,5)
+
+        grid.addWidget(self.radio_optimization, 1,0)
+        grid.addWidget(self.combo, 1,1, alignment=Qt.AlignLeft)
+        grid.addWidget(self.radio_profile, 2,0)
+        grid.addWidget(self.line_first_file, 2,1)
+        grid.addWidget(self.line_last_file, 2,2)
+
+
+        self.tab5.setLayout(grid)
+
+    def optimizate_radio_elements(self):
+        self.combo.setDisabled(False)
+        self.line_first_file.setDisabled(True)
+        self.line_last_file.setDisabled(True)
+
+    def profile_radio_elements(self):
+        self.combo.setDisabled(True)
+        self.line_first_file.setDisabled(False)
+        self.line_last_file.setDisabled(False)
+
+
+
+    # endregion
 
     def initTabsWidget(self) -> None:
 
@@ -426,10 +480,12 @@ class MyTableWidget(QWidget):
         self.tab2 = QWidget()
         self.tab3 = QWidget()
         self.tab4 = QWidget()
+        self.tab5 = QWidget()
         self.tabs.resize(300,200)
 
-        self.tabs.addTab(self.tab2,"Move files")
+        self.tabs.addTab(self.tab5,"Split files")
         self.tabs.addTab(self.tab1,"Clean up")
+        self.tabs.addTab(self.tab2,"Move files")
         self.tabs.addTab(self.tab3,"Txt to xlsx")
         self.tabs.addTab(self.tab4,"Config file")
 
