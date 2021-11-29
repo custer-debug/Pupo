@@ -1,6 +1,6 @@
 from abc import ABCMeta
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import QLine, Qt
+from PyQt5.QtCore import Qt
 import os
 from datetime import date, datetime
 from json import dump
@@ -15,6 +15,8 @@ class MyTableWidget(QWidget):
         self.init_tab3()
         self.init_tab4()
         self.init_tab5()
+
+
     # region tab1
     def init_tab1(self):
         # Create elements
@@ -429,12 +431,14 @@ class MyTableWidget(QWidget):
         self.line_split_review = QLineEdit(self.tab5)
         self.line_first_file = QLineEdit(self.tab5)
         self.line_last_file = QLineEdit(self.tab5)
+        self.area_split = QTextEdit(self.tab5)
+        self.area_split.setReadOnly(True)
 
         self.radio_optimization.clicked.connect(self.optimizate_radio_elements)
         self.radio_profile.clicked.connect(self.profile_radio_elements)
 
         self.btn_split_review = QPushButton('Review', self.tab5)
-
+        self.btn_split = QPushButton('Run', self.tab5)
         self.combo = QComboBox(self.tab5)
         self.combo.addItems(['1','2','3','4','5','6','7','8','9','10'])
 
@@ -448,13 +452,13 @@ class MyTableWidget(QWidget):
         grid.addWidget(QLabel('Path'), 0,0)
         grid.addWidget(self.line_split_review, 0,1,1,4)
         grid.addWidget(self.btn_split_review, 0,5)
-
         grid.addWidget(self.radio_optimization, 1,0)
         grid.addWidget(self.combo, 1,1, alignment=Qt.AlignLeft)
         grid.addWidget(self.radio_profile, 2,0)
         grid.addWidget(self.line_first_file, 2,1)
         grid.addWidget(self.line_last_file, 2,2)
-
+        grid.addWidget(self.area_split, 3,0,3,6)
+        grid.addWidget(self.btn_split, 7,5)
 
         self.tab5.setLayout(grid)
 
