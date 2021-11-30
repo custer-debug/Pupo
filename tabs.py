@@ -1,8 +1,7 @@
-from abc import ABCMeta
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import Qt
 import os
-from datetime import date, datetime
+from datetime import datetime
 from json import dump
 import shutil
 
@@ -487,11 +486,11 @@ class MyTableWidget(QWidget):
         self.tab5 = QWidget()
         self.tabs.resize(300,200)
 
-        self.tabs.addTab(self.tab5,"Split files")
-        self.tabs.addTab(self.tab1,"Clean up")
         self.tabs.addTab(self.tab2,"Move files")
+        self.tabs.addTab(self.tab1,"Clean up")
         self.tabs.addTab(self.tab3,"Txt to xlsx")
         self.tabs.addTab(self.tab4,"Config file")
+        self.tabs.addTab(self.tab5,"Split files")
 
         vbox = QVBoxLayout()
         vbox.addWidget(self.tabs)
