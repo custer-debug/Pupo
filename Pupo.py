@@ -1,8 +1,11 @@
 import sys
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
+from PyQt5.QtGui import QKeySequence
+from os import getcwd
 import tabs
 from platform import platform
+from json import load, dump
 
 style = '''
 QMenuBar{
@@ -40,7 +43,50 @@ class MainWindow(QMainWindow):
         self.setStyleSheet(style)
         self.table_widget = tabs.MyTableWidget(self)
         self.setCentralWidget(self.table_widget)
+        self.get_settings()
+        self.table_widget.set_main_fodler(self.settings['prev_folders'][self.count_])
         self.main_menu()
+
+    def increase_counter(self,length):
+        if self.count_ == length:
+            self.count_ = 0
+        else:
+            self.count_ += 1
+
+    def select_folder(self) -> str:
+        folder = QFileDialog().getExistingDirectory(
+                None, "Select folder")
+        if not folder:
+            cwd = getcwd().replace('\\','/')
+            self.table_widget.set_main_fodler(cwd)
+            return cwd
+        else:
+            self.table_widget.set_main_fodler(folder)
+            return folder
+
+    def get_main_folder(self):
+        if not self.settings['prev_folders']:
+            self.settings['prev_folders'] = self.select_folder()
+
+        elif type(self.settings['prev_folders']) == str:
+            tmp = []
+            tmp.append(self.settings['prev_folders'])
+            tmp.append(self.select_folder())
+            self.settings['prev_folders'] = tmp
+
+        elif type(self.settings['prev_folders'] == list):
+            if len(self.settings['prev_folders']) >= 5:
+                self.settings['prev_folders'][self.count_] = self.select_folder()
+                self.increase_counter(len(self.settings['prev_folders']))
+                self.settings['count_folder'] = self.count_
+            else:
+                self.settings['prev_folders'].append(self.select_folder())
+
+        self.set_settings()
+
+
+    def clear_main_folder(self):
+        self.table_widget.set_main_fodler('')
 
 
     def about_dev(self):
@@ -55,18 +101,55 @@ class MainWindow(QMainWindow):
         '''
         QMessageBox.about(self, title, text)
 
+
+    def set_settings(self) -> None:
+        with open('settings.json', 'w') as json:
+            dump(self.settings, json, indent=4)
+
+
+
+    def get_settings(self) -> None:
+        with open('settings.json', 'r') as json:
+            self.settings = load(json)
+        self.count_ = self.settings['count_folder']
+
     def how_to_use(self):
         pass
 
-    def main_menu(self):
-        # print(datetime.datetime.now())
-        menubar = self.menuBar()
-        menubar.addMenu('&File').addAction('Exit',exit)
-        menubar.addMenu('&Option')
+    def test(self):
+        self.table_widget.set_main_fodler(self.sender().objectName())
 
-        about = menubar.addMenu('&Help')
+    def menu_file(self):
+        fileMenu = QMenu('&File',self)
+        self.menubar.addMenu(fileMenu)
+        fileMenu.addAction('Open folder\tCtrl+O',self.get_main_folder)
+        fileMenu.addAction('Clear \tCtrl+I',self.clear_main_folder)
+        fileMenu.addSeparator()
+        QShortcut(QKeySequence('Ctrl+O'),self).activated.connect(self.get_main_folder)
+        QShortcut(QKeySequence('Ctrl+I'),self).activated.connect(self.clear_main_folder)
+        if type(self.settings['prev_folders']) == list:
+            for folder in self.settings['prev_folders']:
+                tmp = fileMenu.addAction(folder,self.test)
+                tmp.setObjectName(folder)
+
+
+            fileMenu.addSeparator()
+        elif type(self.settings['prev_folders']) == str:
+            fileMenu.addAction(self.settings['prev_folders'])
+
+        fileMenu.addAction('Exit',exit)
+
+    def menu_about(self):
+        about = self.menubar.addMenu('&Help')
         about.addAction('About', self.about_dev)
         about.addAction('How to use?', self.how_to_use)
+
+
+    def main_menu(self):
+        self.menubar = self.menuBar()
+        self.menu_file()
+        self.menu_about()
+
 
 
 if __name__ == "__main__":

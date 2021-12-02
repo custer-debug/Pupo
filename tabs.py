@@ -4,6 +4,10 @@ import os
 from datetime import datetime
 from json import dump
 import shutil
+import openpyxl
+from csv import reader
+
+
 
 class MyTableWidget(QWidget):
     def __init__(self, parent):
@@ -14,6 +18,13 @@ class MyTableWidget(QWidget):
         self.init_tab3()
         self.init_tab4()
         self.init_tab5()
+
+    def set_main_fodler(self, text:str) -> None:
+        self.path1.setText(text)
+        self.main_line1.setText(text)
+        self.line_found.setText(text)
+        self.line_split_review.setText(text)
+
 
 
     # region tab1
@@ -136,17 +147,11 @@ class MyTableWidget(QWidget):
     def init_tab2(self):
         # Create elements
         self.radio_button1 = QRadioButton('Collect txt', self.tab2)
-        self.radio_button2 = QRadioButton('Split dat', self.tab2)
-        self.radio_button3 = QRadioButton('Send out exe', self.tab2)
+        self.radio_button2 = QRadioButton('Send out exe', self.tab2)
         self.radio_button1.setChecked(True)
-        self.radio_button1.clicked.connect(self.show_elements)
-        self.radio_button2.clicked.connect(self.hide_elements)
-        self.radio_button3.clicked.connect(self.show_elements)
         group = QButtonGroup(self.tab2)
         group.addButton(self.radio_button1)
         group.addButton(self.radio_button2)
-        group.addButton(self.radio_button3)
-
 
         self.label_1 = QLabel('Path', self.tab2)
         self.label_2 = QLabel('Path', self.tab2)
@@ -176,9 +181,8 @@ class MyTableWidget(QWidget):
         grid.setColumnStretch(3,5)
 
 
-        grid.addWidget(self.radio_button1, 0,1, alignment=Qt.AlignLeft)
-        grid.addWidget(self.radio_button2, 0,2, alignment=Qt.AlignCenter)
-        grid.addWidget(self.radio_button3, 0,3, alignment=Qt.AlignRight)
+        grid.addWidget(self.radio_button1, 0,1, alignment=Qt.AlignCenter)
+        grid.addWidget(self.radio_button2, 0,3, alignment=Qt.AlignLeft)
 
         grid.addWidget(self.label_1, 1,0)
         grid.addWidget(self.label_2, 2,0)
@@ -195,15 +199,6 @@ class MyTableWidget(QWidget):
         self.tab2.setLayout(grid)
 
 
-    def hide_elements(self) -> None:
-        self.path2.setText('')
-        self.path2.setDisabled(True)
-        self.btn2.setDisabled(True)
-
-    def show_elements(self) -> None:
-        self.path2.setText('')
-        self.path2.setDisabled(False)
-        self.btn2.setDisabled(False)
 
 
     def select_second_path(self):
@@ -224,11 +219,19 @@ class MyTableWidget(QWidget):
             self.collect_files()
 
         if self.radio_button2.isChecked():
-            self.cpu_count = os.cpu_count()
-            self.split_files()
+            self.send_out_files()
 
-        if self.radio_button3.isChecked():
-            print('send out exe')
+
+    def send_out_files(self):
+        self.Print(self.area, 'Start copy...')
+        exe = self.path2.text().split('/')[-1]
+        for root,folders,_ in os.walk(self.path1.text()):
+            for folder in folders:
+                shutil.copyfile(self.path2.text(),os.path.join(root, folder,exe))
+                self.Print(self.area, os.path.join(root, folder,exe))
+        self.Print(self.area, 'Finish copy...')
+
+
 
 
     def collect_files(self) -> None:
@@ -244,41 +247,9 @@ class MyTableWidget(QWidget):
             self.probar.setValue(percents)
             self.Print(self.area, f'{item} -> {to_path}')
         self.Print(self.area, f'{size} files copied')
-        self.Print(self.area, 'End copy')
+        self.Print(self.area, 'Finish copy')
 
 
-    def split_files(self):
-        folders = self.make_directories()
-        cwd = self.path1.text()
-        files = os.listdir(cwd)
-        # поиск файлов dat
-        dat_files = [os.path.join(cwd,item) for item in files if item.endswith('.dat')]
-        count_dat_files = len(dat_files)
-        split_list = [count_dat_files // self.cpu_count] * self.cpu_count
-        split_list[-1] += count_dat_files % self.cpu_count
-        for i in range(self.cpu_count):
-            for _ in range(split_list[i]):
-                try:
-                    shutil.move(dat_files[0],os.path.join(folders[i],dat_files[0].replace('\\','/').split('/')[-1]))
-                    dat_files.pop(0)
-                except FileNotFoundError:
-                    self.Print(self.area, 'File Not Found Error')
-
-
-    def make_directories(self) -> list[str]:
-        cwd = self.path1.text()
-        folders = []
-        for i in range(self.cpu_count):
-            try:
-                folder = os.path.join(cwd,f'Path_{i+1}')
-                folders.append(folder)
-                os.makedirs(folder)
-            except FileExistsError:
-                self.Print(self.area, f'Folder {folder} already exists')
-                continue
-
-        self.Print(self.area,f'Folders successfull created')
-        return folders
 
     # endregion
 
@@ -297,7 +268,9 @@ class MyTableWidget(QWidget):
                 QFileDialog().getExistingDirectory(None,'Select directory')))
 
         self.btn_found = QPushButton('Found',self.tab3)
+        self.btn_found.clicked.connect(self.found_files)
         self.btn_save = QPushButton('Save',self.tab3)
+        self.btn_save.clicked.connect(self.check_paths)
         self.btn_hide = QPushButton('Hide all', self.tab3)
         self.btn_hide.clicked.connect(self.hide_items)
         self.btn_select = QPushButton('Select all', self.tab3)
@@ -308,9 +281,8 @@ class MyTableWidget(QWidget):
 
         self.list = QListWidget(self.tab3)
         self.list.setSelectionMode(QAbstractItemView.MultiSelection)
-        l = ['One','Two', 'Three', 'Four', 'Five']
-        self.list.addItems(l)
-        self.list.itemClicked.connect(self.item_clicked)
+
+
 
         self.checkbox_xlsx1 = QCheckBox('One file = one sheet',self.tab3)
         self.checkbox_xlsx1.clicked.connect(lambda state: self.line_save1.setEnabled(state))
@@ -333,6 +305,94 @@ class MyTableWidget(QWidget):
         grid.addWidget(self.list, 3,0,1,3)
         grid.addWidget(self.btn_save, 4,3)
         self.tab3.setLayout(grid)
+
+
+    def check_paths(self) -> None:
+        check1 = self.checkbox_xlsx1.isChecked()
+        check2 = self.checkbox_xlsx2.isChecked()
+
+        if not check1 and not check2:
+            return QMessageBox.warning(self, 'Error','Choose view xlsx file')
+
+        if not self.line_save1.text() and not self.line_save2.text():
+            return QMessageBox.warning(self, 'Error','Enter the name for xlsx-file')
+
+        if len(self.list.selectedItems()) == 0:
+            return QMessageBox.warning(self, 'Error','Choose files for saved')
+
+        if check1:
+            self.one_file_to_one_sheet()
+            QMessageBox.information(self,'Success','Files collected')
+
+
+        if check2:
+            self.many_files_to_one_sheet()
+            QMessageBox.information(self,'Success','Files collected')
+
+
+
+    def delete_sheet(self,wb):
+        del wb['Sheet']
+
+    def many_files_to_one_sheet(self) -> None:
+        _workbook = openpyxl.Workbook()
+        _worksheet = _workbook.create_sheet('Excel')
+        # count = 0
+        for item in self.list.selectedItems():
+            with open(item.text(),'r') as file:
+                cr = reader(file,delimiter = '\t')
+                content = [line for line in cr]
+
+                for line in content:
+                    for i in range(1, len(line) - 1):
+                        line[i] = line[i].replace(' ', '')
+                        line[i] = float(line[i])
+
+                    # count += 1
+                    _worksheet.append(line)
+                file.close()
+
+        self.delete_sheet(_workbook)
+        # print(count)
+        _workbook.save(filename=os.path.join(r'C:\Users\romak\Desktop\Pupo\Hello', self.line_save2.text() + '.xlsx'))
+
+
+
+    def one_file_to_one_sheet(self) -> None:
+        _workbook = openpyxl.Workbook()
+        for item in self.list.selectedItems():
+            _worksheet = _workbook.create_sheet(item.text().split('\\')[-1])
+            with open(item.text(),'r') as file:
+                cr = reader(file,delimiter = '\t')
+                content = [line for line in cr]
+
+
+                for line in content:
+                    for i in range(1, len(line) - 1):
+                        line[i] = line[i].replace(' ', '')
+                        line[i] = float(line[i])
+                    _worksheet.append(line)
+                file.close()
+            _workbook.save(filename=os.path.join(r'C:\Users\romak\Desktop\Pupo\Hello',self.line_save1.text() + '.xlsx'))
+        self.delete_sheet(_workbook)
+
+
+
+    def found_files(self) -> None:
+        self.list.clear()
+        result = []
+        if not self.line_found.text():
+            return result
+
+        for root, _, files in os.walk(self.line_found.text()):
+            for item in files:
+                if item.endswith('.txt'):
+                    result.append(os.path.join(root,item))
+
+
+        self.list.addItems(result)
+        self.list.itemClicked.connect(self.item_clicked)
+
 
 
     def changeItems(self, flag) -> None:
@@ -429,7 +489,12 @@ class MyTableWidget(QWidget):
 
         self.line_split_review = QLineEdit(self.tab5)
         self.line_first_file = QLineEdit(self.tab5)
+        self.line_first_file.setToolTip('First file')
         self.line_last_file = QLineEdit(self.tab5)
+        self.line_last_file.setToolTip('Last file')
+        self.line_profile_name = QLineEdit(self.tab5)
+        self.line_profile_name.setToolTip('Name profile')
+
         self.area_split = QTextEdit(self.tab5)
         self.area_split.setReadOnly(True)
 
@@ -437,9 +502,13 @@ class MyTableWidget(QWidget):
         self.radio_profile.clicked.connect(self.profile_radio_elements)
 
         self.btn_split_review = QPushButton('Review', self.tab5)
+        self.btn_split_review.clicked.connect(lambda : self.line_split_review.setText(
+                QFileDialog().getExistingDirectory(None,'Select directory')))
+
         self.btn_split = QPushButton('Run', self.tab5)
+        self.btn_split.clicked.connect(self.checked_elements)
         self.combo = QComboBox(self.tab5)
-        self.combo.addItems(['1','2','3','4','5','6','7','8','9','10'])
+        self.combo.addItems(['2','3','4','5','6','7','8','9','10'])
 
         self.optimizate_radio_elements()
         group = QButtonGroup(self.tab5)
@@ -456,21 +525,99 @@ class MyTableWidget(QWidget):
         grid.addWidget(self.radio_profile, 2,0)
         grid.addWidget(self.line_first_file, 2,1)
         grid.addWidget(self.line_last_file, 2,2)
+        grid.addWidget(self.line_profile_name, 2,3)
         grid.addWidget(self.area_split, 3,0,3,6)
         grid.addWidget(self.btn_split, 7,5)
-
         self.tab5.setLayout(grid)
 
     def optimizate_radio_elements(self):
         self.combo.setDisabled(False)
         self.line_first_file.setDisabled(True)
         self.line_last_file.setDisabled(True)
+        self.line_profile_name.setDisabled(True)
 
     def profile_radio_elements(self):
         self.combo.setDisabled(True)
         self.line_first_file.setDisabled(False)
         self.line_last_file.setDisabled(False)
+        self.line_profile_name.setDisabled(False)
 
+    def checked_elements(self):
+        if self.radio_optimization.isChecked():
+            self.optimization()
+
+        if self.radio_profile.isChecked() and self.create_profile_folder():
+            self.copy_files(self.profiles())
+            self.Print(self.area_split, self.line_profile_name.text() + ' is done!')
+
+
+
+    def get_files(self):
+        cwd = self.line_split_review.text()
+        return [os.path.join(cwd,item) for item in os.listdir(cwd) if item.endswith('.dat')]
+
+
+    def copy_files(self, files):
+        for item in files:
+            try:
+                shutil.copyfile(item,os.path.join(self.profile_folder,item.split('\\')[-1]))
+            except Exception as ex:
+                self.Print(self.area_split, ex)
+
+    def create_profile_folder(self):
+        self.profile_folder = os.path.join(self.line_split_review.text(), self.line_profile_name.text())
+        if os.path.isdir(self.profile_folder):
+            QMessageBox.warning(self, 'Error', 'Folder already exists')
+            return False
+        os.makedirs(self.profile_folder)
+        return True
+
+    def profiles(self):
+        files = self.get_files()
+        res = []
+        for item in range(len(files)):
+            if files[item].endswith(self.line_first_file.text() + '.dat'):
+                i = item
+                while(not files[i].endswith(self.line_last_file.text() + '.dat')):
+                    res.append(files[i])
+                    i += 1
+                res.append(files[i])
+
+        return res
+
+
+    def optimization(self):
+        split_num = int(self.combo.currentText())
+        self.split_num = split_num
+        folders = self.make_directories()
+        dat_files = self.get_files()
+        # поиск файлов dat
+        count_dat_files = len(dat_files)
+        split_list = [count_dat_files // split_num] * split_num
+        split_list[-1] += count_dat_files % split_num
+        for i in range(split_num):
+            for _ in range(split_list[i]):
+                try:
+                    shutil.move(dat_files[0],os.path.join(folders[i],dat_files[0].replace('\\','/').split('/')[-1]))
+                    dat_files.pop(0)
+                except FileNotFoundError:
+                    self.Print(self.area, 'File Not Found Error')
+
+
+    def make_directories(self) -> list[str]:
+        cwd = self.line_split_review.text()
+        folders = []
+        for i in range(self.split_num):
+            try:
+                folder = os.path.join(cwd,f'Path_{i+1}')
+                folders.append(folder)
+                os.makedirs(folder)
+            except FileExistsError:
+                self.Print(self.area, f'Folder {folder} already exists')
+                continue
+
+        self.Print(self.area,f'Folders successfull created')
+        return folders
 
 
     # endregion
@@ -486,8 +633,8 @@ class MyTableWidget(QWidget):
         self.tab5 = QWidget()
         self.tabs.resize(300,200)
 
-        self.tabs.addTab(self.tab2,"Move files")
         self.tabs.addTab(self.tab1,"Clean up")
+        self.tabs.addTab(self.tab2,"Move files")
         self.tabs.addTab(self.tab3,"Txt to xlsx")
         self.tabs.addTab(self.tab4,"Config file")
         self.tabs.addTab(self.tab5,"Split files")
@@ -495,7 +642,6 @@ class MyTableWidget(QWidget):
         vbox = QVBoxLayout()
         vbox.addWidget(self.tabs)
         self.setLayout(vbox)
-        # self.area.Print('hello')
 
 
     def find_files(self, cwd:str) -> list[str]:
