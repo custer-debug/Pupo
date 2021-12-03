@@ -39,6 +39,7 @@ class MyTableWidget(QWidget):
         self.main_line1 = QLineEdit(self.tab1)
         self.line_extension = QLineEdit('.exe',self.tab1)
         self.line_rename_file = QLineEdit('test.txt',self.tab1)
+        self.line_rename_file.setToolTip('Only txt files!')
         self.line_extension.setEnabled(False)
         self.line_rename_file.setEnabled(False)
 
@@ -81,6 +82,13 @@ class MyTableWidget(QWidget):
         if not (self.check_box1.isChecked() or self.check_box2.isChecked() or self.check_box3.isChecked()):
             QMessageBox.warning(self, 'Error', 'Choose action')
 
+        self.disabled_check_boxes()
+
+
+    def disabled_check_boxes(self):
+        self.check_box1.setChecked(False)
+        self.check_box2.setChecked(False)
+        self.check_box3.setChecked(False)
 
     def convert_bytes(self,size):
         for x in ['bytes', 'KB', 'MB', 'GB', 'TB']:
@@ -101,8 +109,8 @@ class MyTableWidget(QWidget):
                 if file.endswith(extension):
                     path = os.path.join(root,file)
                     self.Print(self.text, path)
-                    # os.remove(path)
                     size += os.stat(path).st_size
+                    os.remove(path)
                     count += 1
         self.Print(self.text, f'Delete {count} files ({self.convert_bytes(size)})')
 
@@ -125,7 +133,7 @@ class MyTableWidget(QWidget):
             if not txt: continue
             rename = f'{root.split("/")[-1]}_{txt.split(".")[0]}_{"_".join(dat.split("_")[1:5])}.txt'
             os.rename(f'{root}/{txt}',f'{root}/{rename}')
-            self.Print(f'{root}/{txt} -> {rename}'.replace('\\','/'))
+            self.Print(self.text, f'{root}/{txt} -> {rename}'.replace('\\','/'))
 
         self.Print(self.text,'End renaming...')
 
@@ -227,8 +235,12 @@ class MyTableWidget(QWidget):
         exe = self.path2.text().split('/')[-1]
         for root,folders,_ in os.walk(self.path1.text()):
             for folder in folders:
-                shutil.copyfile(self.path2.text(),os.path.join(root, folder,exe))
-                self.Print(self.area, os.path.join(root, folder,exe))
+                to = os.path.join(root, folder,exe)
+                try:
+                    shutil.copyfile(self.path2.text(),to)
+                    self.Print(self.area, os.path.join(root, folder,exe))
+                except shutil.SameFileError:
+                    self.Print(self.area, f'File {to} already exists')
         self.Print(self.area, 'Finish copy...')
 
 
@@ -258,13 +270,18 @@ class MyTableWidget(QWidget):
 
     def init_tab3(self):
         self.line_found = QLineEdit(self.tab3)
-        self.line_save1 = QLineEdit(self.tab3)
-        self.line_save1.setEnabled(False)
-        self.line_save2 = QLineEdit(self.tab3)
-        self.line_save2.setEnabled(False)
+        self.line_name_one_to_one = QLineEdit(self.tab3)
+        self.line_name_one_to_one.setEnabled(False)
+        self.line_name_many_to_one = QLineEdit(self.tab3)
+        self.line_name_many_to_one.setEnabled(False)
+        self.line_save = QLineEdit(self.tab3)
 
-        self.btn_review = QPushButton('Review',self.tab3)
-        self.btn_review.clicked.connect(lambda : self.line_found.setText(
+        self.btn_review_found = QPushButton('Review',self.tab3)
+        self.btn_review_found.clicked.connect(lambda : self.line_found.setText(
+                QFileDialog().getExistingDirectory(None,'Select directory')))
+
+        self.btn_review_save = QPushButton('Review',self.tab3)
+        self.btn_review_save.clicked.connect(lambda : self.line_save.setText(
                 QFileDialog().getExistingDirectory(None,'Select directory')))
 
         self.btn_found = QPushButton('Found',self.tab3)
@@ -285,25 +302,28 @@ class MyTableWidget(QWidget):
 
 
         self.checkbox_xlsx1 = QCheckBox('One file = one sheet',self.tab3)
-        self.checkbox_xlsx1.clicked.connect(lambda state: self.line_save1.setEnabled(state))
+        self.checkbox_xlsx1.clicked.connect(lambda state: self.line_name_one_to_one.setEnabled(state))
         self.checkbox_xlsx2 = QCheckBox('Many files = one sheet',self.tab3)
-        self.checkbox_xlsx2.clicked.connect(lambda state: self.line_save2.setEnabled(state))
+        self.checkbox_xlsx2.clicked.connect(lambda state: self.line_name_many_to_one.setEnabled(state))
 
         grid = QGridLayout()
         grid.addWidget(self.line_found, 0,0,1,2)
-        grid.addWidget(self.btn_review, 0,2)
+        grid.addWidget(self.btn_review_found, 0,2)
         grid.addWidget(self.btn_found, 0,3)
         grid.addWidget(self.checkbox_xlsx1, 1,0)
-        grid.addWidget(self.line_save1, 1,1)
+        grid.addWidget(self.line_name_one_to_one, 1,1)
         grid.addWidget(self.checkbox_xlsx2, 2,0)
-        grid.addWidget(self.line_save2, 2,1)
-        grid.addWidget(self.btn_hide,3,3)
-        grid.addWidget(self.btn_select,3,3, alignment=Qt.AlignTop)
+        grid.addWidget(self.line_name_many_to_one, 2,1)
+        grid.addWidget(self.line_save, 3,0,1,2)
+        grid.addWidget(self.btn_review_save, 3,2)
 
-        grid.addWidget(self.label_select, 4,0)
+        grid.addWidget(self.btn_hide,4,3)
+        grid.addWidget(self.btn_select,4,3, alignment=Qt.AlignTop)
 
-        grid.addWidget(self.list, 3,0,1,3)
-        grid.addWidget(self.btn_save, 4,3)
+        grid.addWidget(self.label_select, 5,0)
+
+        grid.addWidget(self.list, 4,0,1,3)
+        grid.addWidget(self.btn_save, 5,3)
         self.tab3.setLayout(grid)
 
 
@@ -314,11 +334,15 @@ class MyTableWidget(QWidget):
         if not check1 and not check2:
             return QMessageBox.warning(self, 'Error','Choose view xlsx file')
 
-        if not self.line_save1.text() and not self.line_save2.text():
+        if not self.line_name_one_to_one.text() and not self.line_name_many_to_one.text():
             return QMessageBox.warning(self, 'Error','Enter the name for xlsx-file')
 
         if len(self.list.selectedItems()) == 0:
             return QMessageBox.warning(self, 'Error','Choose files for saved')
+
+        if not self.line_save.text():
+            return QMessageBox.warning(self, 'Error','Choose folder for saved')
+
 
         if check1:
             self.one_file_to_one_sheet()
@@ -354,7 +378,7 @@ class MyTableWidget(QWidget):
 
         self.delete_sheet(_workbook)
         # print(count)
-        _workbook.save(filename=os.path.join(r'C:\Users\romak\Desktop\Pupo\Hello', self.line_save2.text() + '.xlsx'))
+        _workbook.save(filename=os.path.join(self.line_save.text(), self.line_name_many_to_one.text() + '.xlsx'))
 
 
 
@@ -373,7 +397,7 @@ class MyTableWidget(QWidget):
                         line[i] = float(line[i])
                     _worksheet.append(line)
                 file.close()
-            _workbook.save(filename=os.path.join(r'C:\Users\romak\Desktop\Pupo\Hello',self.line_save1.text() + '.xlsx'))
+            _workbook.save(filename=os.path.join(self.line_save.text(),self.line_name_one_to_one.text() + '.xlsx'))
         self.delete_sheet(_workbook)
 
 
@@ -601,7 +625,7 @@ class MyTableWidget(QWidget):
                     shutil.move(dat_files[0],os.path.join(folders[i],dat_files[0].replace('\\','/').split('/')[-1]))
                     dat_files.pop(0)
                 except FileNotFoundError:
-                    self.Print(self.area, 'File Not Found Error')
+                    self.Print(self.area_split, 'File Not Found Error')
 
 
     def make_directories(self) -> list[str]:
@@ -613,10 +637,10 @@ class MyTableWidget(QWidget):
                 folders.append(folder)
                 os.makedirs(folder)
             except FileExistsError:
-                self.Print(self.area, f'Folder {folder} already exists')
+                self.Print(self.area_split, f'Folder {folder} already exists')
                 continue
 
-        self.Print(self.area,f'Folders successfull created')
+        self.Print(self.area_split,f'Folders successfull created')
         return folders
 
 
