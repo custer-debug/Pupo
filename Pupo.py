@@ -2,33 +2,11 @@ import sys
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QKeySequence
-from os import getcwd
+from os import getcwd, execl,path
 import tabs
 from platform import platform
 from json import load, dump
 
-style = '''
-QMenuBar{
-    background-color: lightgray;
-}
-
-QTabBar::tab {
-  padding: 8px;
-}
-
-QTabBar::tab:selected {
-  background: white;
-}
-QPushButton{
-    padding : 8px 20px;
-}
-QLineEdit{
-    height: 23px;
-}
-QProgressBar{
-    height: 25px;
-}
-'''
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -40,10 +18,10 @@ class MainWindow(QMainWindow):
         icon = self.style().standardIcon(pixmapi)
         self.setWindowIcon(icon)
         self.setWindowTitle("pupo")
-        self.setStyleSheet(style)
         self.table_widget = tabs.MyTableWidget(self)
         self.setCentralWidget(self.table_widget)
         self.get_settings()
+        self.setStyleSheet(open(self.settings['theme']).read())
         self.table_widget.set_main_fodler(self.settings['prev_folders'][self.count_])
         self.main_menu()
 
@@ -116,7 +94,7 @@ class MainWindow(QMainWindow):
     def how_to_use(self):
         pass
 
-    def test(self):
+    def prev_folders(self):
         self.table_widget.set_main_fodler(self.sender().objectName())
 
     def menu_file(self):
@@ -129,7 +107,7 @@ class MainWindow(QMainWindow):
         QShortcut(QKeySequence('Ctrl+I'),self).activated.connect(self.clear_main_folder)
         if type(self.settings['prev_folders']) == list:
             for folder in self.settings['prev_folders']:
-                tmp = fileMenu.addAction(folder,self.test)
+                tmp = fileMenu.addAction(folder,self.prev_folders)
                 tmp.setObjectName(folder)
 
 
@@ -138,6 +116,24 @@ class MainWindow(QMainWindow):
             fileMenu.addAction(self.settings['prev_folders'])
 
         fileMenu.addAction('Exit',exit)
+
+
+    def light_theme(self):
+        self.settings['theme'] = './themes/light_theme.css'
+        self.set_settings()
+        execl(sys.executable,path.abspath(__file__),*sys.argv)
+
+    def dark_theme(self):
+        self.settings['theme'] = './themes/dark_theme.css'
+        self.set_settings()
+        execl(sys.executable,path.abspath(__file__),*sys.argv)
+
+
+    def menu_option(self):
+        option = self.menubar.addMenu('&Option')
+        option.addAction('light theme', self.light_theme)
+        option.addAction('Dark theme', self.dark_theme)
+
 
     def menu_about(self):
         about = self.menubar.addMenu('&Help')
@@ -148,14 +144,13 @@ class MainWindow(QMainWindow):
     def main_menu(self):
         self.menubar = self.menuBar()
         self.menu_file()
+        self.menu_option()
         self.menu_about()
 
 
 
 if __name__ == "__main__":
-
     app = QApplication(sys.argv)
-
     w = MainWindow()
     w.show()
 

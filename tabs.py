@@ -8,7 +8,6 @@ import openpyxl
 from csv import reader
 
 
-
 class MyTableWidget(QWidget):
     def __init__(self, parent):
         super(QWidget, self).__init__(parent)
