@@ -45,7 +45,6 @@ def rename_files(cwd, name) -> None:
         txt =  find_first_file(name, files)
         if not txt: continue
         rename = generate_new_name(root,txt,dat)
-        # os.rename(f'{root}/{txt}',f'{root}/{rename}')
         print(f'{root}/{txt} -> {rename}'.replace('\\','/'))
 
 
@@ -61,9 +60,6 @@ def delete_empty_directories(path:str) -> list[str]:
             delete_empty_directories(current_dir)
             if not os.listdir(current_dir):
                 remove.append(current_dir)
-                # os.rmdir(current_dir)
-                # print()
+
     print(remove)
     return remove
-# for i in os.walk(os.getcwd()): #root, folders, files
-#     print([j for j in i[2] if j.endswith('.py')])
