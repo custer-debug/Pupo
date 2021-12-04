@@ -12,11 +12,11 @@ class MyTableWidget(QWidget):
     def __init__(self, parent):
         super(QWidget, self).__init__(parent)
         self.initTabsWidget()
-        self.init_tab1()
-        self.init_tab2()
-        self.init_tab3()
-        self.init_tab4()
-        self.init_tab5()
+        self.init_clean_up_tab()
+        self.init_move_files_tab()
+        self.init_txt_to_xlsx_tab()
+        self.init_config_file_tab()
+        self.init_split_files_tab()
 
     def set_main_fodler(self, text:str) -> None:
         self.path1.setText(text)
@@ -24,32 +24,31 @@ class MyTableWidget(QWidget):
         self.line_found.setText(text)
         self.line_split_review.setText(text)
 
+    # region clean_up_tab
 
-
-    # region tab1
-    def init_tab1(self) -> None:
+    def init_clean_up_tab(self) -> None:
         '''Функция инициализации первого таба.\n'''
         # Create elements
-        self.btn1 = QPushButton('Review', self.tab1)
+        self.btn1 = QPushButton('Review', self.clean_up_tab)
         self.btn1.clicked.connect(lambda : self.main_line1.setText(
                 QFileDialog().getExistingDirectory(None,'Select directory')))
 
-        self.btn2 = QPushButton('Run', self.tab1)
-        self.btn2.clicked.connect(self.check_elements)
-        self.main_line1 = QLineEdit(self.tab1)
-        self.line_extension = QLineEdit('.exe',self.tab1)
-        self.line_rename_file = QLineEdit('test.txt',self.tab1)
+        self.btn2 = QPushButton('Run', self.clean_up_tab)
+        self.btn2.clicked.connect(self.function_node_clean_up_tab)
+        self.main_line1 = QLineEdit(self.clean_up_tab)
+        self.line_extension = QLineEdit('.exe',self.clean_up_tab)
+        self.line_rename_file = QLineEdit('test.txt',self.clean_up_tab)
         self.line_rename_file.setToolTip('Only txt files!')
         self.line_extension.setEnabled(False)
         self.line_rename_file.setEnabled(False)
 
-        self.check_box1 = QCheckBox('Delete files', self.tab1)
-        self.check_box2 = QCheckBox('Rename files', self.tab1)
-        self.check_box3 = QCheckBox('Delete empty dir', self.tab1)
+        self.check_box1 = QCheckBox('Delete files', self.clean_up_tab)
+        self.check_box2 = QCheckBox('Rename files', self.clean_up_tab)
+        self.check_box3 = QCheckBox('Delete empty dir', self.clean_up_tab)
         self.check_box1.clicked.connect(lambda state: self.line_extension.setEnabled(state))
         self.check_box2.clicked.connect(lambda state: self.line_rename_file.setEnabled(state))
 
-        self.text = QTextEdit(self.tab1)
+        self.text = QTextEdit(self.clean_up_tab)
         self.text.setReadOnly(True)
 
         # Create grid
@@ -64,23 +63,30 @@ class MyTableWidget(QWidget):
         grid.addWidget(self.text, 4,0,5,7)
         grid.addWidget(self.btn2, 10, 6)
 
-        self.tab1.setLayout(grid)
+        self.clean_up_tab.setLayout(grid)
 
-    def check_elements(self) -> None:
-        '''
-        Функция проверки на наличие и корректности введённых данных для вызова определённой операции над файлами.
-        '''
+    def function_node_clean_up_tab(self) -> None:
+        '''Функция проверки на наличие и корректности введённых данных для вызова определённой операции над файлами.'''
         self.text.clear()
         if not os.path.exists(self.main_line1.text()):
             QMessageBox.warning(self, 'Error', 'Path is not exists')
             return
 
         if self.check_box1.isChecked() and self.line_extension.text():
-            self.delete_files()
+            self.Print(self.text, 'Start deleting...')
+            tmp = self.delete_files()
+            self.Print(self.text, f'Delete {tmp[0]} files ({self.convert_bytes(tmp[1])})')
+
         if self.check_box2.isChecked() and self.line_rename_file.text():
+            self.Print(self.text,'Start renaming...')
             self.rename_files()
+            self.Print(self.text,'End renaming...')
+
         if self.check_box3.isChecked():
+            self.Print(self.text,'Start removing directories...')
             self.delete_empty_directories(self.main_line1.text())
+            self.Print(self.text,'Finish removing...')
+
 
         if not (self.check_box1.isChecked() or self.check_box2.isChecked() or self.check_box3.isChecked()):
             QMessageBox.warning(self, 'Error', 'Choose action')
@@ -88,19 +94,17 @@ class MyTableWidget(QWidget):
         self.disabled_check_boxes()
 
     def disabled_check_boxes(self) -> None:
-        '''
-        Функция снятия выделения чек-боксов.\n
-        Она вызывается при успешной выполенении операции.
-        '''
+        '''Функция снятия выделения чек-боксов.\n
+        Она вызывается при успешной выполенении операции.'''
         self.check_box1.setChecked(False)
         self.check_box2.setChecked(False)
         self.check_box3.setChecked(False)
+        self.line_extension.setEnabled(False)
+        self.line_rename_file.setEnabled(False)
 
     def convert_bytes(self,size) -> str:
-        '''
-        Функция определения единиц измерения по размеру удалённых файлов.\n
-        Возрвращает единицы измерения и округлённый до целых размер удалённых файлов.
-        '''
+        '''Функция определения единиц измерения по размеру удалённых файлов.\n
+        Возрвращает единицы измерения и округлённый до целых размер удалённых файлов.'''
         for x in ['bytes', 'KB', 'MB', 'GB', 'TB']:
             if size < 1024.0:
                 return "%3.1f %s" % (size, x)
@@ -108,101 +112,99 @@ class MyTableWidget(QWidget):
 
         return size
 
-    def delete_files(self) -> None:
-        '''
-        Функция из главного функционала\n
+    def delete_files(self) -> tuple[int,int]:
+        '''Функция из главного функционала\n
         Одна из функции главного функционала программы.
-        Удаляет файлы с определённым расширением или именем.
-        '''
-        extension = self.line_extension.text()
+        Удаляет файлы с определённым расширением или именем.'''
         size = 0
-        count = 0
-        self.Print(self.text, 'Start deleting...')
-        for root, _, files in os.walk(self.main_line1.text()):
-            for file in files:
-                if file.endswith(extension):
-                    path = os.path.join(root,file)
-                    self.Print(self.text, path)
-                    size += os.stat(path).st_size
-                    os.remove(path)
-                    count += 1
-        self.Print(self.text, f'Delete {count} files ({self.convert_bytes(size)})')
+        removing_files = self.find_all_files_extension(
+            self.main_line1.text(),
+            self.line_extension.text())
+
+        for i in removing_files:
+            self.Print(self.text, f'File {i} remove')
+            size += os.stat(i).st_size
+            try:
+                os.remove(i)
+            except Exception as ex:
+                self.Print(self.text, ex)
+
+        return (len(removing_files),size)
 
     def find_first_file(self, endswitch:str, files:list) -> str:
-        '''
-        Функция выбора первого файла из списка. Файлы ищутся с определённым расширением.
-        '''
+        '''Функция выбора первого файла из списка. Файлы ищутся с определённым расширением.'''
         for file in files:
             if file.endswith(endswitch):
                 return file
         return ''
 
     def rename_files(self) -> None:
-        '''
-        Функция из главного функционала\n
+        '''Функция из главного функционала\n
         Выполняет поиск файлов с одинаковым именем (например Out_res.txt)
         и переименование по следующем конструкциям:\n
-        1.\tназвание папки в которой находится файл + текущее имя + дата и время из найденого dat-файла (если есть хотя бы один в папке);
-        2.\tназвание папки в которой находится файл + текущее имя
-        '''
-        self.Print(self.text,'Start renaming...')
+        1.\tназвание папки в которой находится файл + дата и время из найденого dat-файла (если есть хотя бы один в папке) + текущее имя;
+        2.\tназвание папки в которой находится файл + текущее имя.'''
         for root, _, files in os.walk(self.main_line1.text()):
             dat =  self.find_first_file('.dat', files)
-            txt =  self.find_first_file(self.line_rename_file.text(), files)
-            if not txt: continue
-            rename = f'{root.split("/")[-1]}_{txt.split(".")[0]}_{"_".join(dat.split("_")[1:5])}.txt'
-            os.rename(f'{root}/{txt}',f'{root}/{rename}')
-            self.Print(self.text, f'{root}/{txt} -> {rename}'.replace('\\','/'))
+            file =  self.find_first_file(self.line_rename_file.text(), files)
+            if not file: continue
 
-        self.Print(self.text,'End renaming...')
+            folder = root.split('/')[-1].split('\\')[-1]
+            if not dat:
+                new_name = '_'.join([folder,file])
+            else:
+                new_name = '_'.join([folder,dat.split('_')[1:5],file])
+
+            try:
+                os.rename(os.path.join(root,file),os.path.join(root,new_name))
+                self.Print(self.text, f'{os.path.join(root,file)} -> {os.path.join(root,new_name)}')
+            except Exception as ex:
+                self.Print(self.text,ex)
 
     def delete_empty_directories(self, path:str) -> None:
-        '''
-        Функция из главного функционала\n
-        Выполняет удаление пустых директорий.
-        '''
+        '''Функция из главного функционала\n
+        Выполняет удаление пустых директорий.'''
         for _dir in os.listdir(path):
             current_dir = os.path.join(path, _dir)
             if os.path.isdir(current_dir):
                 self.delete_empty_directories(current_dir)
                 if not os.listdir(current_dir):
-                    os.rmdir(current_dir)
-                    self.Print(self.text,"Папка удалена: " + current_dir)
+                    self.catch_error(os.rmdir, self.text, current_dir)
+                    self.Print(self.text,"Folder: " + current_dir + " is delete")
+
 
     # endregion
 
-    # region tab2
+    # region move_files_tab
 
-    def init_tab2(self) -> None:
-        '''
-        Функция инициализации второго таба
-        '''
+    def init_move_files_tab(self) -> None:
+        '''Функция инициализации второго таба.'''
         # Create elements
-        self.radio_button1 = QRadioButton('Collect txt', self.tab2)
-        self.radio_button2 = QRadioButton('Send out exe', self.tab2)
+        self.radio_button1 = QRadioButton('Collect txt', self.move_files_tab)
+        self.radio_button2 = QRadioButton('Send out exe', self.move_files_tab)
         self.radio_button1.setChecked(True)
-        group = QButtonGroup(self.tab2)
+        group = QButtonGroup(self.move_files_tab)
         group.addButton(self.radio_button1)
         group.addButton(self.radio_button2)
 
-        self.label_1 = QLabel('Path', self.tab2)
-        self.label_2 = QLabel('Path', self.tab2)
+        self.label_1 = QLabel('Path', self.move_files_tab)
+        self.label_2 = QLabel('Path', self.move_files_tab)
 
-        self.path1 = QLineEdit(self.tab2)
-        self.path2 = QLineEdit(self.tab2)
-        self.area = QTextEdit(self.tab2)
+        self.path1 = QLineEdit(self.move_files_tab)
+        self.path2 = QLineEdit(self.move_files_tab)
+        self.area = QTextEdit(self.move_files_tab)
         self.area.setReadOnly(True)
-        self.probar = QProgressBar(self.tab2)
+        self.probar = QProgressBar(self.move_files_tab)
         self.probar.setAlignment(Qt.AlignCenter)
 
-        self.btn1 = QPushButton('Review',self.tab2)
-        self.btn2 = QPushButton('Review',self.tab2)
+        self.btn1 = QPushButton('Review',self.move_files_tab)
+        self.btn2 = QPushButton('Review',self.move_files_tab)
         self.btn1.clicked.connect(lambda : self.path1.setText(
                 QFileDialog().getExistingDirectory(None,'Select directory')))
         self.btn2.clicked.connect(self.select_second_path)
 
-        self.btn4 = QPushButton('Run',self.tab2)
-        self.btn4.clicked.connect(self.start_move)
+        self.btn4 = QPushButton('Run',self.move_files_tab)
+        self.btn4.clicked.connect(self.function_node_move_files_tab)
         # Create grid for paint elements
         grid = QGridLayout()
         grid.setVerticalSpacing(30)
@@ -228,11 +230,10 @@ class MyTableWidget(QWidget):
         grid.addWidget(self.btn2, 2, 4, 1,1)
         grid.addWidget(self.btn4, 6, 4, 1,1, alignment=Qt.AlignBottom)
 
-        self.tab2.setLayout(grid)
+        self.move_files_tab.setLayout(grid)
 
     def select_second_path(self) -> None:
-        '''
-        Динамический выбор пути\n
+        '''Динамический выбор пути\n
         Учитывает выбор операции (радио кнопки).\n
         Первая операция (выбрано по умолчанию). Сборка txt-файлов требуется два пути:
         1.\tпуть поиска файлов (поиск выполняется и в подпапках по расширению txt)
@@ -241,8 +242,7 @@ class MyTableWidget(QWidget):
         Новое имя определяется по шаблону "название папки + текущее имя файла"\n
         Вторая операция. Рассылка исполняемых файлов программы обработки, поэтому поля будут содержать следующие параметры:
         1.\tпуть куда куда нужно добавить исполняемый файл (добавляется и в подпапки)
-        2.\tпуть к исполняемому файлу, который необходимо разослать
-        '''
+        2.\tпуть к исполняемому файлу, который необходимо разослать.'''
         if self.radio_button1.isChecked():
             self.path2.setText(
                 QFileDialog().getExistingDirectory(None,'Select directory'))
@@ -250,25 +250,44 @@ class MyTableWidget(QWidget):
             self.path2.setText(
                 QFileDialog.getOpenFileName(self,'Open File', None, '*.exe')[0])
 
-    def start_move(self) -> None:
-        '''
-        Функция проверки на наличие и корректности введённых параметров.
-        '''
+    def function_node_move_files_tab(self) -> None:
+        '''Функция проверки на наличие и корректности введённых параметров.'''
+
         if not self.path1.text():
             QMessageBox.warning(self, 'Error', 'First path is empty')
 
         if self.radio_button1.isChecked() and self.path2.text():
-            self.collect_files()
+            self.Print(self.area, 'Start copy...')
+            self.Print(self.area, f'{self.collect_files()} files copied')
+            self.Print(self.area, 'Finish copy')
+
 
         if self.radio_button2.isChecked():
+            self.Print(self.area, 'Start copy...')
             self.send_out_files()
+            self.Print(self.area, 'Finish copy...')
+
+    def collect_files(self) -> int:
+        '''Функция из главного функционала.\n
+        Выполняет сборку txt-файлов из подпапок в одну папку.
+        Возвращает количество копированных файлов.'''
+        files_list = self.find_all_files_extension(self.path1.text(),'.txt')
+        for item in files_list:
+            split = item.replace('\\','/').split('/')
+            rename = f'{split[-2]}_{split[-1]}'
+            to_path = os.path.join(self.path2.text(),rename)
+            try:
+                shutil.copyfile(item,to_path)
+                percents = int((files_list.index(item)+1) / len(files_list)) * 100
+                self.probar.setValue(percents)
+                self.Print(self.area, f'{item} -> {to_path}')
+            except Exception as ex:
+                self.Print(self.area, ex)
+        return len(files_list)
 
     def send_out_files(self) -> None:
-        '''
-        Функция из главного функционала.\n
-        Выполняет рассылку исполняемых файлов по папкам.
-        '''
-        self.Print(self.area, 'Start copy...')
+        '''Функция из главного функционала.\n
+        Выполняет рассылку исполняемых файлов по папкам.'''
         exe = self.path2.text().split('/')[-1]
         for root,folders,_ in os.walk(self.path1.text()):
             for folder in folders:
@@ -276,72 +295,52 @@ class MyTableWidget(QWidget):
                 try:
                     shutil.copyfile(self.path2.text(),to)
                     self.Print(self.area, os.path.join(root, folder,exe))
-                except shutil.SameFileError:
-                    self.Print(self.area, f'File {to} already exists')
-        self.Print(self.area, 'Finish copy...')
+                except Exception as ex:
+                    self.Print(self.area, ex)
 
-    def collect_files(self) -> None:
-        '''
-        Функция из главного функционала.\n
-        Выполняет сборку txt-файлов из подпапок в одну папку.
-        '''
-        self.Print(self.area, 'Start copy...')
-        files_list = self.find_files(self.path1.text(),'.txt')
-        size = len(files_list)
-        for item in files_list:
-            split = item.replace('\\','/').split('/')
-            rename = f'{split[-2]}_{split[-1]}'
-            to_path = os.path.join(self.path2.text(),rename)
-            shutil.copyfile(item,to_path)
-            percents = int((files_list.index(item)+1) / len(files_list)) * 100
-            self.probar.setValue(percents)
-            self.Print(self.area, f'{item} -> {to_path}')
-        self.Print(self.area, f'{size} files copied')
-        self.Print(self.area, 'Finish copy')
+
 
     # endregion
 
-    # region tab3
+    # region txt_to_xlsx_tab
 
-    def init_tab3(self) -> None:
-        '''
-        Функция инициализации третьего таба
-        '''
-        self.line_found = QLineEdit(self.tab3)
-        self.line_name_one_to_one = QLineEdit(self.tab3)
+    def init_txt_to_xlsx_tab(self) -> None:
+        '''Функция инициализации третьего таба.'''
+        self.line_found = QLineEdit(self.txt_to_xlsx_tab)
+        self.line_name_one_to_one = QLineEdit(self.txt_to_xlsx_tab)
         self.line_name_one_to_one.setEnabled(False)
-        self.line_name_many_to_one = QLineEdit(self.tab3)
+        self.line_name_many_to_one = QLineEdit(self.txt_to_xlsx_tab)
         self.line_name_many_to_one.setEnabled(False)
-        self.line_save = QLineEdit(self.tab3)
+        self.line_save = QLineEdit(self.txt_to_xlsx_tab)
 
-        self.btn_review_found = QPushButton('Review',self.tab3)
+        self.btn_review_found = QPushButton('Review',self.txt_to_xlsx_tab)
         self.btn_review_found.clicked.connect(lambda : self.line_found.setText(
                 QFileDialog().getExistingDirectory(None,'Select directory')))
 
-        self.btn_review_save = QPushButton('Review',self.tab3)
+        self.btn_review_save = QPushButton('Review',self.txt_to_xlsx_tab)
         self.btn_review_save.clicked.connect(lambda : self.line_save.setText(
                 QFileDialog().getExistingDirectory(None,'Select directory')))
 
-        self.btn_found = QPushButton('Found',self.tab3)
+        self.btn_found = QPushButton('Found',self.txt_to_xlsx_tab)
         self.btn_found.clicked.connect(self.found_files)
-        self.btn_save = QPushButton('Save',self.tab3)
-        self.btn_save.clicked.connect(self.check_paths)
-        self.btn_hide = QPushButton('Hide all', self.tab3)
+        self.btn_save = QPushButton('Save',self.txt_to_xlsx_tab)
+        self.btn_save.clicked.connect(self.function_node_txt_to_xlsx_tab)
+        self.btn_hide = QPushButton('Hide all', self.txt_to_xlsx_tab)
         self.btn_hide.clicked.connect(self.hide_items)
-        self.btn_select = QPushButton('Select all', self.tab3)
+        self.btn_select = QPushButton('Select all', self.txt_to_xlsx_tab)
         self.btn_select.clicked.connect(self.select_items)
 
-        self.label_select = QLabel(self.tab3)
+        self.label_select = QLabel(self.txt_to_xlsx_tab)
         self.label_select.setText('Selected: 0 items')
 
-        self.list = QListWidget(self.tab3)
+        self.list = QListWidget(self.txt_to_xlsx_tab)
         self.list.setSelectionMode(QAbstractItemView.MultiSelection)
 
 
 
-        self.checkbox_xlsx1 = QCheckBox('One file = one sheet',self.tab3)
+        self.checkbox_xlsx1 = QCheckBox('One file = one sheet',self.txt_to_xlsx_tab)
         self.checkbox_xlsx1.clicked.connect(lambda state: self.line_name_one_to_one.setEnabled(state))
-        self.checkbox_xlsx2 = QCheckBox('Many files = one sheet',self.tab3)
+        self.checkbox_xlsx2 = QCheckBox('Many files = one sheet',self.txt_to_xlsx_tab)
         self.checkbox_xlsx2.clicked.connect(lambda state: self.line_name_many_to_one.setEnabled(state))
 
         grid = QGridLayout()
@@ -362,9 +361,9 @@ class MyTableWidget(QWidget):
 
         grid.addWidget(self.list, 4,0,1,3)
         grid.addWidget(self.btn_save, 5,3)
-        self.tab3.setLayout(grid)
+        self.txt_to_xlsx_tab.setLayout(grid)
 
-    def check_paths(self) -> None:
+    def function_node_txt_to_xlsx_tab(self) -> None:
         '''Функция проверки на наличие и корректности введённых параметров.'''
         check1 = self.checkbox_xlsx1.isChecked()
         check2 = self.checkbox_xlsx2.isChecked()
@@ -384,37 +383,29 @@ class MyTableWidget(QWidget):
 
         if check1:
             self.one_file_to_one_sheet()
-            QMessageBox.information(self,'Success','Files collected')
-
-
         if check2:
             self.many_files_to_one_sheet()
-            QMessageBox.information(self,'Success','Files collected')
+
+        QMessageBox.information(self,'Success','Files collected')
 
     def delete_sheet(self,wb):
-        '''
-        Удаляет лист из эксель файла под именем "Sheet" (Он создаётся по умолчанию).
-        '''
+        '''Удаляет лист из эксель файла под именем "Sheet" (Он создаётся по умолчанию).'''
         del wb['Sheet']
 
     def many_files_to_one_sheet(self) -> None:
-        '''
-        Перебирает txt-файлы, считывая их по строке, и добавляет все строки строки в один лист.
-        '''
+        '''Перебирает txt-файлы, считывая их по строке, и добавляет все строки строки в один лист.'''
         _workbook = openpyxl.Workbook()
         _worksheet = _workbook.create_sheet('Excel')
         for item in self.list.selectedItems():
             with open(item.text(),'r') as file:
                 cr = reader(file,delimiter = '\t')
                 content = [line for line in cr]
-
                 for line in content:
                     for i in range(1, len(line) - 1):
                         line[i] = line[i].replace(' ', '')
                         line[i] = float(line[i])
                     _worksheet.append(line)
                 file.close()
-
         self.delete_sheet(_workbook)
         _workbook.save(filename=os.path.join(self.line_save.text(), self.line_name_many_to_one.text() + '.xlsx'))
 
@@ -438,14 +429,13 @@ class MyTableWidget(QWidget):
         self.delete_sheet(_workbook)
 
     def found_files(self) -> None:
-        '''
-        Функция поиска txt-файлов. Все текстовые документы (.txt) которые находит, добавляет в лист для выбора необходимых файлов перевода в эксель.
-        '''
+        '''Функция поиска txt-файлов. Все текстовые документы (.txt) которые находит,
+        добавляет в лист для выбора необходимых файлов перевода в эксель.'''
         self.list.clear()
         result = []
         if not self.line_found.text():
             return result
-        self.list.addItems(self.find_files(self.line_found.text(), '.txt'))
+        self.list.addItems(self.find_all_files_extension(self.line_found.text(), '.txt'))
         self.list.itemClicked.connect(self.item_clicked)
 
     def changeItems(self, flag) -> None:
@@ -468,31 +458,31 @@ class MyTableWidget(QWidget):
 
     # endregion
 
-    # region tab4
+    # region config_file_tab
 
-    def init_tab4(self) -> None:
+    def init_config_file_tab(self) -> None:
         '''Функция инициализации четвертого таба.\n'''
         # Create elements
-        self.radio_config1 = QRadioButton('1200', self.tab4)
-        self.radio_config2 = QRadioButton('2500', self.tab4)
-        self.radio_config3 = QRadioButton('Local', self.tab4)
-        self.radio_config4 = QRadioButton('Reson', self.tab4)
-        self.radio_config5 = QRadioButton('2', self.tab4)
-        self.radio_config6 = QRadioButton('4', self.tab4)
+        self.radio_config1 = QRadioButton('1200', self.config_file_tab)
+        self.radio_config2 = QRadioButton('2500', self.config_file_tab)
+        self.radio_config3 = QRadioButton('Local', self.config_file_tab)
+        self.radio_config4 = QRadioButton('Reson', self.config_file_tab)
+        self.radio_config5 = QRadioButton('2', self.config_file_tab)
+        self.radio_config6 = QRadioButton('4', self.config_file_tab)
 
-        self.group1 = QButtonGroup(self.tab4)
+        self.group1 = QButtonGroup(self.config_file_tab)
         self.group1.addButton(self.radio_config1)
         self.group1.addButton(self.radio_config2)
 
-        self.group2 = QButtonGroup(self.tab4)
+        self.group2 = QButtonGroup(self.config_file_tab)
         self.group2.addButton(self.radio_config3)
         self.group2.addButton(self.radio_config4)
 
-        self.group3 = QButtonGroup(self.tab4)
+        self.group3 = QButtonGroup(self.config_file_tab)
         self.group3.addButton(self.radio_config5)
         self.group3.addButton(self.radio_config6)
 
-        self.save_json_btn = QPushButton('Save',self.tab4)
+        self.save_json_btn = QPushButton('Save',self.config_file_tab)
         self.save_json_btn.clicked.connect(self.generate_config_file)
 
         grid = QGridLayout()
@@ -509,9 +499,25 @@ class MyTableWidget(QWidget):
         grid.setRowStretch(4,2)
         grid.setVerticalSpacing(20)
 
-        self.tab4.setLayout(grid)
+        self.config_file_tab.setLayout(grid)
+
+    def check_selected_buttons(self) -> bool:
+        if self.group1.checkedButton() == None:
+            QMessageBox.warning(self,'Error','Select radar')
+            return False
+
+        if self.group2.checkedButton() == None:
+            QMessageBox.warning(self,'Error','Select mode')
+            return False
+
+        if self.group3.checkedButton() == None:
+            QMessageBox.warning(self,'Error','Select channel')
+            return False
+
+        return True
 
     def generate_config_file(self) -> None:
+        if not self.check_selected_buttons():return
         '''Генерирует файл конфигурации для программы обработки'''
         Radar = self.group1.checkedButton()     #Радар
         Mode = self.group2.checkedButton()      #Режим
@@ -519,14 +525,11 @@ class MyTableWidget(QWidget):
 
         if Radar == None or Mode == None or Channel == None:
             return
-
         _dict = {
             'Radar':Radar.text(),
             'Mode':Mode.text(),
             'Channel':Channel.text()
-
         }
-
         with open('config.json', 'w') as json:
             dump(_dict,json,indent=4)
 
@@ -534,40 +537,40 @@ class MyTableWidget(QWidget):
 
     # endregion
 
-    # region tab5
+    # region split_files_tab
 
-    def init_tab5(self) -> None:
+    def init_split_files_tab(self) -> None:
         '''Функция инициализации пятого таба.\n'''
-        self.radio_optimization = QRadioButton('Splitting to optimize processing', self.tab5)
+        self.radio_optimization = QRadioButton('Splitting to optimize processing', self.split_files_tab)
         self.radio_profile = QRadioButton('Splitting by profiles')
 
         self.radio_optimization.setChecked(True)
 
-        self.line_split_review = QLineEdit(self.tab5)
-        self.line_first_file = QLineEdit(self.tab5)
+        self.line_split_review = QLineEdit(self.split_files_tab)
+        self.line_first_file = QLineEdit(self.split_files_tab)
         self.line_first_file.setToolTip('First file')
-        self.line_last_file = QLineEdit(self.tab5)
+        self.line_last_file = QLineEdit(self.split_files_tab)
         self.line_last_file.setToolTip('Last file')
-        self.line_profile_name = QLineEdit(self.tab5)
+        self.line_profile_name = QLineEdit(self.split_files_tab)
         self.line_profile_name.setToolTip('Name profile')
 
-        self.area_split = QTextEdit(self.tab5)
+        self.area_split = QTextEdit(self.split_files_tab)
         self.area_split.setReadOnly(True)
 
         self.radio_optimization.clicked.connect(self.optimizate_radio_elements)
         self.radio_profile.clicked.connect(self.profile_radio_elements)
 
-        self.btn_split_review = QPushButton('Review', self.tab5)
+        self.btn_split_review = QPushButton('Review', self.split_files_tab)
         self.btn_split_review.clicked.connect(lambda : self.line_split_review.setText(
                 QFileDialog().getExistingDirectory(None,'Select directory')))
 
-        self.btn_split = QPushButton('Run', self.tab5)
-        self.btn_split.clicked.connect(self.checked_elements)
-        self.combo = QComboBox(self.tab5)
+        self.btn_split = QPushButton('Run', self.split_files_tab)
+        self.btn_split.clicked.connect(self.function_node_split_files)
+        self.combo = QComboBox(self.split_files_tab)
         self.combo.addItems(['2','3','4','5','6','7','8','9','10'])
 
         self.optimizate_radio_elements()
-        group = QButtonGroup(self.tab5)
+        group = QButtonGroup(self.split_files_tab)
         group.addButton(self.radio_optimization)
         group.addButton(self.radio_profile)
 
@@ -584,7 +587,7 @@ class MyTableWidget(QWidget):
         grid.addWidget(self.line_profile_name, 2,3)
         grid.addWidget(self.area_split, 3,0,3,6)
         grid.addWidget(self.btn_split, 7,5)
-        self.tab5.setLayout(grid)
+        self.split_files_tab.setLayout(grid)
 
     def optimizate_radio_elements(self) -> None:
         '''Включает комбо-бокс и отключает три линии редактирования.'''
@@ -600,7 +603,7 @@ class MyTableWidget(QWidget):
         self.line_last_file.setDisabled(False)
         self.line_profile_name.setDisabled(False)
 
-    def checked_elements(self) -> None:
+    def function_node_split_files(self) -> None:
         '''Функция проверки на наличие и корректности введённых параметров.'''
         if self.radio_optimization.isChecked():
             self.optimization()
@@ -626,8 +629,7 @@ class MyTableWidget(QWidget):
         '''Создает папку для профиля и содержит список файлов по профилю.\n
         Возвращает:\n
         1.\tTrue  - папка успешно создана;
-        2.\tFalse - папка с таким именем уже существует.
-        '''
+        2.\tFalse - папка с таким именем уже существует.'''
         self.profile_folder = os.path.join(self.line_split_review.text(), self.line_profile_name.text())
         if os.path.isdir(self.profile_folder):
             QMessageBox.warning(self, 'Error', 'Folder already exists')
@@ -691,26 +693,25 @@ class MyTableWidget(QWidget):
         '''
         self.tabs = QTabWidget()
         self.tabs.setTabPosition(QTabWidget.West)
-        self.tab1 = QWidget()
-        self.tab2 = QWidget()
-        self.tab3 = QWidget()
-        self.tab4 = QWidget()
-        self.tab5 = QWidget()
+        self.clean_up_tab = QWidget()
+        self.move_files_tab = QWidget()
+        self.txt_to_xlsx_tab = QWidget()
+        self.config_file_tab = QWidget()
+        self.split_files_tab = QWidget()
         self.tabs.resize(300,200)
 
-        self.tabs.addTab(self.tab1,"Clean up")
-        self.tabs.addTab(self.tab2,"Move files")
-        self.tabs.addTab(self.tab3,"Txt to xlsx")
-        self.tabs.addTab(self.tab4,"Config file")
-        self.tabs.addTab(self.tab5,"Split files")
+        self.tabs.addTab(self.clean_up_tab,"Clean up")
+        self.tabs.addTab(self.move_files_tab,"Move files")
+        self.tabs.addTab(self.txt_to_xlsx_tab,"Txt to xlsx")
+        self.tabs.addTab(self.config_file_tab,"Config file")
+        self.tabs.addTab(self.split_files_tab,"Split files")
 
         vbox = QVBoxLayout()
         vbox.addWidget(self.tabs)
         self.setLayout(vbox)
 
-    def find_files(self, cwd:str, extension:str) -> list[str]:
-        '''
-        Функция поиска файлов по расширению.\n
+    def find_all_files_extension(self, cwd:str, extension:str) -> list[str]:
+        '''Функция поиска файлов по расширению.\n
         Возрващает список строк.\n
         Одна строка - это полный путь к файлу.
         '''

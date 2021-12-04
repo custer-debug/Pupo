@@ -33,10 +33,10 @@ class MainWindow(QMainWindow):
         Изменение счетчика который используется для сохранения или получения предыдущих директорий.\n
         settings['prev_folders'][self.count_]
         '''
-        if self.count_ == length:
-            self.count_ = 0
-        else:
+        if self.count_ < length - 1:
             self.count_ += 1
+        else:
+            self.count_ = 0
 
     def select_folder(self) -> str:
         '''
@@ -68,25 +68,21 @@ class MainWindow(QMainWindow):
             self.settings['prev_folders'] = tmp
 
         elif type(self.settings['prev_folders'] == list):
-            if len(self.settings['prev_folders']) >= 5:
+            if len(self.settings['prev_folders']) <= 5:
                 self.settings['prev_folders'][self.count_] = self.select_folder()
                 self.increase_counter(len(self.settings['prev_folders']))
-                self.settings['count_folder'] = self.count_
+                self.settings['count_folder'] = self.count_ - 1
             else:
                 self.settings['prev_folders'].append(self.select_folder())
 
         self.set_settings()
 
     def clear_main_folder(self) -> None:
-        '''
-        Очищение полей редактирования.
-        '''
+        '''Очищение полей редактирования.'''
         self.table_widget.set_main_fodler('')
 
     def about_window(self) -> None:
-        '''
-        Вывод окна "О программе".
-        '''
+        '''Вывод окна "О программе".'''
         title = 'About'
         text = f'''
         Programm to Use Program Operations (Pupo)
@@ -99,24 +95,18 @@ class MainWindow(QMainWindow):
         return QMessageBox.about(self, title, text)
 
     def set_settings(self) -> None:
-        '''
-        Запись настроек в файл settings.json
-        '''
+        '''Запись настроек в файл settings.json.'''
         with open('settings.json', 'w') as json:
             dump(self.settings, json, indent=4)
 
     def get_settings(self) -> None:
-        '''
-        Получение настроек из файла settings.json
-        '''
+        '''Получение настроек из файла settings.json.'''
         with open('settings.json', 'r') as json:
             self.settings = load(json)
         self.count_ = self.settings['count_folder']
 
     def create_settings_file(self) -> None:
-        '''
-        Если файла настроек нет, в этой функции он создастся
-        '''
+        '''Если файла настроек нет, в этой функции он создастся.'''
         self.settings = {
             'count_folder':0,
             'prev_folders':[os.getcwd().replace('\\','/')],
@@ -127,38 +117,28 @@ class MainWindow(QMainWindow):
             dump(self.settings, f, indent=4)
 
     def reference_window(self) -> None:
-        '''
-        Вывод окна справки.
-        '''
+        '''Вывод окна справки.'''
         return QMessageBox.information(self, 'How to use',
         open('Readme.md', 'r', encoding='utf-8').read())
 
-    def set_previous_folder(self) -> None:
-        '''
-        Добавление сохранённой директории в линии редактирования.
-        '''
+    def set_prevension_folder(self) -> None:
+        '''Добавление сохранённой директории в линии редактирования.'''
         return self.table_widget.set_main_fodler(self.sender().objectName())
 
     def light_theme(self) -> None:
-        '''
-        Сохранение светлой темы в файл настроек (settings.json).
-        '''
+        '''Сохранение светлой темы в файл настроек (settings.json).'''
         self.settings['theme'] = './themes/light_theme.css'
         self.set_settings()
         QMessageBox.information(self,'Msg','Restart program')
 
     def dark_theme(self) -> None:
-        '''
-        Сохранение темной темы в файл настроек (settings.json).
-        '''
+        '''Сохранение темной темы в файл настроек (settings.json).'''
         self.settings['theme'] = './themes/dark_theme.css'
         self.set_settings()
         QMessageBox.information(self,'Msg','Restart program')
 
     def menu_file(self) -> None:
-        '''
-        Функция обработки секции "file" в меню программы.
-        '''
+        '''Функция обработки секции "file" в меню программы.'''
         fileMenu = QMenu('&File',self)
         self.menubar.addMenu(fileMenu)
         fileMenu.addAction('Open folder\tCtrl+O',self.get_main_folder)
@@ -179,25 +159,19 @@ class MainWindow(QMainWindow):
         fileMenu.addAction('Exit',exit)
 
     def menu_option(self) -> None:
-        '''
-        Функция обработки секции "Option" в меню программы.
-        '''
+        '''Функция обработки секции "Option" в меню программы.'''
         option = self.menubar.addMenu('&Option')
         option.addAction('Light', self.light_theme)
         option.addAction('Dark', self.dark_theme)
 
     def menu_about(self) -> None:
-        '''
-        Функция обработки секции "About" в меню программы.
-        '''
+        '''Функция обработки секции "About" в меню программы.'''
         about = self.menubar.addMenu('&Help')
         about.addAction('About', self.about_window)
         about.addAction('How to use?', self.reference_window)
 
     def main_menu(self) -> None:
-        '''
-        Функция инициализации меню программы и добавление в него секции.
-        '''
+        '''Функция инициализации меню программы и добавление в него секции.'''
         self.menubar = self.menuBar()
         self.menu_file()
         self.menu_option()

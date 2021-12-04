@@ -63,3 +63,17 @@ def delete_empty_directories(path:str) -> list[str]:
 
     print(remove)
     return remove
+
+
+def increase_counter(length, count) -> None:
+    return (0 if count >= length else count + 1)
+
+
+
+def find_all_files_extension(cwd:str, extension:str) -> list[str]:
+    files_list = []
+    for root, _, files in os.walk(cwd):
+        for item in files:
+            if item.endswith(extension):
+                files_list.append(os.path.join(root,item))
+    return files_list
