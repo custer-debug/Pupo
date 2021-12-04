@@ -112,19 +112,13 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-*.ico
 *.dat
-*.png
-Pupo_2021_07_23_07_56_03.txt
-RenameOutFile.py
-Новая папка/Новая папка/Новая папка_2021_07_23_07_56_03.txt
-Новая папка/Новая папка_2021_07_23_07_56_03.txt
+functional.py
 *.txt
 *.xlsx
-CopyFiles.py
-CopyFiles.py
 *.exe
-Test.py
-*.json
+test.py
+config.json
 
 !requirements.txt
+.vscode/tasks.json
