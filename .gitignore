@@ -117,8 +117,7 @@ functional.py
 *.txt
 *.xlsx
 *.exe
-test.py
 config.json
-
+for developers
 !requirements.txt
 .vscode/tasks.json

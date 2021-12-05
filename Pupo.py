@@ -18,31 +18,25 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("pupo")
         self.table_widget = MyTableWidget(self)
         self.setCentralWidget(self.table_widget)
-
         if not os.path.exists('settings.json'):
             self.create_settings_file()
         else:
             self.get_settings()
-
         self.setStyleSheet(open(self.settings['theme']).read())
         self.table_widget.set_main_fodler(self.settings['prev_folders'][self.count_])
         self.main_menu()
 
     def increase_counter(self,length) -> None:
-        '''
-        Изменение счетчика который используется для сохранения или получения предыдущих директорий.\n
-        settings['prev_folders'][self.count_]
-        '''
+        '''Изменение счетчика который используется для сохранения или получения предыдущих директорий.\n
+        settings['prev_folders'][self.count_]'''
         if self.count_ < length - 1:
             self.count_ += 1
         else:
             self.count_ = 0
 
     def select_folder(self) -> str:
-        '''
-        Выбор главной директории.
-        Она сразу будет записана в несколько полей редактирования.
-        '''
+        '''Выбор главной директории.
+        Она сразу будет записана в несколько полей редактирования.'''
         folder = QFileDialog().getExistingDirectory(
                 None, "Select folder")
         if not folder:
@@ -54,10 +48,8 @@ class MainWindow(QMainWindow):
             return folder
 
     def get_main_folder(self) -> None:
-        '''
-        Запись главной директории в словарь для дальнейшего
-        сохранение в файл настроек (settings.json)
-        '''
+        '''Запись главной директории в словарь для дальнейшего
+        сохранение в файл настроек (settings.json).'''
         if not self.settings['prev_folders']:
             self.settings['prev_folders'] = self.select_folder()
 

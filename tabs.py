@@ -6,11 +6,12 @@ from json import dump
 import shutil
 import openpyxl
 from csv import reader
-
+import logging
 
 class MyTableWidget(QWidget):
     def __init__(self, parent):
         super(QWidget, self).__init__(parent)
+        self.initial_logger()
         self.initTabsWidget()
         self.init_clean_up_tab()
         self.init_move_files_tab()
@@ -126,9 +127,9 @@ class MyTableWidget(QWidget):
             size += os.stat(i).st_size
             try:
                 os.remove(i)
-            except Exception as ex:
-                self.Print(self.text, ex)
-
+            except Exception:
+                logging.error('Exception', exc_info=True)
+                return (removing_files.index(i),size)
         return (len(removing_files),size)
 
     def find_first_file(self, endswitch:str, files:list) -> str:
@@ -158,8 +159,8 @@ class MyTableWidget(QWidget):
             try:
                 os.rename(os.path.join(root,file),os.path.join(root,new_name))
                 self.Print(self.text, f'{os.path.join(root,file)} -> {os.path.join(root,new_name)}')
-            except Exception as ex:
-                self.Print(self.text,ex)
+            except Exception:
+                logging.error('Exception', exc_info=True)
 
     def delete_empty_directories(self, path:str) -> None:
         '''Функция из главного функционала\n
@@ -281,8 +282,9 @@ class MyTableWidget(QWidget):
                 percents = int((files_list.index(item)+1) / len(files_list)) * 100
                 self.probar.setValue(percents)
                 self.Print(self.area, f'{item} -> {to_path}')
-            except Exception as ex:
-                self.Print(self.area, ex)
+            except Exception:
+                logging.error('Exception', exc_info=True)
+                return files_list.index(item) + 1
         return len(files_list)
 
     def send_out_files(self) -> None:
@@ -295,8 +297,9 @@ class MyTableWidget(QWidget):
                 try:
                     shutil.copyfile(self.path2.text(),to)
                     self.Print(self.area, os.path.join(root, folder,exe))
-                except Exception as ex:
-                    self.Print(self.area, ex)
+                except Exception:
+                    logging.error('Exception', exc_info=True)
+                    return
 
 
 
@@ -393,7 +396,7 @@ class MyTableWidget(QWidget):
         del wb['Sheet']
 
     def many_files_to_one_sheet(self) -> None:
-        '''Перебирает txt-файлы, считывая их по строке, и добавляет все строки строки в один лист.'''
+        '''Перебирает txt-файлы, считывая их по строке, и добавляет все файлы в один лист.'''
         _workbook = openpyxl.Workbook()
         _worksheet = _workbook.create_sheet('Excel')
         for item in self.list.selectedItems():
@@ -530,9 +533,14 @@ class MyTableWidget(QWidget):
             'Mode':Mode.text(),
             'Channel':Channel.text()
         }
-        with open('config.json', 'w') as json:
-            dump(_dict,json,indent=4)
-
+        try:
+            with open('config.json', 'w') as json:
+                dump(_dict,json,indent=4)
+        except Exception:
+            logging.error('Exception', exc_info=True)
+            return
+        logging.info('Save config file')
+        logging.info(_dict)
         QMessageBox.information(self, 'Success', 'File successful saved')
 
     # endregion
@@ -606,11 +614,14 @@ class MyTableWidget(QWidget):
     def function_node_split_files(self) -> None:
         '''Функция проверки на наличие и корректности введённых параметров.'''
         if self.radio_optimization.isChecked():
+            self.Print(self.area_split, f'Start split...')
             self.optimization()
 
         if self.radio_profile.isChecked() and self.create_profile_folder():
+            self.Print(self.area_split, f'Start split...')
             self.copy_files(self.profiles())
-            self.Print(self.area_split, self.line_profile_name.text() + ' is done!')
+
+        self.Print(self.area_split, f'Files are split')
 
     def get_files(self) -> list[str]:
         '''Возвращает список dat-файлов найденных в указанной директории.'''
@@ -622,8 +633,8 @@ class MyTableWidget(QWidget):
         for item in files:
             try:
                 shutil.copyfile(item,os.path.join(self.profile_folder,item.split('\\')[-1]))
-            except Exception as ex:
-                self.Print(self.area_split, ex)
+            except Exception:
+                logging.info('Exception', exc_info=True)
 
     def create_profile_folder(self) -> bool:
         '''Создает папку для профиля и содержит список файлов по профилю.\n
@@ -667,7 +678,8 @@ class MyTableWidget(QWidget):
                     shutil.move(dat_files[0],os.path.join(folders[i],dat_files[0].replace('\\','/').split('/')[-1]))
                     dat_files.pop(0)
                 except FileNotFoundError:
-                    self.Print(self.area_split, 'File Not Found Error')
+                    logging.error('Exception',exc_info=True)
+                    return
 
     def make_directories(self) -> list[str]:
         '''Возрващает список созданных директорий.'''
@@ -679,6 +691,7 @@ class MyTableWidget(QWidget):
                 folders.append(folder)
                 os.makedirs(folder)
             except FileExistsError:
+                logging.error('Exception', exc_info=True)
                 self.Print(self.area_split, f'Folder {folder} already exists')
                 continue
 
@@ -723,8 +736,11 @@ class MyTableWidget(QWidget):
         return files_list
 
     def Print(self,textEdit,string:str) -> None:
-        '''
-        Функция печати результата.\n
-        Принимает объект, в котором будет отображена строка, которая передаётся третьим параметром
-        '''
+        '''Функция печати результата.\n
+        Принимает объект, в котором будет отображена строка, которая передаётся третьим параметром.'''
+        logging.info(string)
         textEdit.append(f'[{datetime.now().strftime("%d-%m-%Y %H:%M:%S")}] {string}')
+
+    def initial_logger(self):
+        logging.basicConfig(filename='pupo.log',format='%(asctime)s - %(levelname)s - %(message)s', level = logging.INFO)
+        logging.info('Start program')
