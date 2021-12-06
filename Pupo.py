@@ -18,7 +18,8 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("pupo")
         self.table_widget = MyTableWidget(self)
         self.setCentralWidget(self.table_widget)
-        if not os.path.exists('settings.json'):
+        self.pathSettings = 'config\settings.json'
+        if not os.path.exists(self.pathSettings):
             self.create_settings_file()
         else:
             self.get_settings()
@@ -75,7 +76,7 @@ class MainWindow(QMainWindow):
 
     def about_window(self) -> None:
         '''Вывод окна "О программе".'''
-        title = 'About'
+        title = 'О программе'
         text = f'''
         Programm to Use Program Operations (Pupo)
         Version: 2.1.0
@@ -88,12 +89,12 @@ class MainWindow(QMainWindow):
 
     def set_settings(self) -> None:
         '''Запись настроек в файл settings.json.'''
-        with open('settings.json', 'w') as json:
+        with open(self.pathSettings, 'w') as json:
             dump(self.settings, json, indent=4)
 
     def get_settings(self) -> None:
         '''Получение настроек из файла settings.json.'''
-        with open('settings.json', 'r') as json:
+        with open(self.pathSettings, 'r') as json:
             self.settings = load(json)
         self.count_ = self.settings['count_folder']
 
@@ -105,36 +106,40 @@ class MainWindow(QMainWindow):
             'theme':'./themes/light_theme.css'
         }
         self.count_ = 0
-        with open('settings.json', 'w+') as f:
+        with open(self.pathSettings, 'w+') as f:
             dump(self.settings, f, indent=4)
 
     def reference_window(self) -> None:
         '''Вывод окна справки.'''
-        return QMessageBox.information(self, 'How to use',
+        return QMessageBox.information(self, 'Справка',
         open('Readme.md', 'r', encoding='utf-8').read())
 
     def set_prevension_folder(self) -> None:
         '''Добавление сохранённой директории в линии редактирования.'''
         return self.table_widget.set_main_fodler(self.sender().objectName())
 
+    def restartProgramMsg(self):
+        '''Сообщение'''
+        return QMessageBox.information(self,'Сообщение','Перезапустите программу')
+
     def light_theme(self) -> None:
         '''Сохранение светлой темы в файл настроек (settings.json).'''
         self.settings['theme'] = './themes/light_theme.css'
         self.set_settings()
-        QMessageBox.information(self,'Msg','Restart program')
+        self.restartProgramMsg()
 
     def dark_theme(self) -> None:
         '''Сохранение темной темы в файл настроек (settings.json).'''
         self.settings['theme'] = './themes/dark_theme.css'
         self.set_settings()
-        QMessageBox.information(self,'Msg','Restart program')
+        self.restartProgramMsg()
 
     def menu_file(self) -> None:
         '''Функция обработки секции "file" в меню программы.'''
         fileMenu = QMenu('&File',self)
         self.menubar.addMenu(fileMenu)
-        fileMenu.addAction('Open folder\tCtrl+O',self.get_main_folder)
-        fileMenu.addAction('Clear \tCtrl+I',self.clear_main_folder)
+        fileMenu.addAction('Открыть папку\tCtrl+O',self.get_main_folder)
+        fileMenu.addAction('Очистить \tCtrl+I',self.clear_main_folder)
         fileMenu.addSeparator()
         QShortcut(QKeySequence('Ctrl+O'),self).activated.connect(self.get_main_folder)
         QShortcut(QKeySequence('Ctrl+I'),self).activated.connect(self.clear_main_folder)
@@ -148,19 +153,19 @@ class MainWindow(QMainWindow):
         elif type(self.settings['prev_folders']) == str:
             fileMenu.addAction(self.settings['prev_folders'])
 
-        fileMenu.addAction('Exit',exit)
+        fileMenu.addAction('Выход',exit)
 
     def menu_option(self) -> None:
         '''Функция обработки секции "Option" в меню программы.'''
-        option = self.menubar.addMenu('&Option')
-        option.addAction('Light', self.light_theme)
-        option.addAction('Dark', self.dark_theme)
+        option = self.menubar.addMenu('&Опции')
+        option.addAction('Светлая тема', self.light_theme)
+        option.addAction('Темная тема', self.dark_theme)
 
     def menu_about(self) -> None:
         '''Функция обработки секции "About" в меню программы.'''
-        about = self.menubar.addMenu('&Help')
-        about.addAction('About', self.about_window)
-        about.addAction('How to use?', self.reference_window)
+        about = self.menubar.addMenu('&Помощь')
+        about.addAction('О программе', self.about_window)
+        about.addAction('Справка', self.reference_window)
 
     def main_menu(self) -> None:
         '''Функция инициализации меню программы и добавление в него секции.'''

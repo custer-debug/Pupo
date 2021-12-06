@@ -111,9 +111,9 @@ venv.bak/
 dmypy.json
 
 # Pyre type checker
+config/
 .pyre/
 *.dat
-functional.py
 *.txt
 *.xlsx
 *.exe
