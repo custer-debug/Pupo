@@ -14,7 +14,7 @@ class MainWindow(QMainWindow):
 
         self.setGeometry(500,300, 900,600)
         self.setObjectName('MainWindow')
-        self.setWindowIcon(QIcon('./icons/ssd_icon.png'))
+        self.setWindowIcon(QIcon('./config/icons/ssd_icon.png'))
         self.setWindowTitle("pupo")
         self.table_widget = MyTableWidget(self)
         self.setCentralWidget(self.table_widget)
@@ -103,16 +103,20 @@ class MainWindow(QMainWindow):
         self.settings = {
             'count_folder':0,
             'prev_folders':[os.getcwd().replace('\\','/')],
-            'theme':'./themes/light_theme.css'
+            'theme':'./config/themes/light_theme.css'
         }
         self.count_ = 0
-        with open(self.pathSettings, 'w+') as f:
-            dump(self.settings, f, indent=4)
+        try:
+            os.mkdir(os.path.join(os.getcwd(),'config/'))
+            with open(self.pathSettings, 'w+') as f:
+                dump(self.settings, f, indent=4)
+        except Exception as ex:
+            print(ex)
 
     def reference_window(self) -> None:
         '''Вывод окна справки.'''
         return QMessageBox.information(self, 'Справка',
-        open('Readme.md', 'r', encoding='utf-8').read())
+        open(self.settings['reference'], 'r', encoding='utf-8').read())
 
     def set_prevension_folder(self) -> None:
         '''Добавление сохранённой директории в линии редактирования.'''
@@ -124,19 +128,19 @@ class MainWindow(QMainWindow):
 
     def light_theme(self) -> None:
         '''Сохранение светлой темы в файл настроек (settings.json).'''
-        self.settings['theme'] = './themes/light_theme.css'
+        self.settings['theme'] = './config/themes/light_theme.css'
         self.set_settings()
         self.restartProgramMsg()
 
     def dark_theme(self) -> None:
         '''Сохранение темной темы в файл настроек (settings.json).'''
-        self.settings['theme'] = './themes/dark_theme.css'
+        self.settings['theme'] = './config/themes/dark_theme.css'
         self.set_settings()
         self.restartProgramMsg()
 
     def menu_file(self) -> None:
         '''Функция обработки секции "file" в меню программы.'''
-        fileMenu = QMenu('&File',self)
+        fileMenu = QMenu('&Файл',self)
         self.menubar.addMenu(fileMenu)
         fileMenu.addAction('Открыть папку\tCtrl+O',self.get_main_folder)
         fileMenu.addAction('Очистить \tCtrl+I',self.clear_main_folder)

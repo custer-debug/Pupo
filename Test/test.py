@@ -1,5 +1,4 @@
-import logging
+from PyQt5.QtWidgets import QMessageBox
 
-def createLoggerForDev(self):
-    logger = logging.getLogger('example')
-    logger.setLevel(logging.ERROR)
+QMessageBox.information(self, 'Справка',
+open('Readme.md', 'r', encoding='utf-8').read())

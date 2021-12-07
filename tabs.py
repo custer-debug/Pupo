@@ -1,14 +1,13 @@
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import Qt
-import os
 from datetime import datetime
-from json import dump
-import shutil
-import openpyxl
+from PyQt5.QtCore import Qt
 from csv import reader
-import logging
+from json import dump
 from time import time
-# import threading
+import openpyxl
+import logging
+import shutil
+import os
 
 class MyTableWidget(QWidget):
     def __init__(self, parent):
@@ -187,17 +186,24 @@ class MyTableWidget(QWidget):
         '''Функция инициализации второго таба.'''
         # Create elements
         self.radio_button1 = QRadioButton('Сборка txt-файлов', self.move_files_tab)
+        self.radio_button1.clicked.connect(
+            lambda : self.path2.setPlaceholderText('Укажите путь к папке'))
         self.radio_button2 = QRadioButton('Рассылка исполняемых файлов', self.move_files_tab)
+
+        self.radio_button2.clicked.connect(
+            lambda : self.path2.setPlaceholderText('Укажите путь к файлу (.exe)'))
+
         self.radio_button1.setChecked(True)
-        group = QButtonGroup(self.move_files_tab)
-        group.addButton(self.radio_button1)
-        group.addButton(self.radio_button2)
+        self.group_radio_btn = QButtonGroup(self.move_files_tab)
+        self.group_radio_btn.addButton(self.radio_button1)
+        self.group_radio_btn.addButton(self.radio_button2)
 
         self.label_1 = QLabel('Путь', self.move_files_tab)
         self.label_2 = QLabel('Путь', self.move_files_tab)
 
         self.path1 = QLineEdit(self.move_files_tab)
         self.path2 = QLineEdit(self.move_files_tab)
+        self.path2.setPlaceholderText(' Укажите дерикторию')
         self.area = QTextEdit(self.move_files_tab)
         self.area.setReadOnly(True)
         self.probar = QProgressBar(self.move_files_tab)
@@ -307,7 +313,6 @@ class MyTableWidget(QWidget):
                     return
 
 
-
     # endregion
 
     # region txt_to_xlsx_tab
@@ -316,11 +321,13 @@ class MyTableWidget(QWidget):
         '''Функция инициализации третьего таба.'''
         self.line_found = QLineEdit(self.txt_to_xlsx_tab)
         self.line_name_one_to_one = QLineEdit(self.txt_to_xlsx_tab)
+        self.line_name_one_to_one.setPlaceholderText('Введите имя файла...')
         self.line_name_one_to_one.setEnabled(False)
         self.line_name_many_to_one = QLineEdit(self.txt_to_xlsx_tab)
+        self.line_name_many_to_one.setPlaceholderText('Введите имя файла...')
         self.line_name_many_to_one.setEnabled(False)
         self.line_save = QLineEdit(self.txt_to_xlsx_tab)
-
+        self.line_save.setPlaceholderText(os.getcwd())
         self.btn_review_found = QPushButton('Обзор',self.txt_to_xlsx_tab)
         self.btn_review_found.clicked.connect(lambda : self.line_found.setText(
                 QFileDialog().getExistingDirectory(None,'Select directory')))
@@ -396,7 +403,7 @@ class MyTableWidget(QWidget):
 
         QMessageBox.information(self,'Успех','Файлы переведены.')
 
-    def delete_sheet(self,wb):
+    def delete_sheet(self,wb) -> None:
         '''Удаляет лист из эксель файла под именем "Sheet" (Он создаётся по умолчанию).'''
         del wb['Sheet']
 
@@ -718,7 +725,7 @@ class MyTableWidget(QWidget):
         self.split_files_tab = QWidget()
         self.tabs.resize(300,200)
 
-        self.tabs.addTab(self.clean_up_tab,"Чистка")
+        self.tabs.addTab(self.clean_up_tab,"Чистка папок")
         self.tabs.addTab(self.move_files_tab,"Перемещение файлов")
         self.tabs.addTab(self.txt_to_xlsx_tab,"Перевод txt to xlsx")
         self.tabs.addTab(self.config_file_tab,"Конфиг файл")
