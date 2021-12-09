@@ -6,6 +6,24 @@ from tabsDraw import TableWidget
 from platform import platform
 from json import load, dump
 
+light_theme_default = '''
+
+QPushButton{
+    padding : 8px 20px;
+}
+QLineEdit{
+    height: 27px;
+}
+QProgressBar{
+    height: 25px;
+}
+QMenuBar{
+    background-color: lightgray;
+}
+QTabBar::tab {
+    padding: 8px;
+}
+'''
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -21,7 +39,10 @@ class MainWindow(QMainWindow):
             self.create_settings_file()
         else:
             self.get_settings()
-        self.setStyleSheet(open(self.settings['theme']).read())
+        try:
+            self.setStyleSheet(open(self.settings['theme']).read())
+        except FileNotFoundError:
+            self.setStyleSheet(light_theme_default)
         self.table_widget.set_main_fodler(self.settings['prev_folders'][self.count_])
         self.main_menu()
 
@@ -78,7 +99,7 @@ class MainWindow(QMainWindow):
         text = f'''
         Programm to Use Program Operations (Pupo)
         Version: 2.1.0
-        Update: 2021-11-24 12:38:02
+        Update: 2021-12-09 16:40:02
         OS: {platform()} 64-bit
         @Scientific and Production Association RadioSignal JSC
         Software engineers: Krekoten Roman, Nenarokomov Maxim
@@ -111,10 +132,7 @@ class MainWindow(QMainWindow):
         except Exception as ex:
             print(ex)
 
-    def reference_window(self) -> None:
-        '''Вывод окна справки.'''
-        return QMessageBox.information(self, 'Справка',
-        open(self.settings['reference'], 'r', encoding='utf-8').read())
+
 
     def set_prevension_folder(self) -> None:
         '''Добавление сохранённой директории в линии редактирования.'''
@@ -159,15 +177,26 @@ class MainWindow(QMainWindow):
 
     def menu_option(self) -> None:
         '''Функция обработки секции "Option" в меню программы.'''
-        option = self.menubar.addMenu('&Опции')
-        option.addAction('Светлая тема', self.light_theme)
-        option.addAction('Темная тема', self.dark_theme)
+        if os.path.exists('./config/themes/dark_theme.css'):
+            option = self.menubar.addMenu('&Опции')
+            option.addAction('Светлая тема', self.light_theme)
+            option.addAction('Темная тема', self.dark_theme)
 
     def menu_about(self) -> None:
         '''Функция обработки секции "About" в меню программы.'''
         about = self.menubar.addMenu('&Помощь')
         about.addAction('О программе', self.msg_box_about)
-        about.addAction('Справка', self.reference_window)
+
+    def reference_window(self) -> None:
+        '''Вывод окна справки.'''
+        return QMessageBox.information(self, 'Справка',
+            open(self.settings['reference'], 'r', encoding='utf-8').read())
+
+
+    # try:
+    # about.addAction('Справка', self.reference_window)
+    # except Exception as e:
+    # print(e)
 
     def main_menu(self) -> None:
         '''Функция инициализации меню программы и добавление в него секции.'''

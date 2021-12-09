@@ -15,7 +15,7 @@ def convert_bytes(size:int) -> tuple[int,int]:
     for x in ['байтов', 'Кб', 'Мб', 'Гб', 'Тб']:
         if size < 1024.0:
             return "%3.1f %s" % (size, x)
-        size /= 1024.0,x
+        size /= 1024.0
 
     return (size,' byte')
 
