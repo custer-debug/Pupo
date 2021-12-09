@@ -1,9 +1,8 @@
 import sys
-from PyQt5.QtCore import *
-from PyQt5.QtWidgets import *
+from PyQt5.QtWidgets import QShortcut,QMenu,QMainWindow,QMessageBox,QApplication,QFileDialog
 from PyQt5.QtGui import QIcon, QKeySequence
 import os
-from tabs import MyTableWidget
+from tabsDraw import TableWidget
 from platform import platform
 from json import load, dump
 
@@ -11,12 +10,11 @@ from json import load, dump
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-
         self.setGeometry(500,300, 900,600)
         self.setObjectName('MainWindow')
         self.setWindowIcon(QIcon('./config/icons/ssd_icon.png'))
         self.setWindowTitle("pupo")
-        self.table_widget = MyTableWidget(self)
+        self.table_widget = TableWidget(self)
         self.setCentralWidget(self.table_widget)
         self.pathSettings = 'config\settings.json'
         if not os.path.exists(self.pathSettings):
@@ -74,7 +72,7 @@ class MainWindow(QMainWindow):
         '''Очищение полей редактирования.'''
         self.table_widget.set_main_fodler('')
 
-    def about_window(self) -> None:
+    def msg_box_about(self) -> None:
         '''Вывод окна "О программе".'''
         title = 'О программе'
         text = f'''
@@ -122,7 +120,7 @@ class MainWindow(QMainWindow):
         '''Добавление сохранённой директории в линии редактирования.'''
         return self.table_widget.set_main_fodler(self.sender().objectName())
 
-    def restartProgramMsg(self):
+    def msg_restart_program(self) -> None:
         '''Сообщение'''
         return QMessageBox.information(self,'Сообщение','Перезапустите программу')
 
@@ -130,13 +128,13 @@ class MainWindow(QMainWindow):
         '''Сохранение светлой темы в файл настроек (settings.json).'''
         self.settings['theme'] = './config/themes/light_theme.css'
         self.set_settings()
-        self.restartProgramMsg()
+        self.msg_restart_program()
 
     def dark_theme(self) -> None:
         '''Сохранение темной темы в файл настроек (settings.json).'''
         self.settings['theme'] = './config/themes/dark_theme.css'
         self.set_settings()
-        self.restartProgramMsg()
+        self.msg_restart_program()
 
     def menu_file(self) -> None:
         '''Функция обработки секции "file" в меню программы.'''
@@ -157,7 +155,7 @@ class MainWindow(QMainWindow):
         elif type(self.settings['prev_folders']) == str:
             fileMenu.addAction(self.settings['prev_folders'])
 
-        fileMenu.addAction('Выход',exit)
+        fileMenu.addAction('Выход',sys.exit)
 
     def menu_option(self) -> None:
         '''Функция обработки секции "Option" в меню программы.'''
@@ -168,7 +166,7 @@ class MainWindow(QMainWindow):
     def menu_about(self) -> None:
         '''Функция обработки секции "About" в меню программы.'''
         about = self.menubar.addMenu('&Помощь')
-        about.addAction('О программе', self.about_window)
+        about.addAction('О программе', self.msg_box_about)
         about.addAction('Справка', self.reference_window)
 
     def main_menu(self) -> None:

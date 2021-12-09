@@ -111,7 +111,6 @@ venv.bak/
 dmypy.json
 
 # Pyre type checker
-config/
 .pyre/
 *.dat
 *.txt
@@ -120,4 +119,4 @@ config/
 config.json
 for developers
 !requirements.txt
-.vscode/tasks.json
+.vscode

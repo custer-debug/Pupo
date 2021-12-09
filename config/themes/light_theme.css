@@ -1,0 +1,15 @@
+QPushButton{
+    padding : 8px 20px;
+}
+QLineEdit{
+    height: 27px;
+}
+QProgressBar{
+    height: 25px;
+}
+QMenuBar{
+    background-color: lightgray;
+}
+QTabBar::tab {
+    padding: 8px;
+}

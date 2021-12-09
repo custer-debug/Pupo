@@ -1,0 +1,65 @@
+QMenuBar{
+    background-color: lightgray;
+}
+QTextEdit{
+    background-color: rgb(202, 202, 202);
+}
+
+QTextEdit:focus{
+    border: 1px solid rgb(110, 110, 110);
+    border-radius: 2px;
+}
+
+QTabBar::tab {
+  padding: 8px;
+  background-color: rgb(110, 110, 110);
+}
+QTabWidget::pane {
+    background-color: rgb(0, 0, 0);
+}
+
+QTabBar::tab:selected {
+    background-color:rgb(138, 138, 138);
+}
+
+QPushButton{
+    padding : 8px 20px;
+}
+QLineEdit{
+    border: 1px solid rgb(110, 110, 110);
+    height: 27px;
+    border-radius: 2px;
+    background-color: rgb(202, 202, 202);
+}
+QLineEdit:disabled
+{
+    border: 1px solid black;
+    background-color: rgb(54, 54, 54);
+}
+
+QLineEdit:focus
+{
+    border: 1px solid black;
+}
+QProgressBar{
+    height: 25px;
+}
+QMainWindow{
+    background-color: rgb(63, 63, 63);
+}
+QTabWidget QStackedWidget > QWidget
+{
+    background-color:rgb(138, 138, 138);
+}
+
+QListWidget{
+    background-color: rgb(200, 200, 200);
+}
+
+QListWidget:item:hover{
+    background-color: lightgrey;
+}
+
+QListWidget:item:selected{
+    background-color: grey;
+}

@@ -3,13 +3,15 @@ from datetime import datetime
 from PyQt5.QtCore import Qt
 from csv import reader
 from json import dump
+import MainFunctional as mf
 from time import time
 import openpyxl
 import logging
 import shutil
 import os
 
-class MyTableWidget(QWidget):
+
+class TableWidget(QWidget):
     def __init__(self, parent):
         super(QWidget, self).__init__(parent)
         self.initial_logger()
@@ -22,7 +24,7 @@ class MyTableWidget(QWidget):
 
     def set_main_fodler(self, text:str) -> None:
         self.path1.setText(text)
-        self.main_line1.setText(text)
+        self.main_line.setText(text)
         self.line_found.setText(text)
         self.line_split_review.setText(text)
 
@@ -31,122 +33,93 @@ class MyTableWidget(QWidget):
     def init_clean_up_tab(self) -> None:
         '''Функция инициализации первого таба.\n'''
         # Create elements
-        self.btn1 = QPushButton('Обзор', self.clean_up_tab)
-        self.btn1.clicked.connect(lambda : self.main_line1.setText(
+        reviewButton = QPushButton('Обзор', self.clean_up_tab)
+        reviewButton.clicked.connect(lambda : self.main_line.setText(
                 QFileDialog().getExistingDirectory(None,'Select directory')))
 
-        self.btn2 = QPushButton('Выполнить', self.clean_up_tab)
-        self.btn2.clicked.connect(self.function_node_clean_up_tab)
-        self.main_line1 = QLineEdit(self.clean_up_tab)
+        runButton = QPushButton('Выполнить', self.clean_up_tab)
+        runButton.clicked.connect(self.function_node_clean_up_tab)
+
+        self.main_line = QLineEdit(self.clean_up_tab)
         self.line_extension = QLineEdit('.exe',self.clean_up_tab)
-        self.line_rename_file = QLineEdit('test.txt',self.clean_up_tab)
-        self.line_rename_file.setToolTip('Только txt файлы!')
+        self.line_template = QLineEdit('test.txt',self.clean_up_tab)
+        self.line_template.setToolTip('Только txt файлы!')
         self.line_extension.setEnabled(False)
-        self.line_rename_file.setEnabled(False)
+        self.line_template.setEnabled(False)
 
-        self.check_box1 = QCheckBox('Удаление файлов', self.clean_up_tab)
-        self.check_box2 = QCheckBox('Переименование файлов', self.clean_up_tab)
-        self.check_box3 = QCheckBox('Удаление пустых папок', self.clean_up_tab)
-        self.check_box1.clicked.connect(lambda state: self.line_extension.setEnabled(state))
-        self.check_box2.clicked.connect(lambda state: self.line_rename_file.setEnabled(state))
+        self.check_box_rm_files = QCheckBox('Удаление файлов', self.clean_up_tab)
+        self.check_box_rename_files = QCheckBox('Переименование файлов', self.clean_up_tab)
+        self.check_box_rm_dir = QCheckBox('Удаление пустых папок', self.clean_up_tab)
+        self.check_box_rm_files.clicked.connect(lambda state: self.line_extension.setEnabled(state))
+        self.check_box_rename_files.clicked.connect(lambda state: self.line_template.setEnabled(state))
 
-        self.text = QTextEdit(self.clean_up_tab)
-        self.text.setReadOnly(True)
+        self.cout_clean_up = QTextEdit(self.clean_up_tab)
+        self.cout_clean_up.setReadOnly(True)
 
         # Create grid
         grid = QGridLayout()
-        grid.addWidget(self.main_line1, 0, 0,1,6)
-        grid.addWidget(self.btn1, 0, 6)
-        grid.addWidget(self.check_box1, 1,0)
+        grid.addWidget(self.main_line, 0, 0,1,6)
+        grid.addWidget(reviewButton, 0, 6)
+        grid.addWidget(self.check_box_rm_files, 1,0)
         grid.addWidget(self.line_extension,1,1, alignment=Qt.AlignCenter)
-        grid.addWidget(self.check_box2, 2,0)
-        grid.addWidget(self.line_rename_file, 2,1, alignment=Qt.AlignCenter)
-        grid.addWidget(self.check_box3, 3,0)
-        grid.addWidget(self.text, 4,0,5,7)
-        grid.addWidget(self.btn2, 10, 6)
+        grid.addWidget(self.check_box_rename_files, 2,0)
+        grid.addWidget(self.line_template, 2,1, alignment=Qt.AlignCenter)
+        grid.addWidget(self.check_box_rm_dir, 3,0)
+        grid.addWidget(self.cout_clean_up, 4,0,5,7)
+        grid.addWidget(runButton, 10, 6)
 
         self.clean_up_tab.setLayout(grid)
-
+        # C:\Users\r.krekoten\Downloads\ssd_icon.ico
     def function_node_clean_up_tab(self) -> None:
         '''Функция проверки на наличие и корректности введённых данных для вызова определённой операции над файлами.'''
-        self.text.clear()
-        if not os.path.exists(self.main_line1.text()):
+        self.cout_clean_up.clear()
+        if not os.path.exists(self.main_line.text()):
             QMessageBox.warning(self, 'Ошибка', 'Такого пути не существует')
             return
         t = time()
-        if self.check_box1.isChecked() and self.line_extension.text():
-            self.Print(self.text, 'Удаление...')
-            tmp = self.delete_files()
-            self.Print(self.text, f'Удалено {tmp[0]} файлов ({self.convert_bytes(tmp[1])})')
-        if self.check_box2.isChecked() and self.line_rename_file.text():
-            self.Print(self.text,'Переименование...')
+
+        if self.check_box_rm_files.isChecked() and self.line_extension.text():
+            self.Print(self.cout_clean_up, 'Удаление...')
+            tmp = mf.delete_files(
+                    mf.find_all_files_extension(
+                        self.main_line.text(),
+                        self.line_extension.text()))
+            self.Print(self.cout_clean_up, f'Удалено {tmp[0]} файлов ({mf.convert_bytes(tmp[1])})')
+
+        if self.check_box_rename_files.isChecked() and self.line_template.text():
+            self.Print(self.cout_clean_up,'Переименование...')
             self.rename_files()
-            self.Print(self.text,'Файлы переименованы...')
-        if self.check_box3.isChecked():
-            self.Print(self.text,'Удаление пустых папок...')
-            self.delete_empty_directories(self.main_line1.text())
-            self.Print(self.text,'Папки удалены...')
+            self.Print(self.cout_clean_up,'Файлы переименованы...')
+
+        if self.check_box_rm_dir.isChecked():
+            self.Print(self.cout_clean_up,'Удаление пустых папок...')
+            self.delete_empty_directories(self.main_line.text())
+            self.Print(self.cout_clean_up,'Папки удалены...')
         print(time() - t)
-
-        if not (self.check_box1.isChecked() or self.check_box2.isChecked() or self.check_box3.isChecked()):
+        if not any([self.check_box_rm_files.isChecked(),self.check_box_rename_files.isChecked(),self.check_box_rm_dir.isChecked()]):
             QMessageBox.warning(self, 'Ошибка', 'Выберите действие')
-
         self.disabled_check_boxes()
 
     def disabled_check_boxes(self) -> None:
         '''Функция снятия выделения чек-боксов.\n
         Она вызывается при успешной выполенении операции.'''
-        self.check_box1.setChecked(False)
-        self.check_box2.setChecked(False)
-        self.check_box3.setChecked(False)
+        self.check_box_rm_files.setChecked(False)
+        self.check_box_rename_files.setChecked(False)
+        self.check_box_rm_dir.setChecked(False)
         self.line_extension.setEnabled(False)
-        self.line_rename_file.setEnabled(False)
-
-    def convert_bytes(self,size) -> str:
-        '''Функция определения единиц измерения по размеру удалённых файлов.\n
-        Возрвращает единицы измерения и округлённый до целых размер удалённых файлов.'''
-        for x in ['байтов', 'Кб', 'Мб', 'Гб', 'Тб']:
-            if size < 1024.0:
-                return "%3.1f %s" % (size, x)
-            size /= 1024.0
-
-        return size
-
-    def delete_files(self) -> tuple[int,int]:
-        '''Функция из главного функционала\n
-        Одна из функции главного функционала программы.
-        Удаляет файлы с определённым расширением или именем.'''
-        size = 0
-        removing_files = self.find_all_files_extension(
-            self.main_line1.text(),
-            self.line_extension.text())
-
-        for i in removing_files:
-            self.Print(self.text, f'Файл {i} удалён')
-            size += os.stat(i).st_size
-            try:
-                os.remove(i)
-            except Exception:
-                logging.error('Exception', exc_info=True)
-                return (removing_files.index(i),size)
-        return (len(removing_files),size)
-
-    def find_first_file(self, endswitch:str, files:list) -> str:
-        '''Функция выбора первого файла из списка. Файлы ищутся с определённым расширением.'''
-        for file in files:
-            if file.endswith(endswitch):
-                return file
-        return ''
+        self.line_template.setEnabled(False)
 
     def rename_files(self) -> None:
-        '''Функция из главного функционала\n
+        """Функция из главного функционала
         Выполняет поиск файлов с одинаковым именем (например Out_res.txt)
-        и переименование по следующем конструкциям:\n
-        1.\tназвание папки в которой находится файл + дата и время из найденого dat-файла (если есть хотя бы один в папке) + текущее имя;
-        2.\tназвание папки в которой находится файл + текущее имя.'''
-        for root, _, files in os.walk(self.main_line1.text()):
-            dat =  self.find_first_file('.dat', files)
-            file =  self.find_first_file(self.line_rename_file.text(), files)
+        и переименование по следующем конструкциям:
+        1. название папки в которой находится файл + дата и время из найденого dat-файла
+        (если есть хотя бы один в папке) + текущее имя;
+        2. название папки в которой находится файл + текущее имя.
+        """
+        for root, _, files in os.walk(self.main_line.text()):
+            dat = mf.find_first_file('.dat', files)
+            file = mf.find_first_file(self.line_template.text(), files)
             if not file: continue
 
             folder = root.split('/')[-1].split('\\')[-1]
@@ -158,13 +131,15 @@ class MyTableWidget(QWidget):
 
             try:
                 os.rename(os.path.join(root,file),os.path.join(root,new_name))
-                self.Print(self.text, f'{os.path.join(root,file)} -> {os.path.join(root,new_name)}')
-            except Exception:
-                logging.error('Exception', exc_info=True)
+                print(f'{os.path.join(root,file)} -> {os.path.join(root,new_name)}')
+            except Exception as e:
+                # logging.error('Exception', exc_info=True)
+                print(e)
 
     def delete_empty_directories(self, path:str) -> None:
-        '''Функция из главного функционала\n
-        Выполняет удаление пустых директорий.'''
+        """Функция из главного функционала
+        Выполняет удаление пустых директорий.
+        """
         for _dir in os.listdir(path):
             current_dir = os.path.join(path, _dir)
             if os.path.isdir(current_dir):
@@ -174,9 +149,7 @@ class MyTableWidget(QWidget):
                         os.rmdir(current_dir)
                     except Exception as e:
                         print(e)
-                    # self.catch_error(, self.text, current_dir)
-                    self.Print(self.text,"Папка: " + current_dir + " удалена")
-
+                    # self.Print(self.cout_clean_up,"Папка: " + current_dir + " удалена")
 
     # endregion
 
@@ -276,14 +249,16 @@ class MyTableWidget(QWidget):
 
         if self.radio_button2.isChecked():
             self.Print(self.area, 'Начало рассылки...')
-            self.send_out_files()
+            mf.send_out_files(self.path1.text(),self.path2.text())
             self.Print(self.area, 'Файлы разосланы...')
 
     def collect_files(self) -> int:
-        '''Функция из главного функционала.\n
-        Выполняет сборку txt-файлов из подпапок в одну папку.
-        Возвращает количество копированных файлов.'''
-        files_list = self.find_all_files_extension(self.path1.text(),'.txt')
+        """Выполняет поиск по папке и подпапках текстовых документов и
+        копирует их в одну папку переименовывая по первому шаблону (см. Справку)
+        Returns:
+            int: количество скопированных файлов
+        """
+        files_list = mf.find_all_files_extension(self.path1.text(),'.txt')
         for item in files_list:
             split = item.replace('\\','/').split('/')
             rename = f'{split[-2]}_{split[-1]}'
@@ -293,25 +268,11 @@ class MyTableWidget(QWidget):
                 percents = int((files_list.index(item)+1) / len(files_list)) * 100
                 self.probar.setValue(percents)
                 self.Print(self.area, f'{item} -> {to_path}')
-            except Exception:
+            except Exception as e:
+                print(e)
                 logging.error('Exception', exc_info=True)
                 return files_list.index(item) + 1
         return len(files_list)
-
-    def send_out_files(self) -> None:
-        '''Функция из главного функционала.\n
-        Выполняет рассылку исполняемых файлов по папкам.'''
-        exe = self.path2.text().split('/')[-1]
-        for root,folders,_ in os.walk(self.path1.text()):
-            for folder in folders:
-                to = os.path.join(root, folder,exe)
-                try:
-                    shutil.copyfile(self.path2.text(),to)
-                    self.Print(self.area, os.path.join(root, folder,exe))
-                except Exception:
-                    logging.error('Exception', exc_info=True)
-                    return
-
 
     # endregion
 
@@ -411,6 +372,7 @@ class MyTableWidget(QWidget):
         '''Перебирает txt-файлы, считывая их по строке, и добавляет все файлы в один лист.'''
         _workbook = openpyxl.Workbook()
         _worksheet = _workbook.create_sheet('Excel')
+        _worksheet.append(mf.add_cap(self.list.item(0)))
         for item in self.list.selectedItems():
             with open(item.text(),'r') as file:
                 cr = reader(file,delimiter = '\t')
@@ -429,6 +391,7 @@ class MyTableWidget(QWidget):
         _workbook = openpyxl.Workbook()
         for item in self.list.selectedItems():
             _worksheet = _workbook.create_sheet(item.text().split('\\')[-1])
+            _worksheet.append(mf.add_cap(item))
             with open(item.text(),'r') as file:
                 cr = reader(file,delimiter = '\t')
                 content = [line for line in cr]
@@ -450,7 +413,7 @@ class MyTableWidget(QWidget):
         result = []
         if not self.line_found.text():
             return result
-        self.list.addItems(self.find_all_files_extension(self.line_found.text(), '.txt'))
+        self.list.addItems(mf.find_all_files_extension(self.line_found.text(), '.txt'))
         self.list.itemClicked.connect(self.item_clicked)
 
     def changeItems(self, flag) -> None:
@@ -568,11 +531,14 @@ class MyTableWidget(QWidget):
 
         self.line_split_review = QLineEdit(self.split_files_tab)
         self.line_first_file = QLineEdit(self.split_files_tab)
+        self.line_first_file.setPlaceholderText('y_m_d_h_min_s.dat')
         self.line_first_file.setToolTip('Первый файл профиля')
         self.line_last_file = QLineEdit(self.split_files_tab)
+        self.line_last_file.setPlaceholderText('y_m_d_h_min_s.dat')
         self.line_last_file.setToolTip('Последний файл профиля')
         self.line_profile_name = QLineEdit(self.split_files_tab)
-        self.line_profile_name.setToolTip('Имя профиля')
+        self.line_profile_name.setPlaceholderText('Имя профиля')
+
 
         self.area_split = QTextEdit(self.split_files_tab)
         self.area_split.setReadOnly(True)
@@ -631,22 +597,9 @@ class MyTableWidget(QWidget):
 
         if self.radio_profile.isChecked() and self.create_profile_folder():
             self.Print(self.area_split, f'Разделение файлов...')
-            self.copy_files(self.profiles())
+            mf.copy_files(self.profiles(),self.profile_folder)
 
         self.Print(self.area_split, f'Файлы разделены.')
-
-    def get_files(self) -> list[str]:
-        '''Возвращает список dat-файлов найденных в указанной директории.'''
-        cwd = self.line_split_review.text()
-        return [os.path.join(cwd,item) for item in os.listdir(cwd) if item.endswith('.dat')]
-
-    def copy_files(self, files) -> None:
-        '''Копирует список файлов в указанную папку'''
-        for item in files:
-            try:
-                shutil.copyfile(item,os.path.join(self.profile_folder,item.split('\\')[-1]))
-            except Exception:
-                logging.info('Exception', exc_info=True)
 
     def create_profile_folder(self) -> bool:
         '''Создает папку для профиля и содержит список файлов по профилю.\n
@@ -662,12 +615,12 @@ class MyTableWidget(QWidget):
 
     def profiles(self) -> list:
         '''Возвращает список файлов, которые входят в профиль.'''
-        files = self.get_files()
+        files = mf.find_all_files_extension(self.line_split_review.text(),'.dat')
         res = []
         for item in range(len(files)):
-            if files[item].endswith(self.line_first_file.text() + '.dat'):
+            if files[item].endswith(self.line_first_file.text()):
                 i = item
-                while(not files[i].endswith(self.line_last_file.text() + '.dat')):
+                while(not files[i].endswith(self.line_last_file.text())):
                     res.append(files[i])
                     i += 1
                 res.append(files[i])
@@ -679,7 +632,7 @@ class MyTableWidget(QWidget):
         split_num = int(self.combo.currentText())
         self.split_num = split_num
         folders = self.make_directories()
-        dat_files = self.get_files()
+        dat_files = mf.find_all_files_extension(self.line_split_review.text(),'.dat')
         # поиск файлов dat
         count_dat_files = len(dat_files)
         split_list = [count_dat_files // split_num] * split_num
@@ -713,9 +666,7 @@ class MyTableWidget(QWidget):
     # endregion
 
     def initTabsWidget(self) -> None:
-        '''
-        Функция инициализации табов
-        '''
+        '''Функция инициализации табов.'''
         self.tabs = QTabWidget()
         self.tabs.setTabPosition(QTabWidget.West)
         self.clean_up_tab = QWidget()
@@ -724,7 +675,7 @@ class MyTableWidget(QWidget):
         self.config_file_tab = QWidget()
         self.split_files_tab = QWidget()
         self.tabs.resize(300,200)
-
+        # Tab.create_button()
         self.tabs.addTab(self.clean_up_tab,"Чистка папок")
         self.tabs.addTab(self.move_files_tab,"Перемещение файлов")
         self.tabs.addTab(self.txt_to_xlsx_tab,"Перевод txt to xlsx")
@@ -734,18 +685,6 @@ class MyTableWidget(QWidget):
         vbox = QVBoxLayout()
         vbox.addWidget(self.tabs)
         self.setLayout(vbox)
-
-    def find_all_files_extension(self, cwd:str, extension:str) -> list[str]:
-        '''Функция поиска файлов по расширению.\n
-        Возрващает список строк.\n
-        Одна строка - это полный путь к файлу.
-        '''
-        files_list = []
-        for root, _, files in os.walk(cwd):
-            for item in files:
-                if item.endswith(extension):
-                    files_list.append(os.path.join(root,item))
-        return files_list
 
     def Print(self,textEdit,string:str) -> None:
         '''Функция печати результата.\n
