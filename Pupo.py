@@ -23,6 +23,9 @@ QMenuBar{
 QTabBar::tab {
     padding: 8px;
 }
+QTabBar::tab:selected {
+    background-color:  rgb(255, 255, 255);
+}
 '''
 
 class MainWindow(QMainWindow):

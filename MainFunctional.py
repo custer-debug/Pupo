@@ -1,6 +1,7 @@
 import os
 import shutil
 import logging
+import collections
 
 def convert_bytes(size:int) -> tuple[int,int]:
     """Функция определения единиц измерения по размеру удалённых файлов.\n
@@ -86,12 +87,24 @@ def send_out_files(cwd:str,path_exe:str) -> None:
                 logging.error('Exception', exc_info=True)
                 return
 
-def copy_files(files:list, to_path:str):
-    for item in files:
+def copy_files(files:list, to_path:str) -> int:
+    """Копирует файлы в указанный каталог
+
+    Args:
+        files (list): список файлов(абсолютный путь)
+        to_path (str): конечный каталог
+
+    Returns:
+        int: количество скопированных файлов
+    """
+    for count,item in enumerate(files):
         try:
             shutil.copyfile(item,os.path.join(to_path,item.split('\\')[-1]))
         except Exception as e:
             print(e)
+            return count
+
+    return len(files)
 
 
 def add_cap(item:str) ->list[str]:
@@ -115,7 +128,6 @@ def add_cap(item:str) ->list[str]:
                     'Фронт',
                     'Спад',
                     'Dll',
-                    ' ',
                     'Глубина',
                     ' ',
                     'Rff'
@@ -123,4 +135,17 @@ def add_cap(item:str) ->list[str]:
     except Exception:
         logging.error('Exception', exc_info=True)
 
-# print(type(add_cap(r'C:\Users\r.krekoten\Desktop\Эксперимент 08.12.21\3\3_2021_12_08_12_result.txt')))
+
+def same_files(files:list) -> tuple[int,int]:
+    # tmp = [item.split('\\')[-1] for item in files]
+    for item in files:
+        item = item.split('\\')[-1]
+    # print(tmp)
+    # y = list(collections.Counter(tmp))
+    # print(y)
+
+
+
+
+
+same_files(find_all_files_extension(r'C:\Users\r.krekoten\Desktop\Эксперимент 08.12.21\1','.dat'))
