@@ -1,14 +1,34 @@
 from PyQt5.QtWidgets import *
 from datetime import datetime
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QThread, pyqtSignal, pyqtSlot,QObject
 from csv import reader
 from json import dump
-from time import time
+from time import time, sleep
 import MainFunctional as mf
 import openpyxl
 import logging
 import shutil
 import os
+
+class Worker(QObject):
+    """Создаёт дополнительный поток. """
+
+    text = pyqtSignal(str, QTextEdit)
+    # progressBar = pyqtSignal(int)
+    finished = pyqtSignal()
+    def __init__(self,function = None,obj:QTextEdit = None) -> None:
+        super().__init__()
+        self.function = function
+        self.object = obj
+
+
+    def run(self):
+        print('one')
+        self.text.emit(str(self.function()), self.object)
+        self.finished.emit()
+
+
+
 
 
 class TableWidget(QWidget):
@@ -39,7 +59,6 @@ class TableWidget(QWidget):
                 QFileDialog().getExistingDirectory(None,'Select directory')))
 
         runButton = QPushButton('Выполнить', self.clean_up_tab)
-        runButton.clicked.connect(self.function_node_clean_up_tab)
 
         self.main_line = QLineEdit(self.clean_up_tab)
         self.line_extension = QLineEdit('.exe',self.clean_up_tab)
@@ -70,6 +89,7 @@ class TableWidget(QWidget):
         grid.addWidget(runButton, 10, 6)
 
         self.clean_up_tab.setLayout(grid)
+
 
     def function_node_clean_up_tab(self) -> None:
         '''Функция проверки на наличие и корректности введённых данных для вызова определённой операции над файлами.'''
@@ -192,7 +212,6 @@ class TableWidget(QWidget):
         self.radio_button2.clicked.connect(self.hide_elements)
 
 
-
         self.radio_button1.setChecked(True)
         group_main_buttons = QButtonGroup(self.move_files_tab)
         group_main_buttons.addButton(self.radio_button1)
@@ -217,6 +236,7 @@ class TableWidget(QWidget):
         self.probar = QProgressBar(self.move_files_tab)
         self.probar.setAlignment(Qt.AlignCenter)
 
+
         self.btn1 = QPushButton('Обзор',self.move_files_tab)
         self.btn2 = QPushButton('Обзор',self.move_files_tab)
         self.btn1.clicked.connect(lambda : self.path1.setText(
@@ -225,6 +245,8 @@ class TableWidget(QWidget):
 
         self.btn4 = QPushButton('Выполнить',self.move_files_tab)
         self.btn4.clicked.connect(self.function_node_move_files_tab)
+
+        # self.function_node_move_files_tab
         # Create grid for paint elements
         grid = QGridLayout()
         grid.setVerticalSpacing(30)
@@ -256,6 +278,7 @@ class TableWidget(QWidget):
         self.move_files_tab.setLayout(grid)
 
 
+
     def hide_elements(self):
         self.radio_btn_txt.setDisabled(True)
         self.radio_btn_dat.setDisabled(True)
@@ -265,7 +288,6 @@ class TableWidget(QWidget):
         self.radio_btn_txt.setEnabled(True)
         self.radio_btn_dat.setEnabled(True)
         self.path2.setPlaceholderText('Укажите путь к файлу (.exe)')
-
 
     def select_second_path(self) -> None:
         '''Динамический выбор пути\n
@@ -295,17 +317,22 @@ class TableWidget(QWidget):
         if not path2:
             return QMessageBox.warning(self,'Ошибка', 'Укажите второй путь')
 
+        self.second_thread = QThread()
+        self.second_object = Worker()
+
         if self.radio_button1.isChecked():
-            self.Print(self.area, 'Копирование...')
+            # self.Print(self.area, 'Копирование...')
             if self.radio_btn_txt.isChecked():
-                self.Print(self.area, f'Итого: {self.collect_txt()} файлов скопировано')
-            else:
-                tmp = mf.copy_files(mf.find_all_files_extension(
-                    path1,
-                    '.dat'),
-                    path2)
-                self.Print(self.area, f'Итого: {tmp} файлов скопировано')
-            self.Print(self.area, 'Файлы скопированы.')
+                self.second_object = Worker(
+                    function=self.collect_txt,
+                    obj=self.area)
+                # self.Print(self.area, f'Итого: {self.collect_txt()} файлов скопировано')
+            if self.radio_btn_dat.isChecked():
+                self.second_object = Worker(
+                    function=self.collect_dat,
+                    obj=self.area)
+            # self.Print(self.area, 'Файлы скопированы.')
+
 
 
         if self.radio_button2.isChecked():
@@ -313,27 +340,49 @@ class TableWidget(QWidget):
             mf.send_out_files(self.path1.text(),self.path2.text())
             self.Print(self.area, 'Файлы разосланы...')
 
-    def collect_txt(self) -> int:
+
+        self.second_object.text.connect(self.Print)
+        self.second_object.moveToThread(self.second_thread)
+        self.second_object.finished.connect(self.second_thread.quit)
+        # self.second_object.progressBar.connect(self.draw_progressBar)
+        self.second_thread.started.connect(self.second_object.run)
+        self.second_thread.start()
+
+    def collect_txt(self) -> str:
         """Выполняет поиск по папке и подпапках текстовых документов и
         копирует их в одну папку переименовывая по первому шаблону (см. Справку)
         Returns:
             int: количество скопированных файлов
         """
         files_list = mf.find_all_files_extension(self.path1.text(),'.txt')
+        print(self.path1.text())
         for item in files_list:
             split = item.replace('\\','/').split('/')
             rename = f'{split[-2]}_{split[-1]}'
             to_path = os.path.join(self.path2.text(),rename)
             try:
                 shutil.copyfile(item,to_path)
-                percents = int((files_list.index(item)+1) / len(files_list)) * 100
-                self.probar.setValue(percents)
-                self.Print(self.area, f'{item} -> {to_path}')
+                self.second_object.text.emit(f'{item} -> {to_path}', self.area)
+                # percents = int((files_list.index(item)+1) / len(files_list)) * 100
+                # print(percents)
+                # self.probar.setValue(percents)
+                # self.second_object.progressBar.emit(percents)
+                # self.draw_progressBar()
+                sleep(0.1)
             except Exception as e:
                 print(e)
                 logging.error('Exception', exc_info=True)
-                return files_list.index(item) + 1
-        return len(files_list)
+                return str(files_list.index(item) + 1)
+        return str(len(files_list))
+
+    def collect_dat(self) -> str:
+        dat_files = mf.find_all_files_extension(self.path1.text(),'.dat')
+        cout = mf.same_files(dat_files)
+        self.second_object.text.emit(f'{cout[1]} повторяющихся файлов из {cout[0]}',self.area)
+        return str(mf.copy_files(dat_files,self.path2.text()))
+        # self.Print(self.area, )
+        # self.Print(self.area, f'{} файлов скопировано')
+
 
     # endregion
 
@@ -756,3 +805,14 @@ class TableWidget(QWidget):
     def initial_logger(self):
         logging.basicConfig(filename='pupo.log',format='%(asctime)s - %(levelname)s - %(message)s', level = logging.INFO)
         logging.info('Программа запущена')
+
+
+
+    @pyqtSlot(int)
+    def draw_progressBar(self, percents:int):
+        self.probar.setValue(percents)
+        # self.Print(self.area, f'{item} -> {to_path}')
+
+    @pyqtSlot(str, QTextEdit)
+    def Print(self, string, obj):
+        obj.append(string)

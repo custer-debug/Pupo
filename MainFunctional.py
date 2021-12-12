@@ -31,7 +31,7 @@ def delete_files(files) -> tuple[int,int]:
             return (files.index(item),size)
     return (len(files),size)
 
-def find_first_file(endswitch:str, files:list) -> str:
+def find_first_file(endswitch:str = '.txt', files:list = None) -> str:
     """Функция выбора первого файла из списка.
     Файлы ищутся с определённым расширением.
 
@@ -99,13 +99,15 @@ def copy_files(files:list, to_path:str) -> int:
     """
     for count,item in enumerate(files):
         try:
-            shutil.copyfile(item,os.path.join(to_path,item.split('\\')[-1]))
+            tmp = os.path.join(to_path,item.split('\\')[-1])
+            print(tmp)
+            shutil.copyfile(item,tmp)
+
         except Exception as e:
             print(e)
             return count
 
     return len(files)
-
 
 def add_cap(item:str) ->list[str]:
     try:
@@ -135,17 +137,19 @@ def add_cap(item:str) ->list[str]:
     except Exception:
         logging.error('Exception', exc_info=True)
 
-
 def same_files(files:list) -> tuple[int,int]:
-    # tmp = [item.split('\\')[-1] for item in files]
-    for item in files:
-        item = item.split('\\')[-1]
-    # print(tmp)
-    # y = list(collections.Counter(tmp))
-    # print(y)
+    """Проверяет количество одинаковых файлов в подпапках
 
+    Args:
+        files (list): список файлов, абсолютный путь
 
-
-
-
-same_files(find_all_files_extension(r'C:\Users\r.krekoten\Desktop\Эксперимент 08.12.21\1','.dat'))
+    Returns:
+        tuple[int,int]: количество повторов и общее количество файлов
+    """
+    tmp = [item.split('\\')[-1] for item in files]
+    y = collections.Counter(tmp)
+    count = 0
+    for it,item in enumerate(y.items()):
+        if item[1] > 1:
+            count = it + 1
+    return (len(files),count)
