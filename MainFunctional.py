@@ -47,7 +47,7 @@ def find_first_file(endswitch:str = '.txt', files:list = None) -> str:
             return file
     return ''
 
-def find_all_files_extension(cwd:str, extension:str) -> list[str]:
+def find_all_files_extension(cwd:str = os.getcwd(), extension:str = '.txt') -> list[str]:
     """Функция поиска файлов по расширению.
     Возрващает список строк.
     Одна строка - это полный путь к файлу.

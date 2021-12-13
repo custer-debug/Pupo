@@ -1,39 +1,48 @@
 from PyQt5.QtWidgets import *
-from datetime import datetime
-from PyQt5.QtCore import Qt, QThread, pyqtSignal, pyqtSlot,QObject
+# from datetime import datetime
+from PyQt5.QtCore import QThreadPool, Qt, QThread, pyqtSignal, pyqtSlot,QRunnable
 from csv import reader
 from json import dump
 from time import time, sleep
 
-from openpyxl.workbook.workbook import Workbook
+# from openpyxl.workbook.workbook import Workbook
 import MainFunctional as mf
 import openpyxl
 import logging
 import shutil
 import os
 
-class Worker(QObject):
+class Worker(QRunnable):
     """Создаёт дополнительный поток. """
 
     text = pyqtSignal(str, QTextEdit)
     # progressBar = pyqtSignal(int)
-    finished = pyqtSignal()
-    def __init__(self,function = None,obj:QTextEdit = None) -> None:
+    # finished = pyqtSignal()
+    def __init__(self,function = None, path:str = os.getcwd(),extension:str = '.txt') -> None:
         super().__init__()
         self.function = function
-        self.object = obj
+        self.path = path
+        self.extension = extension
+        # print(function)
+        # self.function = function
+
 
 
     def run(self):
-        print('one')
-        self.text.emit(str(self.function()), self.object)
-        self.finished.emit()
+        for i in self.function(self.path,self.extension):
+            print(i)
+            sleep(0.1)
+        print(f'Thread: {QThread.currentThreadId()}')
 
 
 
 class TableWidget(QWidget):
     def __init__(self, parent):
         super(QWidget, self).__init__(parent)
+
+        # self.thread.start()
+
+
         self.initial_logger()
         self.initTabsWidget()
         self.init_clean_up_tab()
@@ -59,6 +68,7 @@ class TableWidget(QWidget):
                 QFileDialog().getExistingDirectory(None,'Select directory')))
 
         runButton = QPushButton('Выполнить', self.clean_up_tab)
+        runButton.clicked.connect(self.function_node_clean_up_tab)
 
         self.main_line = QLineEdit(self.clean_up_tab)
         self.line_extension = QLineEdit('.exe',self.clean_up_tab)
@@ -87,56 +97,79 @@ class TableWidget(QWidget):
         grid.addWidget(self.check_box_rm_dir, 3,0)
         grid.addWidget(self.cout_clean_up, 4,0,5,7)
         grid.addWidget(runButton, 10, 6)
-
         self.clean_up_tab.setLayout(grid)
 
 
     def function_node_clean_up_tab(self) -> None:
         '''Функция проверки на наличие и корректности введённых данных для вызова определённой операции над файлами.'''
         self.cout_clean_up.clear()
+        # self.thread = QThread()
+
         if not os.path.exists(self.main_line.text()):
-            QMessageBox.warning(self, 'Ошибка', 'Такого пути не существует')
-            return
+            return QMessageBox.warning(self, 'Ошибка', 'Такого пути не существует')
+
         t = time()
 
         if self.check_box_rm_files.isChecked() and self.line_extension.text():
-            self.Print(self.cout_clean_up, 'Удаление...')
+            # self.Print(self.cout_clean_up, 'Удаление...')
+
             try:
-                tmp = mf.delete_files(
-                        mf.find_all_files_extension(
-                            self.main_line.text(),
-                            self.line_extension.text()))
+
+                # work = Worker()
+
+                QThreadPool.globalInstance().start(Worker(
+                    mf.find_all_files_extension,
+                    self.main_line.text()
+                ))
+                # QThreadPool.globalInstance().start(Worker())
+                # self.object = Worker(mf.find_all_files_extension,[self.main_line.text(),'.txt'])
+                # tmp = mf.delete_files(
+                        # mf.find_all_files_extension(
+                            # self.main_line.text(),
+                            # self.line_extension.text()))
             except Exception as e:
                 logging.error('Exception', exc_info=True)
-                self.Print(self.cout_clean_up,e)
+                # self.Print(self.cout_clean_up,e)
                 return
 
-            if tmp[0] == 0:
-                self.Print(self.cout_clean_up, f'Файлов такого расширения не найдено, либо они были пустые.')
-            else:
-                self.Print(self.cout_clean_up, f'Удалено {tmp[0]} файлов ({mf.convert_bytes(tmp[1])}).')
+            # if tmp[0] == 0:
+                # self.Print(self.cout_clean_up, f'Файлов такого расширения не найдено, либо они были пустые.')
+            # else:
+                # self.Print(self.cout_clean_up, f'Удалено {tmp[0]} файлов ({mf.convert_bytes(tmp[1])}).')
 
 
         if self.check_box_rename_files.isChecked() and self.line_template.text():
-            self.Print(self.cout_clean_up,'Переименование...')
+            # self.Print(self.cout_clean_up,'Переименование...')
             try:
-                self.rename_files()
+                # work =
+                QThreadPool.globalInstance().start(Worker(
+                    mf.find_all_files_extension,
+                    self.main_line.text(),
+                    self.line_extension.text()
+                ))
+                # self.rename_files()
             except Exception as e:
                 logging.error('Exception', exc_info=True)
                 self.Print(self.cout_clean_up,e)
                 return
-            self.Print(self.cout_clean_up,'Файлы переименованы...')
+            # self.Print(self.cout_clean_up,'Файлы переименованы...')
 
         if self.check_box_rm_dir.isChecked():
-            self.Print(self.cout_clean_up,'Удаление пустых папок...')
+            # self.Print(self.cout_clean_up,'Удаление пустых папок...')
             try:
-                self.delete_empty_directories(self.main_line.text())
+                QThreadPool.globalInstance().start(Worker())
+                # self.delete_empty_directories(self.main_line.text())
             except Exception as e:
                 logging.error('Exception', exc_info=True)
                 self.Print(self.cout_clean_up,e)
                 return
-            self.Print(self.cout_clean_up,'Папки удалены...')
+            # self.Print(self.cout_clean_up,'Папки удалены...')
 
+        # self.object.text.connect(self.Print)
+        # self.object.finished.connect(self.thread.quit)
+        # self.object.moveToThread(self.thread)
+        # self.thread.started.connect(self.object.run)
+        # self.thread.start()
         print(time() - t)
         if not any([self.check_box_rm_files.isChecked(),self.check_box_rename_files.isChecked(),self.check_box_rm_dir.isChecked()]):
             QMessageBox.warning(self, 'Ошибка', 'Выберите действие')
@@ -372,12 +405,11 @@ class TableWidget(QWidget):
                 # self.probar.setValue(percents)
                 # self.second_object.progressBar.emit(percents)
                 # self.draw_progressBar()
-                sleep(0.1)
-            except Exception as e:
-                print(e)
+                sleep(0.3)
+            except Exception:
                 logging.error('Exception', exc_info=True)
-                return str(files_list.index(item) + 1)
-        return str(len(files_list))
+                return f'Не все файлы перемещены ({str(files_list.index(item) + 1)} из {str(len(files_list))})'
+        return f'Перемещено {str(len(files_list))} файлов'
 
     def collect_dat(self) -> str:
         dat_files = mf.find_all_files_extension(self.path1.text(),'.dat')
@@ -387,8 +419,7 @@ class TableWidget(QWidget):
         # self.Print(self.area, )
         # self.Print(self.area, f'{} файлов скопировано')
 
-
-    def send_out_files(self) -> None:
+    def send_out_files(self) -> str:
         """Функция из главного функционала.
         Выполняет рассылку исполняемых файлов по папкам.
 
@@ -401,14 +432,13 @@ class TableWidget(QWidget):
             for folder in folders:
                 to = os.path.join(root, folder,exe.split('/')[-1].split('\\')[-1])
                 try:
-                    print(exe)
-                    print(to)
                     shutil.copyfile(exe,to)
                     self.second_object.text.emit(to,self.area)
-                    sleep(0.2)
+                    sleep(0.5)
                 except Exception:
                     logging.error('Exception', exc_info=True)
-                    return
+                    return f'Не все файлы перемещены (Последний: {to}).'
+
 
     # endregion
 
@@ -812,8 +842,8 @@ class TableWidget(QWidget):
         self.split_files_tab = QWidget()
         self.tabs.resize(300,200)
         # Tab.create_button()
-        self.tabs.addTab(self.move_files_tab,"Копирование")
         self.tabs.addTab(self.clean_up_tab,"Чистка")
+        self.tabs.addTab(self.move_files_tab,"Копирование")
         self.tabs.addTab(self.txt_to_xlsx_tab,"Txt to xlsx")
         self.tabs.addTab(self.config_file_tab,"Конфиг")
         self.tabs.addTab(self.split_files_tab,"Разделение")
@@ -822,11 +852,11 @@ class TableWidget(QWidget):
         vbox.addWidget(self.tabs)
         self.setLayout(vbox)
 
-    def Print(self,textEdit,string:str) -> None:
-        '''Функция печати результата.\n
-        Принимает объект, в котором будет отображена строка, которая передаётся третьим параметром.'''
-        logging.info(string)
-        textEdit.append(f'[{datetime.now().strftime("%d-%m-%Y %H:%M:%S")}] {string}')
+    # def Print(self,textEdit,string:str) -> None:
+    #     '''Функция печати результата.\n
+    #     Принимает объект, в котором будет отображена строка, которая передаётся третьим параметром.'''
+    #     logging.info(string)
+    #     textEdit.append(f'[{datetime.now().strftime("%d-%m-%Y %H:%M:%S")}] {string}')
 
     def initial_logger(self):
         logging.basicConfig(filename='pupo.log',
