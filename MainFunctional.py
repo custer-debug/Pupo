@@ -67,25 +67,7 @@ def find_all_files_extension(cwd:str, extension:str) -> list[str]:
                 files_list.append(os.path.join(root,item))
     return files_list
 
-def send_out_files(cwd:str,path_exe:str) -> None:
-    """Функция из главного функционала.
-    Выполняет рассылку исполняемых файлов по папкам.
 
-    Args:
-        cwd (str): корневой каталог
-        path_exe (str): путь к файлу
-    """
-    exe = path_exe.split('/')[-1]
-    for root,folders,_ in os.walk(cwd):
-        for folder in folders:
-            to = os.path.join(root, folder,exe)
-            try:
-                shutil.copyfile(path_exe,to)
-                # self.Print(self.area, os.path.join(root, folder,exe))
-            except Exception as e:
-                print(e)
-                logging.error('Exception', exc_info=True)
-                return
 
 def copy_files(files:list, to_path:str) -> int:
     """Копирует файлы в указанный каталог

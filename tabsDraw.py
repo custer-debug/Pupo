@@ -4,6 +4,8 @@ from PyQt5.QtCore import Qt, QThread, pyqtSignal, pyqtSlot,QObject
 from csv import reader
 from json import dump
 from time import time, sleep
+
+from openpyxl.workbook.workbook import Workbook
 import MainFunctional as mf
 import openpyxl
 import logging
@@ -26,8 +28,6 @@ class Worker(QObject):
         print('one')
         self.text.emit(str(self.function()), self.object)
         self.finished.emit()
-
-
 
 
 
@@ -336,9 +336,14 @@ class TableWidget(QWidget):
 
 
         if self.radio_button2.isChecked():
-            self.Print(self.area, 'Начало рассылки...')
-            mf.send_out_files(self.path1.text(),self.path2.text())
-            self.Print(self.area, 'Файлы разосланы...')
+            self.second_object.text.emit('Начало рассылки...', self.area)
+            # self.Print(self.area, 'Начало рассылки...')
+            self.second_object = Worker(
+                function=self.send_out_files,
+                obj=self.area
+            )
+            # self.send_out_files()
+            # self.Print(self.area, 'Файлы разосланы...')
 
 
         self.second_object.text.connect(self.Print)
@@ -355,7 +360,6 @@ class TableWidget(QWidget):
             int: количество скопированных файлов
         """
         files_list = mf.find_all_files_extension(self.path1.text(),'.txt')
-        print(self.path1.text())
         for item in files_list:
             split = item.replace('\\','/').split('/')
             rename = f'{split[-2]}_{split[-1]}'
@@ -383,6 +387,28 @@ class TableWidget(QWidget):
         # self.Print(self.area, )
         # self.Print(self.area, f'{} файлов скопировано')
 
+
+    def send_out_files(self) -> None:
+        """Функция из главного функционала.
+        Выполняет рассылку исполняемых файлов по папкам.
+
+        Args:
+            cwd (str): корневой каталог
+            path_exe (str): путь к файлу
+        """
+        exe = self.path2.text()
+        for root,folders,_ in os.walk(self.path1.text()):
+            for folder in folders:
+                to = os.path.join(root, folder,exe.split('/')[-1].split('\\')[-1])
+                try:
+                    print(exe)
+                    print(to)
+                    shutil.copyfile(exe,to)
+                    self.second_object.text.emit(to,self.area)
+                    sleep(0.2)
+                except Exception:
+                    logging.error('Exception', exc_info=True)
+                    return
 
     # endregion
 
@@ -803,7 +829,10 @@ class TableWidget(QWidget):
         textEdit.append(f'[{datetime.now().strftime("%d-%m-%Y %H:%M:%S")}] {string}')
 
     def initial_logger(self):
-        logging.basicConfig(filename='pupo.log',format='%(asctime)s - %(levelname)s - %(message)s', level = logging.INFO)
+        logging.basicConfig(filename='pupo.log',
+        format='%(asctime)s - %(levelname)s - %(message)s',
+        level = logging.INFO,
+        encoding='utf-8')
         logging.info('Программа запущена')
 
 
