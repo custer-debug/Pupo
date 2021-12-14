@@ -1,38 +1,61 @@
 from PyQt5.QtWidgets import *
 # from datetime import datetime
-from PyQt5.QtCore import QThreadPool, Qt, QThread, pyqtSignal, pyqtSlot,QRunnable
+from PyQt5.QtCore import QThreadPool, Qt, QThread, pyqtSignal, pyqtSlot,QRunnable,QObject
 from csv import reader
 from json import dump
 from time import time, sleep
 
 # from openpyxl.workbook.workbook import Workbook
 import MainFunctional as mf
+import traceback
 import openpyxl
 import logging
 import shutil
+import sys
 import os
 
+
+# class WorkerSignals(QObject):
+
+#     finished = pyqtSignal()
+#     error = pyqtSignal(tuple)
+#     result = pyqtSignal(object)
+#     progress = pyqtSignal(int)
+
+
+
 class Worker(QRunnable):
-    """Создаёт дополнительный поток. """
 
-    text = pyqtSignal(str, QTextEdit)
-    # progressBar = pyqtSignal(int)
-    # finished = pyqtSignal()
-    def __init__(self,function = None, path:str = os.getcwd(),extension:str = '.txt') -> None:
-        super().__init__()
-        self.function = function
-        self.path = path
-        self.extension = extension
-        # print(function)
-        # self.function = function
+    def __init__(self, fn, *args, **kwargs):
+        super(Worker, self).__init__()
 
+        # Store constructor arguments (re-used for processing)
+        self.fn = fn
+        self.args = args
+        self.kwargs = kwargs
+        # self.signals = WorkerSignals()
 
+        # Add the callback to our kwargs
+        # self.kwargs['progress_callback'] = self.signals.progress
 
+    @pyqtSlot()
     def run(self):
-        for i in self.function(self.path,self.extension):
-            print(i)
-            sleep(0.1)
-        print(f'Thread: {QThread.currentThreadId()}')
+        '''
+        Initialise the runner function with passed args, kwargs.
+        '''
+
+        # Retrieve args/kwargs here; and fire processing using them
+        try:
+            self.fn(*self.args, **self.kwargs)
+        except:
+            traceback.print_exc()
+            # exctype, value = sys.exc_info()[:2]
+            # self.signals.error.emit((exctype, value, traceback.format_exc()))
+        # else:
+            # self.signals.result.emit(result)  # Return the result of the processing
+        # finally:
+            # self.signals.finished.emit()  # Done
+
 
 
 
@@ -104,7 +127,7 @@ class TableWidget(QWidget):
         '''Функция проверки на наличие и корректности введённых данных для вызова определённой операции над файлами.'''
         self.cout_clean_up.clear()
         # self.thread = QThread()
-
+        self.threadpool = QThreadPool()
         if not os.path.exists(self.main_line.text()):
             return QMessageBox.warning(self, 'Ошибка', 'Такого пути не существует')
 
@@ -115,12 +138,9 @@ class TableWidget(QWidget):
 
             try:
 
-                # work = Worker()
-
-                QThreadPool.globalInstance().start(Worker(
-                    mf.find_all_files_extension,
-                    self.main_line.text()
-                ))
+                worker = Worker(mf.find_all_files_extension,self.main_line.text(),self.line_extension.text())
+                self.threadpool.start(worker)
+                print(self.threadpool.activeThreadCount())
                 # QThreadPool.globalInstance().start(Worker())
                 # self.object = Worker(mf.find_all_files_extension,[self.main_line.text(),'.txt'])
                 # tmp = mf.delete_files(
@@ -142,7 +162,7 @@ class TableWidget(QWidget):
             # self.Print(self.cout_clean_up,'Переименование...')
             try:
                 # work =
-                QThreadPool.globalInstance().start(Worker(
+                self.pool.start(Worker(
                     mf.find_all_files_extension,
                     self.main_line.text(),
                     self.line_extension.text()
@@ -157,14 +177,17 @@ class TableWidget(QWidget):
         if self.check_box_rm_dir.isChecked():
             # self.Print(self.cout_clean_up,'Удаление пустых папок...')
             try:
-                QThreadPool.globalInstance().start(Worker())
-                # self.delete_empty_directories(self.main_line.text())
+                self.pool.globalInstance().start(Worker(
+                    mf.find_all_files_extension,
+                    self.main_line.text(),
+                    self.line_extension.text()
+                ))                # self.delete_empty_directories(self.main_line.text())
             except Exception as e:
                 logging.error('Exception', exc_info=True)
                 self.Print(self.cout_clean_up,e)
                 return
             # self.Print(self.cout_clean_up,'Папки удалены...')
-
+        # print(self.pool.activeThreadCount())
         # self.object.text.connect(self.Print)
         # self.object.finished.connect(self.thread.quit)
         # self.object.moveToThread(self.thread)

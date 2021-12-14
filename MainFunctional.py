@@ -2,6 +2,8 @@ import os
 import shutil
 import logging
 import collections
+from time import sleep
+
 
 def convert_bytes(size:int) -> tuple[int,int]:
     """Функция определения единиц измерения по размеру удалённых файлов.\n
@@ -65,6 +67,8 @@ def find_all_files_extension(cwd:str = os.getcwd(), extension:str = '.txt') -> l
         for item in files:
             if item.endswith(extension):
                 files_list.append(os.path.join(root,item))
+                print(item)
+                sleep(0.3)
     return files_list
 
 

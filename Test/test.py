@@ -1,73 +1,150 @@
-from PyQt5.QtCore import QThread, pyqtSignal, QObject, pyqtSlot
-from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QGridLayout
-import sys
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtCore import *
 
-class Worker(QObject):
-    def __init__(self,function) -> None:
-        super().__init__()
-        self.function = function
-        # print(argc[0])
-
-    intReady = pyqtSignal(int)
+import time
+import traceback, sys
 
 
+class WorkerSignals(QObject):
+    '''
+    Defines the signals available from a running worker thread.
 
+    Supported signals are:
+
+    finished
+        No data
+
+    error
+        tuple (exctype, value, traceback.format_exc() )
+
+    result
+        object data returned from processing, anything
+
+    progress
+        int indicating % progress
+
+    '''
+    finished = pyqtSignal()
+    error = pyqtSignal(tuple)
+    result = pyqtSignal(object)
+    progress = pyqtSignal(int)
+
+
+class Worker(QRunnable):
+    '''
+    Worker thread
+
+    Inherits from QRunnable to handler worker thread setup, signals and wrap-up.
+
+    :param callback: The function callback to run on this worker thread. Supplied args and
+                     kwargs will be passed through to the runner.
+    :type callback: function
+    :param args: Arguments to pass to the callback function
+    :param kwargs: Keywords to pass to the callback function
+
+    '''
+
+    def __init__(self, fn, *args, **kwargs):
+        super(Worker, self).__init__()
+
+        # Store constructor arguments (re-used for processing)
+        self.fn = fn
+        self.args = args
+        self.kwargs = kwargs
+        self.signals = WorkerSignals()
+
+        # Add the callback to our kwargs
+        self.kwargs['progress_callback'] = self.signals.progress
 
     @pyqtSlot()
-    def procCounter(self): # A slot takes no params
-        self.function('jghfjhjgkjkgh')
+    def run(self):
+        '''
+        Initialise the runner function with passed args, kwargs.
+        '''
+
+        # Retrieve args/kwargs here; and fire processing using them
+        try:
+            result = self.fn(*self.args, **self.kwargs)
+        except:
+            traceback.print_exc()
+            exctype, value = sys.exc_info()[:2]
+            self.signals.error.emit((exctype, value, traceback.format_exc()))
+        else:
+            self.signals.result.emit(result)  # Return the result of the processing
+        finally:
+            self.signals.finished.emit()  # Done
 
 
-def test(string):
-    print(string)
+
+class MainWindow(QMainWindow):
 
 
-class Form(QWidget):
+    def __init__(self, *args, **kwargs):
+        super(MainWindow, self).__init__(*args, **kwargs)
 
-    def __init__(self):
-        super().__init__()
-        self.label = QLabel("0")
+        self.counter = 0
 
-        # 1 - create Worker and Thread inside the Form
-        self.obj = Worker(function=test)  # no parent!
-        self.thread = QThread()  # no parent!
+        layout = QVBoxLayout()
 
-        # 2 - Connect Worker`s Signals to Form method slots to post data.
-        self.obj.intReady.connect(self.onIntReady)
+        self.l = QLabel("Start")
+        b = QPushButton("DANGER!")
+        b.pressed.connect(self.oh_no)
 
-        # 3 - Move the Worker object to the Thread object
-        self.obj.moveToThread(self.thread)
+        layout.addWidget(self.l)
+        layout.addWidget(b)
 
-        # 5 - Connect Thread started signal to Worker operational slot method
-        self.thread.started.connect(self.obj.procCounter)
+        w = QWidget()
+        w.setLayout(layout)
 
-        # * - Thread finished signal will close the app if you want!
-        #self.thread.finished.connect(app.exit)
+        self.setCentralWidget(w)
 
-        # 6 - Start the thread
-        self.thread.start()
-        # 7 - Start the form
-        self.initUI()
-
-
-    def initUI(self):
-        grid = QGridLayout()
-        self.setLayout(grid)
-        grid.addWidget(self.label,0,0)
-
-        self.move(300, 150)
-        self.setWindowTitle('thread test')
         self.show()
 
-    def onIntReady(self, i):
-        self.label.setText("{}".format(i))
-        #print(i)
+        self.threadpool = QThreadPool()
+        print("Multithreading with maximum %d threads" % self.threadpool.maxThreadCount())
+
+        self.timer = QTimer()
+        self.timer.setInterval(1000)
+        self.timer.timeout.connect(self.recurring_timer)
+        self.timer.start()
+
+    def progress_fn(self, n):
+        print("%d%% done" % n)
+
+    def execute_this_fn(self, progress_callback):
+
+        for n in range(0, 5):
+            time.sleep(1)
+            print(f'{n=}')
+            progress_callback.emit(n*100/4)
+            print(f'threads = {self.threadpool.activeThreadCount()}')
+
+        return "Done."
+
+    def print_output(self, s):
+        print(s)
+
+    def thread_complete(self):
+        print("THREAD COMPLETE!")
+
+    def oh_no(self):
+        # Pass the function to execute
+        worker = Worker(self.execute_this_fn) # Any other args, kwargs are passed to the run function
+        worker.signals.result.connect(self.print_output)
+        worker.signals.finished.connect(self.thread_complete)
+        worker.signals.progress.connect(self.progress_fn)
+
+        # Execute
+        self.threadpool.start(worker)
 
 
 
+    def recurring_timer(self):
+        self.counter +=1
+        self.l.setText("Counter: %d" % self.counter)
 
-app = QApplication(sys.argv)
 
-form = Form()
-
-sys.exit(app.exec_())
+app = QApplication([])
+window = MainWindow()
+app.exec_()
