@@ -27,7 +27,8 @@ def delete_files(files) -> tuple[int,int]:
     for item in files:
         size += os.stat(item).st_size
         try:
-            os.remove(item)
+            print(item)
+            # os.remove(item)
         except Exception:
             logging.error('Exception', exc_info=True)
             return (files.index(item),size)
@@ -67,8 +68,7 @@ def find_all_files_extension(cwd:str = os.getcwd(), extension:str = '.txt') -> l
         for item in files:
             if item.endswith(extension):
                 files_list.append(os.path.join(root,item))
-                print(item)
-                sleep(0.3)
+                sleep(0.1)
     return files_list
 
 

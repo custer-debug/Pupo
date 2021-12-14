@@ -7,54 +7,33 @@ from time import time, sleep
 
 # from openpyxl.workbook.workbook import Workbook
 import MainFunctional as mf
-import traceback
 import openpyxl
 import logging
 import shutil
-import sys
 import os
 
 
-# class WorkerSignals(QObject):
-
-#     finished = pyqtSignal()
-#     error = pyqtSignal(tuple)
-#     result = pyqtSignal(object)
-#     progress = pyqtSignal(int)
-
+class WorkerSignals(QObject):
+    error = pyqtSignal(tuple)
+    output = pyqtSignal(str)
 
 
 class Worker(QRunnable):
 
     def __init__(self, fn, *args, **kwargs):
         super(Worker, self).__init__()
-
-        # Store constructor arguments (re-used for processing)
         self.fn = fn
         self.args = args
         self.kwargs = kwargs
-        # self.signals = WorkerSignals()
-
-        # Add the callback to our kwargs
-        # self.kwargs['progress_callback'] = self.signals.progress
+        self.signals = WorkerSignals()
 
     @pyqtSlot()
     def run(self):
-        '''
-        Initialise the runner function with passed args, kwargs.
-        '''
-
-        # Retrieve args/kwargs here; and fire processing using them
         try:
-            self.fn(*self.args, **self.kwargs)
-        except:
-            traceback.print_exc()
-            # exctype, value = sys.exc_info()[:2]
-            # self.signals.error.emit((exctype, value, traceback.format_exc()))
-        # else:
-            # self.signals.result.emit(result)  # Return the result of the processing
-        # finally:
-            # self.signals.finished.emit()  # Done
+            result = self.fn(*self.args, **self.kwargs)
+            self.signals.output.emit(result)
+        except Exception:
+            logging.error('Exception', exc_info=True)
 
 
 
@@ -84,7 +63,7 @@ class TableWidget(QWidget):
 
     def init_clean_up_tab(self) -> None:
 
-        '''Функция инициализации первого таба.\n'''
+        '''Функция инициализации первого таба.'''
         # Create elements
         reviewButton = QPushButton('Обзор', self.clean_up_tab)
         reviewButton.clicked.connect(lambda : self.main_line.setText(
@@ -126,86 +105,70 @@ class TableWidget(QWidget):
     def function_node_clean_up_tab(self) -> None:
         '''Функция проверки на наличие и корректности введённых данных для вызова определённой операции над файлами.'''
         self.cout_clean_up.clear()
-        # self.thread = QThread()
         self.threadpool = QThreadPool()
         if not os.path.exists(self.main_line.text()):
             return QMessageBox.warning(self, 'Ошибка', 'Такого пути не существует')
 
         t = time()
-
         if self.check_box_rm_files.isChecked() and self.line_extension.text():
-            # self.Print(self.cout_clean_up, 'Удаление...')
-
+            self.output_change_files('Удаление...')
             try:
-
-                worker = Worker(mf.find_all_files_extension,self.main_line.text(),self.line_extension.text())
+                worker = Worker(self.delete_files_extension)
+                worker.signals.output.connect(self.output_change_files)
                 self.threadpool.start(worker)
-                print(self.threadpool.activeThreadCount())
-                # QThreadPool.globalInstance().start(Worker())
-                # self.object = Worker(mf.find_all_files_extension,[self.main_line.text(),'.txt'])
-                # tmp = mf.delete_files(
-                        # mf.find_all_files_extension(
-                            # self.main_line.text(),
-                            # self.line_extension.text()))
-            except Exception as e:
+            except Exception:
                 logging.error('Exception', exc_info=True)
-                # self.Print(self.cout_clean_up,e)
-                return
 
-            # if tmp[0] == 0:
-                # self.Print(self.cout_clean_up, f'Файлов такого расширения не найдено, либо они были пустые.')
-            # else:
-                # self.Print(self.cout_clean_up, f'Удалено {tmp[0]} файлов ({mf.convert_bytes(tmp[1])}).')
 
 
         if self.check_box_rename_files.isChecked() and self.line_template.text():
-            # self.Print(self.cout_clean_up,'Переименование...')
             try:
-                # work =
-                self.pool.start(Worker(
-                    mf.find_all_files_extension,
-                    self.main_line.text(),
-                    self.line_extension.text()
-                ))
-                # self.rename_files()
-            except Exception as e:
+                self.output_change_files('Переименование...')
+                worker = Worker(self.rename_files)
+                worker.signals.output.connect(self.output_change_files)
+                self.threadpool.start(worker)
+            except Exception:
                 logging.error('Exception', exc_info=True)
-                self.Print(self.cout_clean_up,e)
-                return
-            # self.Print(self.cout_clean_up,'Файлы переименованы...')
 
         if self.check_box_rm_dir.isChecked():
-            # self.Print(self.cout_clean_up,'Удаление пустых папок...')
             try:
-                self.pool.globalInstance().start(Worker(
-                    mf.find_all_files_extension,
-                    self.main_line.text(),
-                    self.line_extension.text()
-                ))                # self.delete_empty_directories(self.main_line.text())
-            except Exception as e:
+                self.output_change_files('Удаление папок...')
+                worker = Worker(self.delete_empty_directories,self.main_line.text())
+                worker.signals.output.connect(self.output_change_files)
+                self.threadpool.start(worker)
+            except Exception:
                 logging.error('Exception', exc_info=True)
-                self.Print(self.cout_clean_up,e)
-                return
-            # self.Print(self.cout_clean_up,'Папки удалены...')
-        # print(self.pool.activeThreadCount())
-        # self.object.text.connect(self.Print)
-        # self.object.finished.connect(self.thread.quit)
-        # self.object.moveToThread(self.thread)
-        # self.thread.started.connect(self.object.run)
-        # self.thread.start()
+
+        print(self.threadpool.activeThreadCount())
         print(time() - t)
         if not any([self.check_box_rm_files.isChecked(),self.check_box_rename_files.isChecked(),self.check_box_rm_dir.isChecked()]):
             QMessageBox.warning(self, 'Ошибка', 'Выберите действие')
         self.disabled_check_boxes()
 
     def disabled_check_boxes(self) -> None:
-        '''Функция снятия выделения чек-боксов.\n
+        '''Функция снятия выделения чек-боксов.
         Она вызывается при успешной выполенении операции.'''
         self.check_box_rm_files.setChecked(False)
         self.check_box_rename_files.setChecked(False)
         self.check_box_rm_dir.setChecked(False)
         self.line_extension.setEnabled(False)
         self.line_template.setEnabled(False)
+
+
+    def delete_files_extension(self) -> str:
+        tmp = mf.delete_files(
+                mf.find_all_files_extension(
+                    self.main_line.text(),
+                    self.line_extension.text()))
+
+        if tmp[0] == 0:
+            return f'Файлов такого расширения не найдено, либо они были пустые.'
+
+        return f'Удалено {tmp[0]} файлов ({mf.convert_bytes(tmp[1])}).'
+
+
+
+
 
     def rename_files(self) -> int:
         """Функция из главного функционала
@@ -218,6 +181,7 @@ class TableWidget(QWidget):
         Return:
             (int) - количество переименнованных файлов.
         """
+        count = 0
         for root, _, files in os.walk(self.main_line.text()):
             dat = mf.find_first_file('.dat', files)
             file = mf.find_first_file(self.line_template.text(), files)
@@ -232,11 +196,13 @@ class TableWidget(QWidget):
                 new_name = '_'.join([folder,dat_split,file])
 
             try:
-                os.rename(os.path.join(root,file),os.path.join(root,new_name))
-                self.Print(f'{os.path.join(root,file)} -> {os.path.join(root,new_name)}')
-            except Exception as e:
+                # os.rename(os.path.join(root,file),os.path.join(root,new_name))
+                # self.Print(self.cout_clean_up ,f'{os.path.join(root,file)} -> {os.path.join(root,new_name)}')
+                count += 1
+            except Exception:
                 logging.error('Exception', exc_info=True)
-                self.Print(self.cout_clean_up,e)
+                return count
+        return count
 
     def delete_empty_directories(self, path:str) -> None:
         """Функция из главного функционала
@@ -248,11 +214,19 @@ class TableWidget(QWidget):
                 self.delete_empty_directories(current_dir)
                 if not os.listdir(current_dir):
                     try:
-                        os.rmdir(current_dir)
+                        print(current_dir)
+                        # os.rmdir(current_dir)
                     except Exception as e:
                         logging.error('Exception', exc_info=True)
-                        self.Print(self.cout_clean_up,e)
-                    self.Print(self.cout_clean_up,"Папка: " + current_dir + " удалена")
+                        # self.Print(self.cout_clean_up,e)
+                    # self.Print(self.cout_clean_up,"Папка: " + current_dir + " удалена")
+
+
+    @pyqtSlot(str)
+    def output_change_files(self, string:str):
+        self.cout_clean_up.append(string)
+
+
 
     # endregion
 
@@ -890,11 +864,7 @@ class TableWidget(QWidget):
 
 
 
-    @pyqtSlot(int)
-    def draw_progressBar(self, percents:int):
-        self.probar.setValue(percents)
+    # @pyqtSlot(int)
+    # def draw_progressBar(self, percents:int):
+        # self.probar.setValue(percents)
         # self.Print(self.area, f'{item} -> {to_path}')
-
-    @pyqtSlot(str, QTextEdit)
-    def Print(self, string, obj):
-        obj.append(string)
