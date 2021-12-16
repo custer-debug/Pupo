@@ -490,6 +490,10 @@ class TableWidget(QWidget):
         self.label_select = QLabel(self.txt_to_xlsx_tab)
         self.label_select.setText('Выбрано: 0 файлов.')
 
+        # self.label_output = QLabel(self.txt_to_xlsx_tab)
+        # self.label_output.setText('Output')
+
+
         self.list = QListWidget(self.txt_to_xlsx_tab)
         self.list.setSelectionMode(QAbstractItemView.MultiSelection)
 
@@ -515,6 +519,7 @@ class TableWidget(QWidget):
         grid.addWidget(self.btn_select,4,3, alignment=Qt.AlignTop)
 
         grid.addWidget(self.label_select, 5,0)
+        # grid.addWidget(self.label_output, 5,1,alignment=Qt.AlignCenter)
 
         grid.addWidget(self.list, 4,0,1,3)
         grid.addWidget(self.btn_save, 5,3)
@@ -539,17 +544,22 @@ class TableWidget(QWidget):
 
 
         if check1:
-            self.one_file_to_one_sheet()
-        if check2:
-            self.many_files_to_one_sheet()
+            self.Print_copying_files('Рассылка исполняемых файлов...')
+            worker = Worker(self.one_file_to_one_sheet)
+            worker.signals.output.connect(self.print_output)
+            self.threadpool.start(worker)
 
-        QMessageBox.information(self,'Успех','Файлы переведены.')
+        if check2:
+            self.Print_copying_files('Рассылка исполняемых файлов...')
+            worker = Worker(self.many_files_to_one_sheet)
+            worker.signals.output.connect(self.print_output)
+            self.threadpool.start(worker)
 
     def delete_sheet(self,wb) -> None:
         '''Удаляет лист из эксель файла под именем "Sheet" (Он создаётся по умолчанию).'''
         del wb['Sheet']
 
-    def many_files_to_one_sheet(self) -> None:
+    def many_files_to_one_sheet(self) -> str:
         '''Перебирает txt-файлы, считывая их по строке, и добавляет все файлы в один лист.'''
         _workbook = openpyxl.Workbook()
         _worksheet = _workbook.create_sheet('Excel')
@@ -566,8 +576,9 @@ class TableWidget(QWidget):
                 file.close()
         self.delete_sheet(_workbook)
         _workbook.save(filename=os.path.join(self.line_save.text(), self.line_name_many_to_one.text() + '.xlsx'))
+        return 'Файлы переведены в excel (one to many).'
 
-    def one_file_to_one_sheet(self) -> None:
+    def one_file_to_one_sheet(self) -> str:
         '''Перебирает txt-файлы, считывая их по строке, и добавляет каждый файл в отдельный лист.'''
         _workbook = openpyxl.Workbook()
         for item in self.list.selectedItems():
@@ -586,6 +597,7 @@ class TableWidget(QWidget):
                 file.close()
             _workbook.save(filename=os.path.join(self.line_save.text(),self.line_name_one_to_one.text() + '.xlsx'))
         self.delete_sheet(_workbook)
+        return 'Файлы переведены в excel (many to one).'
 
     def found_files(self) -> None:
         '''Функция поиска txt-файлов. Все текстовые документы (.txt) которые находит,
@@ -614,6 +626,10 @@ class TableWidget(QWidget):
     def item_clicked(self) -> None:
         '''Изменяет лэйбл при выделении элемента. Показывает сколько элементов выбрано.'''
         return self.label_select.setText(f'Выбрано: {len(self.list.selectedItems())} элементов')
+
+    @pyqtSlot(str)
+    def print_output(self, string:str) -> None:
+        QMessageBox.information(self,'Успех',string)
 
     # endregion
 
@@ -857,9 +873,9 @@ class TableWidget(QWidget):
         self.split_files_tab = QWidget()
         self.tabs.resize(300,200)
         # Tab.create_button()
-        self.tabs.addTab(self.move_files_tab,"Копирование")
-        self.tabs.addTab(self.clean_up_tab,"Чистка")
         self.tabs.addTab(self.txt_to_xlsx_tab,"Txt to xlsx")
+        self.tabs.addTab(self.clean_up_tab,"Чистка")
+        self.tabs.addTab(self.move_files_tab,"Копирование")
         self.tabs.addTab(self.config_file_tab,"Конфиг")
         self.tabs.addTab(self.split_files_tab,"Разделение")
 

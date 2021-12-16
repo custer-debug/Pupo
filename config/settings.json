@@ -1,8 +1,8 @@
 {
     "count_folder": -1,
     "prev_folders": [
-        "C:/Users/r.krekoten/Desktop/\u042d\u043a\u0441\u043f\u0435\u0440\u0438\u043c\u0435\u043d\u0442 08.12.21"
+        "C:/Users/romak/Desktop/Pupo/\u0414\u043b\u0438\u043d\u043d\u044b\u0435 \u043f\u0440\u043e\u0444\u0438\u043b\u0438"
     ],
-    "theme": "./config/themes/dark_theme.css",
+    "theme": "./config/themes/light_theme.css",
     "reference": "./config/reference.md"
 }
