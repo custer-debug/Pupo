@@ -5,6 +5,7 @@ import collections
 from time import sleep
 
 
+
 def convert_bytes(size:int) -> tuple[int,int]:
     """Функция определения единиц измерения по размеру удалённых файлов.\n
     Возрвращает единицы измерения и округлённый до целых размер удалённых файлов.
@@ -22,7 +23,7 @@ def convert_bytes(size:int) -> tuple[int,int]:
 
     return (size,' byte')
 
-def delete_files(files) -> tuple[int,int]:
+def delete_files(files:list) -> tuple[int,int]:
     size = 0
     for item in files:
         size += os.stat(item).st_size
@@ -68,10 +69,7 @@ def find_all_files_extension(cwd:str = os.getcwd(), extension:str = '.txt') -> l
         for item in files:
             if item.endswith(extension):
                 files_list.append(os.path.join(root,item))
-                sleep(0.1)
     return files_list
-
-
 
 def copy_files(files:list, to_path:str) -> int:
     """Копирует файлы в указанный каталог

@@ -1,6 +1,5 @@
 from PyQt5.QtWidgets import *
-# from datetime import datetime
-from PyQt5.QtCore import QThreadPool, Qt, QThread, pyqtSignal, pyqtSlot,QRunnable,QObject
+from PyQt5.QtCore import QThreadPool, Qt,QThread, pyqtSignal, pyqtSlot,QRunnable,QObject
 from csv import reader
 from json import dump
 from time import time, sleep
@@ -14,18 +13,17 @@ import os
 
 
 class WorkerSignals(QObject):
-    error = pyqtSignal(tuple)
     output = pyqtSignal(str)
-
 
 class Worker(QRunnable):
 
-    def __init__(self, fn, *args, **kwargs):
+    def __init__(self,fn, *args, **kwargs):
         super(Worker, self).__init__()
         self.fn = fn
         self.args = args
         self.kwargs = kwargs
         self.signals = WorkerSignals()
+
 
     @pyqtSlot()
     def run(self):
@@ -34,7 +32,15 @@ class Worker(QRunnable):
             self.signals.output.emit(result)
         except Exception:
             logging.error('Exception', exc_info=True)
+        finally:
+            self.signals.output.emit('Выполнено!')
 
+
+class ProgressBar(QThread):
+    progressBar = pyqtSignal(int)
+    percents = 0
+    def run(self):
+        self.progressBar.emit(self.percents)
 
 
 
@@ -42,9 +48,7 @@ class TableWidget(QWidget):
     def __init__(self, parent):
         super(QWidget, self).__init__(parent)
 
-        # self.thread.start()
-
-
+        self.threadpool = QThreadPool()
         self.initial_logger()
         self.initTabsWidget()
         self.init_clean_up_tab()
@@ -53,6 +57,7 @@ class TableWidget(QWidget):
         self.init_config_file_tab()
         self.init_split_files_tab()
 
+
     def set_main_fodler(self, text:str) -> None:
         self.path1.setText(text)
         self.main_line.setText(text)
@@ -60,6 +65,7 @@ class TableWidget(QWidget):
         self.line_split_review.setText(text)
 
     # region clean_up_tab
+
 
     def init_clean_up_tab(self) -> None:
 
@@ -105,45 +111,42 @@ class TableWidget(QWidget):
     def function_node_clean_up_tab(self) -> None:
         '''Функция проверки на наличие и корректности введённых данных для вызова определённой операции над файлами.'''
         self.cout_clean_up.clear()
-        self.threadpool = QThreadPool()
+
         if not os.path.exists(self.main_line.text()):
             return QMessageBox.warning(self, 'Ошибка', 'Такого пути не существует')
 
-        t = time()
         if self.check_box_rm_files.isChecked() and self.line_extension.text():
-            self.output_change_files('Удаление...')
+            self.Printer('Удаление файлов...')
             try:
                 worker = Worker(self.delete_files_extension)
-                worker.signals.output.connect(self.output_change_files)
+                worker.signals.output.connect(self.Printer)
                 self.threadpool.start(worker)
             except Exception:
                 logging.error('Exception', exc_info=True)
 
-
-
         if self.check_box_rename_files.isChecked() and self.line_template.text():
+            self.Printer('Переименование файлов...')
             try:
-                self.output_change_files('Переименование...')
                 worker = Worker(self.rename_files)
-                worker.signals.output.connect(self.output_change_files)
+                worker.signals.output.connect(self.Printer)
                 self.threadpool.start(worker)
             except Exception:
                 logging.error('Exception', exc_info=True)
 
         if self.check_box_rm_dir.isChecked():
+            self.Printer('Удаление директорий...')
             try:
-                self.output_change_files('Удаление папок...')
                 worker = Worker(self.delete_empty_directories,self.main_line.text())
-                worker.signals.output.connect(self.output_change_files)
+                worker.signals.output.connect(self.Printer)
                 self.threadpool.start(worker)
             except Exception:
                 logging.error('Exception', exc_info=True)
 
-        print(self.threadpool.activeThreadCount())
-        print(time() - t)
+        self.print_active_threads()
         if not any([self.check_box_rm_files.isChecked(),self.check_box_rename_files.isChecked(),self.check_box_rm_dir.isChecked()]):
             QMessageBox.warning(self, 'Ошибка', 'Выберите действие')
         self.disabled_check_boxes()
+
 
     def disabled_check_boxes(self) -> None:
         '''Функция снятия выделения чек-боксов.
@@ -156,21 +159,19 @@ class TableWidget(QWidget):
 
 
     def delete_files_extension(self) -> str:
-        tmp = mf.delete_files(
-                mf.find_all_files_extension(
+        files = mf.find_all_files_extension(
                     self.main_line.text(),
-                    self.line_extension.text()))
+                    self.line_extension.text())
+        tmp = mf.delete_files(files)
 
         if tmp[0] == 0:
             return f'Файлов такого расширения не найдено, либо они были пустые.'
-
-        return f'Удалено {tmp[0]} файлов ({mf.convert_bytes(tmp[1])}).'
-
-
-
+        result = '\n'.join(files)
+        result += f'Удалено {tmp[0]} файлов ({mf.convert_bytes(tmp[1])}).'
+        return result
 
 
-    def rename_files(self) -> int:
+    def rename_files(self) -> str:
         """Функция из главного функционала
         Выполняет поиск файлов с одинаковым именем (например Out_res.txt)
         и переименование по следующем конструкциям:
@@ -194,38 +195,38 @@ class TableWidget(QWidget):
             else:
                 dat_split = '_'.join(dat.split('_')[1:5])
                 new_name = '_'.join([folder,dat_split,file])
-
             try:
                 # os.rename(os.path.join(root,file),os.path.join(root,new_name))
-                # self.Print(self.cout_clean_up ,f'{os.path.join(root,file)} -> {os.path.join(root,new_name)}')
                 count += 1
             except Exception:
                 logging.error('Exception', exc_info=True)
-                return count
-        return count
+                return f'Переменованно {count} файлов.'
 
-    def delete_empty_directories(self, path:str) -> None:
-        """Функция из главного функционала
-        Выполняет удаление пустых директорий.
-        """
+
+        if count == 0:
+            return f'Файлов подобного шаблона не найдено.'
+
+        return f'Переменованно {count} файлов.'
+
+
+    def delete_empty_directories(self, path:str) -> str:
+        """Функция из главного функционала. Выполняет удаление пустых директорий."""
+        result = 0
         for _dir in os.listdir(path):
             current_dir = os.path.join(path, _dir)
             if os.path.isdir(current_dir):
-                self.delete_empty_directories(current_dir)
+                result += int(self.delete_empty_directories(current_dir))
                 if not os.listdir(current_dir):
                     try:
-                        print(current_dir)
                         # os.rmdir(current_dir)
-                    except Exception as e:
+                        result += 1
+                    except Exception:
                         logging.error('Exception', exc_info=True)
-                        # self.Print(self.cout_clean_up,e)
-                    # self.Print(self.cout_clean_up,"Папка: " + current_dir + " удалена")
-
+        return str(result)
 
     @pyqtSlot(str)
-    def output_change_files(self, string:str):
-        self.cout_clean_up.append(string)
-
+    def Printer(self, string:str):
+        self.cout_clean_up.append(f'{string}')
 
 
     # endregion
@@ -314,10 +315,15 @@ class TableWidget(QWidget):
         self.radio_btn_dat.setDisabled(True)
         self.path2.setPlaceholderText('Укажите путь к папке')
 
+
+
     def show_elements(self):
         self.radio_btn_txt.setEnabled(True)
         self.radio_btn_dat.setEnabled(True)
         self.path2.setPlaceholderText('Укажите путь к файлу (.exe)')
+
+
+
 
     def select_second_path(self) -> None:
         '''Динамический выбор пути\n
@@ -337,84 +343,82 @@ class TableWidget(QWidget):
             self.path2.setText(
                 QFileDialog.getOpenFileName(self,'Open File', None, '*.exe')[0])
 
+
+
     def function_node_move_files_tab(self) -> None:
         '''Функция проверки на наличие и корректности введённых параметров.'''
-        path1 = self.path1.text()
-        path2 = self.path2.text()
-        if not path1:
+
+        if not self.path1.text():
             return QMessageBox.warning(self, 'Ошибка', 'Укажите первый путь')
 
-        if not path2:
+        if not self.path2.text():
             return QMessageBox.warning(self,'Ошибка', 'Укажите второй путь')
 
-        self.second_thread = QThread()
-        self.second_object = Worker()
 
         if self.radio_button1.isChecked():
-            # self.Print(self.area, 'Копирование...')
             if self.radio_btn_txt.isChecked():
-                self.second_object = Worker(
-                    function=self.collect_txt,
-                    obj=self.area)
-                # self.Print(self.area, f'Итого: {self.collect_txt()} файлов скопировано')
-            if self.radio_btn_dat.isChecked():
-                self.second_object = Worker(
-                    function=self.collect_dat,
-                    obj=self.area)
-            # self.Print(self.area, 'Файлы скопированы.')
+                self.Print_copying_files('Перемещение текстовых документов...')
+                worker = Worker(self.collect_txt)
+                worker.signals.output.connect(self.Print_copying_files)
+                self.threadpool.start(worker)
 
+            if self.radio_btn_dat.isChecked():
+                self.Print_copying_files('Перемещение dat-файлов...')
+                worker = Worker(self.collect_dat)
+                worker.signals.output.connect(self.Print_copying_files)
+                self.threadpool.start(worker)
 
 
         if self.radio_button2.isChecked():
-            self.second_object.text.emit('Начало рассылки...', self.area)
-            # self.Print(self.area, 'Начало рассылки...')
-            self.second_object = Worker(
-                function=self.send_out_files,
-                obj=self.area
-            )
-            # self.send_out_files()
-            # self.Print(self.area, 'Файлы разосланы...')
+                self.Print_copying_files('Рассылка исполняемых файлов...')
+                worker = Worker(self.send_out_files)
+                worker.signals.output.connect(self.Print_copying_files)
+                self.threadpool.start(worker)
 
-
-        self.second_object.text.connect(self.Print)
-        self.second_object.moveToThread(self.second_thread)
-        self.second_object.finished.connect(self.second_thread.quit)
-        # self.second_object.progressBar.connect(self.draw_progressBar)
-        self.second_thread.started.connect(self.second_object.run)
-        self.second_thread.start()
+        self.print_active_threads()
 
     def collect_txt(self) -> str:
         """Выполняет поиск по папке и подпапках текстовых документов и
         копирует их в одну папку переименовывая по первому шаблону (см. Справку)
         Returns:
-            int: количество скопированных файлов
-        """
+            int: количество скопированных файлов."""
+        p = ProgressBar()
+        p.progressBar.connect(self.set_value_progress_bar)
+        p.start()
         files_list = mf.find_all_files_extension(self.path1.text(),'.txt')
         for item in files_list:
             split = item.replace('\\','/').split('/')
             rename = f'{split[-2]}_{split[-1]}'
             to_path = os.path.join(self.path2.text(),rename)
             try:
-                shutil.copyfile(item,to_path)
-                self.second_object.text.emit(f'{item} -> {to_path}', self.area)
-                # percents = int((files_list.index(item)+1) / len(files_list)) * 100
-                # print(percents)
-                # self.probar.setValue(percents)
-                # self.second_object.progressBar.emit(percents)
-                # self.draw_progressBar()
-                sleep(0.3)
+                # shutil.copyfile(item,to_path)
+                percents = (files_list.index(item)+1) / len(files_list)
+                p.progressBar.emit(int(round(percents,2) * 100))
             except Exception:
                 logging.error('Exception', exc_info=True)
                 return f'Не все файлы перемещены ({str(files_list.index(item) + 1)} из {str(len(files_list))})'
         return f'Перемещено {str(len(files_list))} файлов'
 
+
     def collect_dat(self) -> str:
+        p = ProgressBar()
+        p.progressBar.connect(self.set_value_progress_bar)
+        p.start()
+        to_path = self.path2.text()
         dat_files = mf.find_all_files_extension(self.path1.text(),'.dat')
         cout = mf.same_files(dat_files)
-        self.second_object.text.emit(f'{cout[1]} повторяющихся файлов из {cout[0]}',self.area)
-        return str(mf.copy_files(dat_files,self.path2.text()))
-        # self.Print(self.area, )
-        # self.Print(self.area, f'{} файлов скопировано')
+        for count,item in enumerate(dat_files):
+            try:
+                # tmp = os.path.join(to_path,item.split('\\')[-1])
+                percents = (count+1) / len(dat_files)
+                p.progressBar.emit(int(round(percents,2) * 100))
+                sleep(0.1)
+                # shutil.copyfile(item,tmp)
+            except Exception:
+                logging.error('Exception', exc_info=True)
+                return f'Возникла ошибка при копировании. Скопировано {count} файлов (Всего {len(dat_files)}).'
+        return f'Скопировано {len(dat_files)}. {cout[1]} повторяющихся файлов из {cout[0]}'
+
 
     def send_out_files(self) -> str:
         """Функция из главного функционала.
@@ -424,17 +428,31 @@ class TableWidget(QWidget):
             cwd (str): корневой каталог
             path_exe (str): путь к файлу
         """
+        p = ProgressBar()
+        p.progressBar.connect(self.set_value_progress_bar)
+        p.start()
         exe = self.path2.text()
+        result = 0
         for root,folders,_ in os.walk(self.path1.text()):
-            for folder in folders:
+            for item,folder in enumerate(folders):
                 to = os.path.join(root, folder,exe.split('/')[-1].split('\\')[-1])
                 try:
-                    shutil.copyfile(exe,to)
-                    self.second_object.text.emit(to,self.area)
-                    sleep(0.5)
+                    # shutil.copyfile(exe,to)
+                    percents = (item+1) / len(folders)
+                    p.progressBar.emit(int(round(percents,2) * 100))
+                    result += 1
+                    sleep(0.2)
                 except Exception:
                     logging.error('Exception', exc_info=True)
-                    return f'Не все файлы перемещены (Последний: {to}).'
+                    return f'Возникла ошибка при копировании. Разослано {result} файлов (Последний: {to}).'
+        return  f'Разослано {result} файлов.'
+    @pyqtSlot(str)
+    def Print_copying_files(self, string:str):
+        self.area.append(f'{string}')
+
+    @pyqtSlot(int)
+    def set_value_progress_bar(self,percents:int):
+        self.probar.setValue(percents)
 
 
     # endregion
@@ -839,8 +857,8 @@ class TableWidget(QWidget):
         self.split_files_tab = QWidget()
         self.tabs.resize(300,200)
         # Tab.create_button()
-        self.tabs.addTab(self.clean_up_tab,"Чистка")
         self.tabs.addTab(self.move_files_tab,"Копирование")
+        self.tabs.addTab(self.clean_up_tab,"Чистка")
         self.tabs.addTab(self.txt_to_xlsx_tab,"Txt to xlsx")
         self.tabs.addTab(self.config_file_tab,"Конфиг")
         self.tabs.addTab(self.split_files_tab,"Разделение")
@@ -863,8 +881,5 @@ class TableWidget(QWidget):
         logging.info('Программа запущена')
 
 
-
-    # @pyqtSlot(int)
-    # def draw_progressBar(self, percents:int):
-        # self.probar.setValue(percents)
-        # self.Print(self.area, f'{item} -> {to_path}')
+    def print_active_threads(self):
+        print(f'Active threads: {self.threadpool.activeThreadCount()}')
