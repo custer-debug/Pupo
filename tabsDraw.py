@@ -1,19 +1,18 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import QThreadPool, Qt,QThread, pyqtSignal, pyqtSlot,QRunnable,QObject
+from time import sleep
+import MainFunctional as mf
 from csv import reader
 from json import dump
-from time import time, sleep
-
-# from openpyxl.workbook.workbook import Workbook
-import MainFunctional as mf
 import openpyxl
 import logging
 import shutil
 import os
+# import traceback
 
-
-class WorkerSignals(QObject):
+class Signals(QObject):
     output = pyqtSignal(str)
+    pb_signal = pyqtSignal(int)
 
 class Worker(QRunnable):
 
@@ -22,7 +21,7 @@ class Worker(QRunnable):
         self.fn = fn
         self.args = args
         self.kwargs = kwargs
-        self.signals = WorkerSignals()
+        self.signals = Signals()
 
 
     @pyqtSlot()
@@ -35,14 +34,18 @@ class Worker(QRunnable):
         finally:
             self.signals.output.emit('Выполнено!')
 
+    def stop(self):
+        self.stop()
+
 
 class ProgressBar(QThread):
-    progressBar = pyqtSignal(int)
+    progress_bar = Signals()
     percents = 0
     def run(self):
-        self.progressBar.emit(self.percents)
-
-
+        try:
+            self.progress_bar.pb_signal.emit(self.percents)
+        except Exception:
+            logging.error('Exception', exc_info=True)
 
 class TableWidget(QWidget):
     def __init__(self, parent):
@@ -139,8 +142,10 @@ class TableWidget(QWidget):
                 worker = Worker(self.delete_empty_directories,self.main_line.text())
                 worker.signals.output.connect(self.Printer)
                 self.threadpool.start(worker)
+
             except Exception:
                 logging.error('Exception', exc_info=True)
+
 
         self.print_active_threads()
         if not any([self.check_box_rm_files.isChecked(),self.check_box_rename_files.isChecked(),self.check_box_rm_dir.isChecked()]):
@@ -329,13 +334,13 @@ class TableWidget(QWidget):
         '''Динамический выбор пути\n
         Учитывает выбор операции (радио кнопки).\n
         Первая операция (выбрано по умолчанию). Сборка txt-файлов требуется два пути:
-        1.\tпуть поиска файлов (поиск выполняется и в подпапках по расширению txt)
-        2.\tпуть куда они будут помещены\n
+        1. путь поиска файлов (поиск выполняется и в подпапках по расширению txt)
+        2. путь куда они будут помещены\n
         Имеется проблема одинаковых имён файлов в месте хранения, в связи с чем необходимо их переименовывать в момент копирования.
         Новое имя определяется по шаблону "название папки + текущее имя файла"\n
         Вторая операция. Рассылка исполняемых файлов программы обработки, поэтому поля будут содержать следующие параметры:
-        1.\tпуть куда куда нужно добавить исполняемый файл (добавляется и в подпапки)
-        2.\tпуть к исполняемому файлу, который необходимо разослать.'''
+        1. путь куда куда нужно добавить исполняемый файл (добавляется и в подпапки)
+        2. путь к исполняемому файлу, который необходимо разослать.'''
         if self.radio_button1.isChecked():
             self.path2.setText(
                 QFileDialog().getExistingDirectory(None,'Select directory'))
@@ -360,20 +365,21 @@ class TableWidget(QWidget):
                 self.Print_copying_files('Перемещение текстовых документов...')
                 worker = Worker(self.collect_txt)
                 worker.signals.output.connect(self.Print_copying_files)
-                self.threadpool.start(worker)
+                self.thread.start(worker)
 
             if self.radio_btn_dat.isChecked():
                 self.Print_copying_files('Перемещение dat-файлов...')
                 worker = Worker(self.collect_dat)
                 worker.signals.output.connect(self.Print_copying_files)
-                self.threadpool.start(worker)
+                self.thread.start(worker)
 
 
         if self.radio_button2.isChecked():
                 self.Print_copying_files('Рассылка исполняемых файлов...')
                 worker = Worker(self.send_out_files)
                 worker.signals.output.connect(self.Print_copying_files)
-                self.threadpool.start(worker)
+                self.thread.start(worker)
+
 
         self.print_active_threads()
 
@@ -383,7 +389,7 @@ class TableWidget(QWidget):
         Returns:
             int: количество скопированных файлов."""
         p = ProgressBar()
-        p.progressBar.connect(self.set_value_progress_bar)
+        p.progress_bar.pb_signal.connect(self.set_value_progress_bar)
         p.start()
         files_list = mf.find_all_files_extension(self.path1.text(),'.txt')
         for item in files_list:
@@ -393,7 +399,7 @@ class TableWidget(QWidget):
             try:
                 # shutil.copyfile(item,to_path)
                 percents = (files_list.index(item)+1) / len(files_list)
-                p.progressBar.emit(int(round(percents,2) * 100))
+                p.progress_bar.pb_signal.emit(int(round(percents,2) * 100))
             except Exception:
                 logging.error('Exception', exc_info=True)
                 return f'Не все файлы перемещены ({str(files_list.index(item) + 1)} из {str(len(files_list))})'
@@ -402,7 +408,7 @@ class TableWidget(QWidget):
 
     def collect_dat(self) -> str:
         p = ProgressBar()
-        p.progressBar.connect(self.set_value_progress_bar)
+        p.progress_bar.pb_signal.connect(self.set_value_progress_bar)
         p.start()
         to_path = self.path2.text()
         dat_files = mf.find_all_files_extension(self.path1.text(),'.dat')
@@ -411,7 +417,7 @@ class TableWidget(QWidget):
             try:
                 # tmp = os.path.join(to_path,item.split('\\')[-1])
                 percents = (count+1) / len(dat_files)
-                p.progressBar.emit(int(round(percents,2) * 100))
+                p.progress_bar.pb_signal.emit(int(round(percents,2) * 100))
                 sleep(0.1)
                 # shutil.copyfile(item,tmp)
             except Exception:
@@ -429,7 +435,7 @@ class TableWidget(QWidget):
             path_exe (str): путь к файлу
         """
         p = ProgressBar()
-        p.progressBar.connect(self.set_value_progress_bar)
+        p.progress_bar.pb_signal.connect(self.set_value_progress_bar)
         p.start()
         exe = self.path2.text()
         result = 0
@@ -439,7 +445,7 @@ class TableWidget(QWidget):
                 try:
                     # shutil.copyfile(exe,to)
                     percents = (item+1) / len(folders)
-                    p.progressBar.emit(int(round(percents,2) * 100))
+                    p.progress_bar.pb_signal.emit(int(round(percents,2) * 100))
                     result += 1
                     sleep(0.2)
                 except Exception:
@@ -530,6 +536,7 @@ class TableWidget(QWidget):
         check1 = self.checkbox_xlsx1.isChecked()
         check2 = self.checkbox_xlsx2.isChecked()
 
+
         if not check1 and not check2:
             return QMessageBox.warning(self, 'Ошибка','Выберите вид сохранения эксель файла.')
 
@@ -547,13 +554,13 @@ class TableWidget(QWidget):
             self.Print_copying_files('Рассылка исполняемых файлов...')
             worker = Worker(self.one_file_to_one_sheet)
             worker.signals.output.connect(self.print_output)
-            self.threadpool.start(worker)
+            self.thread.start(worker)
 
         if check2:
             self.Print_copying_files('Рассылка исполняемых файлов...')
             worker = Worker(self.many_files_to_one_sheet)
             worker.signals.output.connect(self.print_output)
-            self.threadpool.start(worker)
+            self.thread.start(worker)
 
     def delete_sheet(self,wb) -> None:
         '''Удаляет лист из эксель файла под именем "Sheet" (Он создаётся по умолчанию).'''
@@ -602,6 +609,15 @@ class TableWidget(QWidget):
     def found_files(self) -> None:
         '''Функция поиска txt-файлов. Все текстовые документы (.txt) которые находит,
         добавляет в лист для выбора необходимых файлов перевода в эксель.'''
+
+        path = self.line_found.text()
+
+        if not path:
+            return QMessageBox.warning(self,'Ошибка', 'Выберите путь')
+
+        if not os.path.exists(path):
+            return QMessageBox.warning(self, 'Ошибка','Такого пути не существует')
+
         self.list.clear()
         result = []
         if not self.line_found.text():
@@ -873,9 +889,9 @@ class TableWidget(QWidget):
         self.split_files_tab = QWidget()
         self.tabs.resize(300,200)
         # Tab.create_button()
-        self.tabs.addTab(self.txt_to_xlsx_tab,"Txt to xlsx")
         self.tabs.addTab(self.clean_up_tab,"Чистка")
         self.tabs.addTab(self.move_files_tab,"Копирование")
+        self.tabs.addTab(self.txt_to_xlsx_tab,"Txt to xlsx")
         self.tabs.addTab(self.config_file_tab,"Конфиг")
         self.tabs.addTab(self.split_files_tab,"Разделение")
 
@@ -883,11 +899,6 @@ class TableWidget(QWidget):
         vbox.addWidget(self.tabs)
         self.setLayout(vbox)
 
-    # def Print(self,textEdit,string:str) -> None:
-    #     '''Функция печати результата.\n
-    #     Принимает объект, в котором будет отображена строка, которая передаётся третьим параметром.'''
-    #     logging.info(string)
-    #     textEdit.append(f'[{datetime.now().strftime("%d-%m-%Y %H:%M:%S")}] {string}')
 
     def initial_logger(self):
         logging.basicConfig(filename='pupo.log',

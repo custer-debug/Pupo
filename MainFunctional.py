@@ -2,7 +2,7 @@ import os
 import shutil
 import logging
 import collections
-from time import sleep
+# from time import sleep
 
 
 
@@ -28,10 +28,8 @@ def delete_files(files:list) -> tuple[int,int]:
     for item in files:
         size += os.stat(item).st_size
         try:
-            print(item)
-            # os.remove(item)
+            os.remove(item)
         except Exception:
-            logging.error('Exception', exc_info=True)
             return (files.index(item),size)
     return (len(files),size)
 
