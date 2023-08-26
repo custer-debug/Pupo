@@ -1,10 +1,10 @@
 from PyQt6 import uic, QtWidgets
 from PyQt6.QtWidgets import QMessageBox,QFileDialog
 import sys
-from platform import platform
 import AdditionalFunction as af
 import logging
 from os import path
+from json import dump,load
 
 Form, _ = uic.loadUiType("Pupo.ui")
 logging.basicConfig(level=logging.INFO, filename="pupo.log",filemode="a",
@@ -14,26 +14,53 @@ logging.basicConfig(level=logging.INFO, filename="pupo.log",filemode="a",
 class MainWindow(QtWidgets.QMainWindow, Form):
     def __init__(self) -> None:
         super(MainWindow,self).__init__()
-        self.setupUi(self)
-        self.main_menu_handler()
-        self.del_files_tab_handler()
-        self.move_files_tab_hanlder()
-        self.concatenation_tab_hanlder()
-        self.quitButton.clicked.connect(exit)
+        try:
+            self.setupUi(self)
+            self.main_menu_handler()
+            self.del_files_tab_handler()
+            self.move_files_tab_hanlder()
+            self.concatenation_tab_hanlder()
+            self.check_config_file()
+            self.quitButton.clicked.connect(sys.exit)
+        except Exception as ex:
+            logging.error(ex)
+            print(ex)
 
+    def check_config_file(self):
+        if path.isfile('config.json'):
+            with open('config.json','r') as reader:
+                data = load(reader)
+                self.set_global_folder(data['last_folder'])
+                reader.close()
+
+    def set_global_folder(self,folder):
+        self.del_line_edit.setText(folder)
+        self.path_from_move.setText(folder)
+        self.concat_line_edit.setText(folder)
+        self.save_as_line_edit.setText(folder)
 
 
     def main_menu_handler(self):
         self.about_text.triggered.connect(self.msg_about)
+        self.open_dir.triggered.connect(self.open_folder)
 
+    def open_folder(self):
+        folder = QFileDialog.getExistingDirectory(None,"Select directory")
+        if not folder:
+            return
+        self.set_global_folder(folder)
+        with open('config.json','w') as writter:
+            dump({'last_folder':folder},writter,indent=4)
+            writter.close()
 
     def msg_about(self):
         text = f'''
         Programm to Use Program Operations (Pupo)
         Version: 1.0.0
         Update: 2023-22-08
-        OS: {platform()} 64-bit
-        @Software engineers: \n\tKrekoten Roman Igorevich\n\tNenarokomov Maxim Dmitrievich
+        @Software engineers:
+        \tKrekoten Roman Igorevich
+        \tNenarokomov Maxim Dmitrievich
         '''
         return QMessageBox.information(self,'О программе', text)
 
@@ -52,25 +79,26 @@ class MainWindow(QtWidgets.QMainWindow, Form):
 
     def run_clean_up(self):
         if not self.del_line_edit.text():
-            return QMessageBox.critical(self,'Ошибка','Не указан путь')
-
-        try:
-            if self.cb_del_files.isChecked():
-                tmp = af.del_files(
-                    self.del_line_edit.text(),
-                    self.extension_line_edit.text())
-                self.output_clean.setText(f'Выполнено. {tmp} удалено файлов')
-                logging.info(f'{tmp} files removed')
+            return self.error_message()
 
 
-            if self.cb_del_empty_dir.isChecked():
-                tmp = af.delete_empty_directories(self.del_line_edit.text())
-                self.output_clean.setText(f'Выполнено. {tmp} удалено папок')
-                logging.info(f'{tmp} directories removed')
+        if self.cb_del_files.isChecked():
+            tmp = af.del_files(
+                self.del_line_edit.text(),
+                self.extension_line_edit.text())
+            self.output_clean.setText(f'Выполнено. {tmp} удалено файлов')
+            logging.info(f'{tmp} files removed')
 
-        except Exception as ex:
-            logging.error(ex)
-            print(ex)
+
+        if self.cb_del_empty_dir.isChecked():
+            tmp = af.delete_empty_directories(self.del_line_edit.text())
+            self.output_clean.setText(f'Выполнено. {tmp} удалено папок')
+            logging.info(f'{tmp} directories removed')
+
+
+
+
+
 
 
     def move_files_tab_hanlder(self):
@@ -87,17 +115,18 @@ class MainWindow(QtWidgets.QMainWindow, Form):
 
     def run_move_files(self):
         if not self.path_from_move.text() or not self.path_to_move.text():
-            return QMessageBox.critical(self,'Ошибка','Не указан путь')
+            return self.error_message()
 
-        try:
-            self.output_move_files.setText(
-                af.copy_files(
-                    self.path_from_move.text(),
-                    self.path_to_move.text(),
-                    self.cut_checkBox.isChecked()))
-        except Exception as ex:
-            print(ex)
-            logging.error(ex)
+
+        self.output_move_files.setText(
+            af.copy_files(
+                self.path_from_move.text(),
+                self.path_to_move.text(),
+                self.cut_checkBox.isChecked()))
+
+
+
+
 
 
 
@@ -122,7 +151,7 @@ class MainWindow(QtWidgets.QMainWindow, Form):
 
     def finder(self):
         if not self.concat_line_edit.text():
-            return QMessageBox.critical(self,'Ошибка','Не указан путь')
+            return self.error_message()
         self.list_results.clear()
         self.list_results.addItems(af.find_files(self.concat_line_edit.text()))
         self.list_results.itemClicked.connect(self.change_label_count)
@@ -146,10 +175,10 @@ class MainWindow(QtWidgets.QMainWindow, Form):
 
     def run_concatenation(self):
         if not self.concat_line_edit.text() or not self.save_as_line_edit.text() or not self.filename_line_edit.text():
-            return QMessageBox.critical(self,'Ошибка','Заполните все поля')
+            return self.error_message('Заполните все поля')
 
         if not self.list_results.selectedItems():
-            return QMessageBox.critical(self,'Ошибка','Выберите элементы')
+            return self.error_message('Выберите элементы')
 
         save_file = path.join(
                     self.save_as_line_edit.text(),
@@ -158,15 +187,22 @@ class MainWindow(QtWidgets.QMainWindow, Form):
         if path.isfile(save_file):
             return QMessageBox.critical(self,'Ошибка', f'Файл {save_file} уже существует')
 
-        try:
-            tmp = af.concatenate(
-                self.list_results.selectedItems(),
-                save_file
-                )
-            return QMessageBox.about(self,'Готово',tmp)
-        except Exception as ex:
-            logging.error(ex)
-            print(ex)
+        if len(self.list_results.selectedItems()) < 2:
+            return self.error_message('Выберите более одного файла для склейки')
+
+
+
+        tmp = af.concatenate(
+            self.list_results.selectedItems(),
+            save_file
+            )
+        return QMessageBox.about(self,'Готово',tmp)
+
+
+    def error_message(self,msg:str='Не указан путь'):
+        return QMessageBox.critical(self,'Ошибка',msg)
+
+
 
 
 

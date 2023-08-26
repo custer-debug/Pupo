@@ -116,6 +116,7 @@ dmypy.json
 *.txt
 *.xlsx
 *.exe
+*.ico
 config.json
 for developers
 !requirements.txt

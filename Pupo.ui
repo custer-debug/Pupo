@@ -32,7 +32,7 @@
           <string/>
          </property>
          <property name="currentIndex">
-          <number>2</number>
+          <number>0</number>
          </property>
          <widget class="QWidget" name="tab_del_files">
           <property name="accessibleName">
@@ -216,7 +216,7 @@
            <property name="handleWidth">
             <number>0</number>
            </property>
-           <widget class="QWidget" name="">
+           <widget class="QWidget" name="layoutWidget">
             <layout class="QHBoxLayout" name="horizontalLayout_4">
              <item>
               <widget class="QLineEdit" name="path_from_move">
@@ -264,7 +264,7 @@
           <attribute name="title">
            <string>Склейка</string>
           </attribute>
-          <widget class="QWidget" name="">
+          <widget class="QWidget" name="layoutWidget">
            <property name="geometry">
             <rect>
              <x>10</x>
@@ -343,6 +343,9 @@
                <widget class="QLineEdit" name="filename_line_edit">
                 <property name="toolTip">
                  <string>Имя файла, который получится в результате склейки</string>
+                </property>
+                <property name="text">
+                 <string>Res</string>
                 </property>
                 <property name="placeholderText">
                  <string>Имя файла</string>
@@ -490,11 +493,6 @@
     </property>
     <addaction name="open_dir"/>
    </widget>
-   <widget class="QMenu" name="edit_menu">
-    <property name="title">
-     <string>Вид</string>
-    </property>
-   </widget>
    <widget class="QMenu" name="about_menu">
     <property name="title">
      <string>Справка</string>
@@ -502,7 +500,6 @@
     <addaction name="about_text"/>
    </widget>
    <addaction name="file_menu"/>
-   <addaction name="edit_menu"/>
    <addaction name="about_menu"/>
   </widget>
   <action name="about_text">
