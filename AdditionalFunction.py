@@ -3,14 +3,14 @@ from shutil import copyfile
 
 
 
-def del_files(path:str,ex:str) -> str:
+def del_files(path:str,ex:str) -> int:
     count = 0
     for folder,_,files in os.walk(path):
         for _file in files:
             if _file.endswith(ex):
                 os.remove(os.path.join(folder,_file))
                 count += 1
-    return f'{count} files delete'
+    return count
 
 
 def delete_empty_directories(path:str) -> int:
@@ -91,7 +91,7 @@ def remove_first_line(filename:str) -> None:
 
 
 
-def concatenate(files:list,output:str) -> str:
+def concat_in_one(files:list,output:str) -> str:
     with open(output,'a') as writter:
         writter.write('\t'.join(names) + '\n')
         for filename in files:
@@ -104,3 +104,43 @@ def concatenate(files:list,output:str) -> str:
         writter.close()
 
     return 'Файлы склеины'
+
+
+import openpyxl
+from csv import reader
+
+
+names = [
+'Имя файла',
+    'Номер файла',
+    'Номер импульса',
+    'Широта',
+    'Долгота',
+    'N(UTM)',
+    'E(UTM)',
+    'T new',
+    'delta T new',
+    'Частота',
+    'Фронт',
+    'Спад',
+    'Эпсилон (Dll)',
+    'Глубина',
+    'delta Freq',
+    'Rff']
+
+
+def concat_profiles(files:list,out_file):
+    wb = openpyxl.Workbook()
+    count = 1
+    for item in files:
+        ws = wb.create_sheet(str(count))
+        ws.append(names)
+        with open(item.text(),'r') as r:
+            cr = reader(r,delimiter='\t')
+            for line in cr:
+                ws.append(line)
+            r.close()
+        count += 1
+    del wb['Sheet']
+    wb.save(filename=out_file.replace('.txt','.xlsx'))
+    return 'Файлы добавлены'

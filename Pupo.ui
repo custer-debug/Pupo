@@ -27,7 +27,7 @@
      <item>
       <layout class="QHBoxLayout" name="TabsLayout">
        <item>
-        <widget class="QTabWidget" name="concatenation">
+        <widget class="QTabWidget" name="Tabs">
          <property name="toolTip">
           <string/>
          </property>
@@ -105,6 +105,9 @@
                 <property name="text">
                  <string>.txt</string>
                 </property>
+                <property name="maxLength">
+                 <number>7</number>
+                </property>
                </widget>
               </item>
               <item>
@@ -156,19 +159,6 @@
           <attribute name="title">
            <string>Перемещение </string>
           </attribute>
-          <widget class="QTextEdit" name="output_move_files">
-           <property name="geometry">
-            <rect>
-             <x>10</x>
-             <y>130</y>
-             <width>651</width>
-             <height>281</height>
-            </rect>
-           </property>
-           <property name="readOnly">
-            <bool>true</bool>
-           </property>
-          </widget>
           <widget class="QPushButton" name="runBtn_2">
            <property name="geometry">
             <rect>
@@ -259,8 +249,21 @@
             </layout>
            </widget>
           </widget>
+          <widget class="QTextEdit" name="output_move_files">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>130</y>
+             <width>651</width>
+             <height>281</height>
+            </rect>
+           </property>
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
          </widget>
-         <widget class="QWidget" name="tab">
+         <widget class="QWidget" name="concat">
           <attribute name="title">
            <string>Склейка</string>
           </attribute>
@@ -274,22 +277,118 @@
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_2">
+            <item row="1" column="2">
+             <layout class="QHBoxLayout" name="horizontalLayout_12">
+              <item>
+               <widget class="QLabel" name="label_count">
+                <property name="text">
+                 <string>0</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item row="0" column="0" colspan="3">
+             <layout class="QGridLayout" name="gridLayout">
+              <item row="0" column="0" colspan="2">
+               <layout class="QHBoxLayout" name="horizontalLayout_6">
+                <item>
+                 <widget class="QLineEdit" name="concat_line_edit">
+                  <property name="toolTip">
+                   <string>Путь, где находятся файлы для склейки</string>
+                  </property>
+                  <property name="placeholderText">
+                   <string>Укажите директорию</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="reviewBtn_concat">
+                  <property name="text">
+                   <string>Обзор</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="findBtn">
+                  <property name="text">
+                   <string>Поиск</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item row="1" column="0" colspan="2">
+               <layout class="QHBoxLayout" name="horizontalLayout_10">
+                <item>
+                 <widget class="QLineEdit" name="save_as_line_edit">
+                  <property name="toolTip">
+                   <string>Куда сохранить результат</string>
+                  </property>
+                  <property name="placeholderText">
+                   <string>Укажите директорию</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="reviewBtn_save_as">
+                  <property name="text">
+                   <string>Обзор</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item row="2" column="1">
+               <layout class="QHBoxLayout" name="horizontalLayout_11"/>
+              </item>
+              <item row="2" column="0">
+               <widget class="QLineEdit" name="filename_line_edit">
+                <property name="toolTip">
+                 <string>Имя файла, который получится в результате склейки</string>
+                </property>
+                <property name="text">
+                 <string>Res</string>
+                </property>
+                <property name="placeholderText">
+                 <string>Имя файла</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
             <item row="1" column="0">
-             <widget class="QLabel" name="label">
+             <widget class="QCheckBox" name="profiles_checkBox">
+              <property name="toolTip">
+               <string>Каждый файл в отдельный лист</string>
+              </property>
               <property name="text">
-               <string>Выбрано:</string>
+               <string>Профили</string>
+              </property>
+              <property name="checked">
+               <bool>false</bool>
               </property>
              </widget>
             </item>
             <item row="1" column="1">
-             <widget class="QLabel" name="label_count">
+             <widget class="QLabel" name="label">
               <property name="text">
-               <string>0</string>
+               <string>Выбрано:</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
              </widget>
             </item>
-            <item row="2" column="0" colspan="4">
+            <item row="2" column="0" colspan="3">
              <layout class="QHBoxLayout" name="horizontalLayout_9">
+              <item>
+               <widget class="QTextEdit" name="output_concat">
+                <property name="readOnly">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
               <item>
                <widget class="QListWidget" name="list_results">
                 <property name="selectionMode">
@@ -336,104 +435,6 @@
                </layout>
               </item>
              </layout>
-            </item>
-            <item row="0" column="0" colspan="4">
-             <layout class="QGridLayout" name="gridLayout">
-              <item row="2" column="0">
-               <widget class="QLineEdit" name="filename_line_edit">
-                <property name="toolTip">
-                 <string>Имя файла, который получится в результате склейки</string>
-                </property>
-                <property name="text">
-                 <string>Res</string>
-                </property>
-                <property name="placeholderText">
-                 <string>Имя файла</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="0" colspan="3">
-               <layout class="QHBoxLayout" name="horizontalLayout_6">
-                <item>
-                 <widget class="QLineEdit" name="concat_line_edit">
-                  <property name="toolTip">
-                   <string>Путь, где находятся файлы для склейки</string>
-                  </property>
-                  <property name="placeholderText">
-                   <string>Укажите директорию</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QPushButton" name="reviewBtn_concat">
-                  <property name="text">
-                   <string>Обзор</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QPushButton" name="findBtn">
-                  <property name="text">
-                   <string>Поиск</string>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
-              </item>
-              <item row="2" column="2">
-               <layout class="QHBoxLayout" name="horizontalLayout_11"/>
-              </item>
-              <item row="1" column="0" colspan="3">
-               <layout class="QHBoxLayout" name="horizontalLayout_10">
-                <item>
-                 <widget class="QLineEdit" name="save_as_line_edit">
-                  <property name="toolTip">
-                   <string>Куда сохранить результат</string>
-                  </property>
-                  <property name="placeholderText">
-                   <string>Укажите директорию</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QPushButton" name="reviewBtn_save_as">
-                  <property name="text">
-                   <string>Обзор</string>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
-              </item>
-              <item row="2" column="1">
-               <spacer name="horizontalSpacer_3">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-             </layout>
-            </item>
-            <item row="1" column="3">
-             <layout class="QHBoxLayout" name="horizontalLayout_12"/>
-            </item>
-            <item row="1" column="2">
-             <spacer name="horizontalSpacer_4">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>40</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
             </item>
            </layout>
           </widget>
