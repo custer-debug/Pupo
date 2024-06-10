@@ -47,7 +47,7 @@ coverage.xml
 *.cover
 .hypothesis/
 .pytest_cache/
-
+test/
 # Translations
 *.mo
 *.pot
@@ -121,3 +121,4 @@ config.json
 for developers
 !requirements.txt
 .vscode
+*png

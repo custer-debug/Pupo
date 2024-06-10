@@ -1,0 +1,11 @@
+<RCC>
+  <qresource prefix="icons">
+    <file>images/reset_icon.png</file>
+    <file>images/success_icon.png</file>
+    <file>images/dots-icon.png</file>
+    <file>images/lupa-icon.png</file>
+    <file>images/excel-icon.png</file>
+    <file>images/prevlooked.png</file>
+    <file>images/copy-icon.png</file>
+  </qresource>
+</RCC>
