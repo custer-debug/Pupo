@@ -48,16 +48,20 @@ class Graph(QDialog, Ui_GraphUi):
         self._max_azimut = 360
         self._main_azimut = 0
 
-    def exec_(self, res):
+    def exec_(self, distance:pd.Series, values:pd.Series):
         self.figure.clear()
-        ax = self.figure.add_subplot(projection="polar")
-        ax.set_theta_zero_location("N")
-        ax.set_theta_direction(-1)
-        ax.scatter(
-            [np.deg2rad(self._main_azimut)] * res.shape[0], res, c="red", marker="."
+        ax1 = self.figure.add_subplot(121,projection="polar")
+        ax2 = self.figure.add_subplot(122)
+        ax2.plot(distance,values,marker='o',linewidth=1,mfc='r')
+        ax2.grid(True)
+        ax1.set_theta_zero_location("N")
+        ax1.set_theta_direction(-1)
+
+        ax1.scatter(
+            [np.deg2rad(self._main_azimut)] * distance.shape[0], distance, c="red", marker="."
         )
-        ax.set_thetamin(self._min_azimut)
-        ax.set_thetamax(self._max_azimut)
+        ax1.set_thetamin(self._min_azimut)
+        ax1.set_thetamax(self._max_azimut)
         self.canvas.draw()
         self.showMaximized()
         self.exec()
@@ -230,7 +234,9 @@ class PreviewFile:
                     self.paint_column()
                 except Exception as e:
                     # print('Here')
-                    self.main.error_msg(str(e))
+                    return self.main.error_msg(str(e))
+
+
 
     def paint_column(self, reset_state: bool = False):
         _max = self._max
@@ -276,16 +282,24 @@ class PreviewFile:
             self.main.max_link.show()
 
     def map_btn_handler(self):
+        if not self.current_column:
+            return
+
         distance = self.settings.distance_limit.value()
         limit_distance = distance if distance > 0 else 6000
-
+        # print(self._min)
         res = self.df.loc[
             (self.df[self.current_column] < self._max)
             & (self.df[self.current_column] > self._min)
-            & (self.df.index < self.rows_count)
+            & (self.df.index <= self.rows_count)
             & (self.df[self.column_distance] < limit_distance),
-            self.column_distance,
+            :,
         ]
+        res = res.loc[:,(self.column_distance,self.current_column)].sort_values(by=self.column_distance)
+        x = res[self.column_distance]
+        y = res[self.current_column]
+
+        # print(res[[self.column_distance,self.current_column]].head(40))
         graph = Graph(self.main)
         min_a = self.settings.min_azimut.value()
         max_a = self.settings.max_azimut.value()
@@ -297,7 +311,7 @@ class PreviewFile:
             graph.min_azimut = m
         if m := max_a:
             graph.max_azimut = m
-        graph.exec_(res)
+        graph.exec_(x,y)
 
     def get_max(self) -> float:
         return self.df.loc[

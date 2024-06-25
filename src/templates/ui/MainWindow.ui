@@ -1413,6 +1413,9 @@ PillToolButton:disabled:checked {
            </item>
            <item row="2" column="0" rowspan="2" colspan="3">
             <widget class="PushButton" name="set_params_link">
+             <property name="cursor">
+              <cursorShape>PointingHandCursor</cursorShape>
+             </property>
              <property name="text">
               <string>Задать параметры</string>
              </property>
@@ -2047,7 +2050,7 @@ QTableCornerButton::section:pressed {
  </resources>
  <connections/>
  <buttongroups>
-  <buttongroup name="buttonGroup_2"/>
   <buttongroup name="buttonGroup"/>
+  <buttongroup name="buttonGroup_2"/>
  </buttongroups>
 </ui>

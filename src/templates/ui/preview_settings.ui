@@ -87,7 +87,7 @@
      </layout>
     </widget>
    </item>
-   <item row="0" column="2" rowspan="2" colspan="3">
+   <item row="0" column="2" rowspan="2" colspan="2">
     <widget class="SimpleCardWidget" name="SimpleCardWidget_2">
      <layout class="QGridLayout" name="gridLayout_2">
       <item row="0" column="0">
@@ -196,19 +196,6 @@
     </widget>
    </item>
    <item row="2" column="0" colspan="2">
-    <widget class="SwitchButton" name="SwitchButton">
-     <property name="text">
-      <string>Сортировать по выбранному столбцу</string>
-     </property>
-     <property name="onText">
-      <string>Сортировать по выбранному столбцу</string>
-     </property>
-     <property name="offText">
-      <string>Сортировать по выбранному столбцу</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="0" colspan="3">
     <spacer name="horizontalSpacer">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -221,14 +208,14 @@
      </property>
     </spacer>
    </item>
-   <item row="3" column="3">
+   <item row="2" column="2">
     <widget class="PushButton" name="cancel_btn">
      <property name="text">
       <string>Отмена</string>
      </property>
     </widget>
    </item>
-   <item row="3" column="4">
+   <item row="2" column="3">
     <widget class="PrimaryPushButton" name="save_btn">
      <property name="text">
       <string>Сохранить</string>
@@ -251,11 +238,6 @@
   <customwidget>
    <class>PrimaryPushButton</class>
    <extends>PushButton</extends>
-   <header>qfluentwidgets</header>
-  </customwidget>
-  <customwidget>
-   <class>SwitchButton</class>
-   <extends>QWidget</extends>
    <header>qfluentwidgets</header>
   </customwidget>
   <customwidget>

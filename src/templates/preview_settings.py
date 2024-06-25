@@ -20,7 +20,7 @@ from PySide6.QtWidgets import (QApplication, QDialog, QGridLayout, QSizePolicy,
 
 from qfluentwidgets import (BodyLabel, CardWidget, ComboBox, DoubleSpinBox,
     PrimaryPushButton, PushButton, SimpleCardWidget, SpinBox,
-    StrongBodyLabel, SwitchButton)
+    StrongBodyLabel)
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
@@ -137,7 +137,7 @@ class Ui_Dialog(object):
         self.gridLayout_2.addWidget(self.distance_limit, 4, 1, 1, 1)
 
 
-        self.gridLayout_3.addWidget(self.SimpleCardWidget_2, 0, 2, 2, 3)
+        self.gridLayout_3.addWidget(self.SimpleCardWidget_2, 0, 2, 2, 2)
 
         self.StrongBodyLabel_7 = StrongBodyLabel(Dialog)
         self.StrongBodyLabel_7.setObjectName(u"StrongBodyLabel_7")
@@ -150,24 +150,19 @@ class Ui_Dialog(object):
 
         self.gridLayout_3.addWidget(self.preview_count_row_show_cb, 1, 1, 1, 1)
 
-        self.SwitchButton = SwitchButton(Dialog)
-        self.SwitchButton.setObjectName(u"SwitchButton")
-
-        self.gridLayout_3.addWidget(self.SwitchButton, 2, 0, 1, 2)
-
         self.horizontalSpacer = QSpacerItem(228, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
-        self.gridLayout_3.addItem(self.horizontalSpacer, 3, 0, 1, 3)
+        self.gridLayout_3.addItem(self.horizontalSpacer, 2, 0, 1, 2)
 
         self.cancel_btn = PushButton(Dialog)
         self.cancel_btn.setObjectName(u"cancel_btn")
 
-        self.gridLayout_3.addWidget(self.cancel_btn, 3, 3, 1, 1)
+        self.gridLayout_3.addWidget(self.cancel_btn, 2, 2, 1, 1)
 
         self.save_btn = PrimaryPushButton(Dialog)
         self.save_btn.setObjectName(u"save_btn")
 
-        self.gridLayout_3.addWidget(self.save_btn, 3, 4, 1, 1)
+        self.gridLayout_3.addWidget(self.save_btn, 2, 3, 1, 1)
 
 
         self.retranslateUi(Dialog)
@@ -200,9 +195,6 @@ class Ui_Dialog(object):
         self.preview_count_row_show_cb.setToolTip(QCoreApplication.translate("Dialog", u"\u041f\u043e \u0443\u043c\u043e\u043b\u0447\u0430\u043d\u0438\u044e 10", None))
 #endif // QT_CONFIG(tooltip)
         self.preview_count_row_show_cb.setText(QCoreApplication.translate("Dialog", u"\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e \u0441\u0442\u0440\u043e\u043a", None))
-        self.SwitchButton.setText(QCoreApplication.translate("Dialog", u"\u0421\u043e\u0440\u0442\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u043f\u043e \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u043e\u043c\u0443 \u0441\u0442\u043e\u043b\u0431\u0446\u0443", None))
-        self.SwitchButton.setOnText(QCoreApplication.translate("Dialog", u"\u0421\u043e\u0440\u0442\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u043f\u043e \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u043e\u043c\u0443 \u0441\u0442\u043e\u043b\u0431\u0446\u0443", None))
-        self.SwitchButton.setOffText(QCoreApplication.translate("Dialog", u"\u0421\u043e\u0440\u0442\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u043f\u043e \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u043e\u043c\u0443 \u0441\u0442\u043e\u043b\u0431\u0446\u0443", None))
         self.cancel_btn.setText(QCoreApplication.translate("Dialog", u"\u041e\u0442\u043c\u0435\u043d\u0430", None))
         self.save_btn.setText(QCoreApplication.translate("Dialog", u"\u0421\u043e\u0445\u0440\u0430\u043d\u0438\u0442\u044c", None))
     # retranslateUi
